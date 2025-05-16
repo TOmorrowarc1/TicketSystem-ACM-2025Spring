@@ -8,6 +8,7 @@ using page_id_t = int;
 using frame_id_t = int;
 const page_id_t INVALID_PAGE_ID = -1;
 const frame_id_t INVAILD_FRMAE_ID = -1;
+
 struct FrameHeader {
   page_id_t page_in_;
   int pin_count_;
