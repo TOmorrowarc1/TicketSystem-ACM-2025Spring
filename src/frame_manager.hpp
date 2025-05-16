@@ -59,6 +59,14 @@ public:
     ++current_time_stamp_;
     --frame_info_[target_frame].pin_count_;
   };
+
+  auto IsDirty(frame_id_t target_frame) -> bool {
+    return frame_info_[target_frame].is_dirty_;
+  }
+
+  auto PageIn(frame_id_t target_frame) -> page_id_t {
+    return frame_info_[target_frame].page_in_;
+  }
 };
 } // namespace bpt
 #endif
