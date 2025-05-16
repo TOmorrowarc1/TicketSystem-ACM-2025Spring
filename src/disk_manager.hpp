@@ -1,14 +1,13 @@
 #ifndef DISK_MANAGER_HPP
 #define DISK_MANAGER_HPP
 
+#include "config.hpp"
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 namespace bpt {
-using page_id_t = int;
-const page_id_t INVALID_PAGE_ID = -1;
 
 class DiskManager {
 private:
