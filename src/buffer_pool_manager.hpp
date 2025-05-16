@@ -40,6 +40,7 @@ public:
       is_valid_ = other.is_valid_;
       other.is_valid_ = false;
     }
+    return *this;
   }
 
   auto GetPageID() -> page_id_t { return page_in_; }
@@ -115,6 +116,7 @@ public:
     if (page_table_.count(target_page)) {
       frame_manager_->Erase(page_table_[target_page]);
     }
+    return true;
   }
 
   auto VisitPage(page_id_t target_page, bool read) -> PageGuard {

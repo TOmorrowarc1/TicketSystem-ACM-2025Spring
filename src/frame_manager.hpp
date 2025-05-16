@@ -1,13 +1,9 @@
 #ifndef FRAME_MANAGER_HPP
 #define FRAME_MANAGER_HPP
+#include "config.hpp"
 #include <cassert>
 #include <vector>
-
 namespace bpt {
-using page_id_t = int;
-using frame_id_t = int;
-const page_id_t INVALID_PAGE_ID = -1;
-const frame_id_t INVALID_FRMAE_ID = -1;
 
 struct FrameHeader {
   page_id_t page_in_;
@@ -66,7 +62,7 @@ public:
     frame_info_[target_frame].pin_count_ = 0;
     frame_info_[target_frame].page_in_ = 0;
   }
-  
+
   auto IsDirty(frame_id_t target_frame) -> bool {
     return frame_info_[target_frame].is_dirty_;
   }
