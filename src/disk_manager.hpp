@@ -1,13 +1,12 @@
 #ifndef DISK_MANAGER_HPP
 #define DISK_MANAGER_HPP
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <cassert>
 #include <vector>
 namespace bpt {
-
 using page_id_t = int;
 const page_id_t INVALID_PAGE_ID = -1;
 
@@ -55,7 +54,7 @@ public:
   }
 
   void DeletePage(page_id_t target_page) {
-    assert(target_page<next_page_);
+    assert(target_page < next_page_);
     empty_page_.push_back(target_page);
   }
 };
