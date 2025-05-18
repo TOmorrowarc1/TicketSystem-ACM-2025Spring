@@ -57,6 +57,9 @@ public:
     if (is_valid_) {
       frame_manager_->Unpin(frame_in_);
     }
+    pointer_ = nullptr;
+    frame_manager_ = nullptr;
+    is_valid_ = false;
   }
 };
 
