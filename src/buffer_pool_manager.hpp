@@ -127,8 +127,10 @@ public:
                        frame_manager_);
     }
     std::pair<frame_id_t, page_id_t> info = frame_manager_->EvictFrame();
-    if (info.second != INVALID_PAGE_ID && frame_manager_->IsDirty(info.first)) {
-      FlushPage(info.second, info.first);
+    if (info.second != INVALID_PAGE_ID) {
+      if (frame_manager_->IsDirty(info.first)) {
+        FlushPage(info.second, info.first);
+      }
       page_table_.erase(info.second);
     }
     FetchPage(target_page, info.first);
