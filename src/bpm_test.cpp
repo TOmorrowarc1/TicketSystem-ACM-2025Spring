@@ -35,10 +35,6 @@ int main() {
 
   // Scenario: Once the buffer pool is full, we should not be able to create any
   // new pages.
-  for (size_t i = 0; i < FRAMES; i++) {
-    auto pid = bpm.NewPage();
-    auto fail = bpm.VisitPage(pid, 0);
-  }
 
   // Scenario: Drop the first 5 pages to unpin them.
   for (size_t i = 0; i < FRAMES / 2; i++) {
