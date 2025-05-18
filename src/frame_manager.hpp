@@ -27,7 +27,7 @@ public:
     frame_id_t victim = INVALID_FRMAE_ID;
     int time = current_time_stamp_;
     for (int i = 0; i < frame_info_.size(); ++i) {
-      if (frame_info_[i].pin_count_ == 0 && frame_info_[i].history_ < time) {
+      if (frame_info_[i].pin_count_ == 0 && frame_info_[i].history_ <= time) {
         victim = i;
         time = frame_info_[i].history_;
         if (frame_info_[i].page_in_ == INVALID_PAGE_ID) {
