@@ -6,6 +6,7 @@ namespace bpt {
   template <typename KeyType, typename ValueType, typename KeyComparator>
 #define LEAF_PAGE_TYPE LeafPage<KeyType, ValueType, KeyComparator>
 #define INTERNAL_PAGE_TYPE InternalPage<KeyType, ValueType, KeyComparator>
+
 class TreePage {
 public:
   enum class PageType : bool { LEAF = false, INTERNAL };
