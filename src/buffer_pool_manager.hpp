@@ -73,19 +73,29 @@ private:
   int page_size_;
   char **cache_;
 
+  void InitPage(page_id_t target_page) {
+    data_file_.seekp(target_page * page_size_);
+    data_file_.write(cache_[0], page_size_);
+  }
   void FetchPage(page_id_t target_page, frame_id_t target_frame) {
     data_file_.seekg(target_page * page_size_);
+    if (!data_file_.good()) {
+      throw std::runtime_error("Seek failed in FlushPage");
+    }
     data_file_.read(cache_[target_frame], page_size_);
   }
   void FlushPage(page_id_t target_page, frame_id_t target_frame) {
     data_file_.seekp(target_page * page_size_);
+    if (!data_file_.good()) {
+      throw std::runtime_error("Seek failed in FlushPage");
+    }
     data_file_.write(cache_[target_frame], page_size_);
   }
 
 public:
   BufferPoolManager() = delete;
-  BufferPoolManager(int cache_size, int page_size, std::string &data_file,
-                    std::string &disk_manager_file) {
+  BufferPoolManager(int cache_size, int page_size, const std::string &data_file,
+                    const std::string &disk_manager_file) {
     data_file_.open(data_file, std::ios::in | std::ios::out | std::ios::binary);
     if (!data_file_.good()) {
       data_file_.close();
@@ -103,6 +113,7 @@ public:
     }
     page_size_ = page_size;
   }
+
   ~BufferPoolManager() {
     for (auto iter = page_table_.begin(); iter != page_table_.end(); ++iter) {
       FlushPage(iter->first, iter->second);
@@ -116,12 +127,20 @@ public:
     delete cache_;
   }
 
-  auto NewPage() -> page_id_t { return disk_manager_->NewPage(); }
+  auto NewPage() -> page_id_t {
+    auto result = disk_manager_->NewPage();
+    if (result.second) {
+      InitPage(result.first);
+    }
+    return result.first;
+  }
   auto DeletePage(page_id_t target_page) -> bool {
     disk_manager_->DeletePage(target_page);
     if (page_table_.count(target_page)) {
       frame_manager_->Erase(page_table_[target_page]);
+      InitPage(target_page);
     }
+    page_table_.erase(target_page);
     return true;
   }
 

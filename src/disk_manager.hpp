@@ -17,7 +17,7 @@ private:
 
 public:
   DiskManager() = delete;
-  DiskManager(std::string file_name) {
+  DiskManager(const std::string &file_name) {
     file_.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
     if (!file_.good()) {
       file_.close();
@@ -40,16 +40,18 @@ public:
     file_.close();
   }
 
-  auto NewPage() -> page_id_t {
+  auto NewPage() -> std::pair<page_id_t, bool> {
     page_id_t target_page;
+    bool flag = false;
     if (!empty_page_.empty()) {
       target_page = empty_page_.back();
       empty_page_.pop_back();
     } else {
       target_page = next_page_;
       ++next_page_;
+      flag = true;
     }
-    return target_page;
+    return {target_page, flag};
   }
 
   void DeletePage(page_id_t target_page) {
