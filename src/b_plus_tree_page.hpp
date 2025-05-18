@@ -1,6 +1,7 @@
 #ifndef B_PLUS_TREE_PAGE_HPP
 #define B_PLUS_TREE_PAGE_HPP
 namespace bpt {
+
 #define TEMPLATE                                                               \
   template <typename KeyType, typename ValueType, typename KeyComparator>
 #define LEAF_PAGE_TYPE LeafPage<KeyType, ValueType, KeyComparator>
