@@ -90,6 +90,9 @@ public:
     if (!data_file_.good()) {
       data_file_.close();
       data_file_.open(data_file, std::ios::out | std::ios::binary);
+      data_file_.close();
+      data_file_.open(data_file,
+                      std::ios::in | std::ios::out | std::ios::binary);
     }
     frame_manager_ = new FrameManager(cache_size);
     disk_manager_ = new DiskManager(disk_manager_file);
