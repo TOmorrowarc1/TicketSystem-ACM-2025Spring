@@ -11,7 +11,7 @@ int main() {
 
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   bpt::page_id_t pid0 = bpm.NewPage();
-  auto page0 = bpm.VisitPage(pid0, true);
+  auto page0 = bpm.VisitPage(pid0, false);
 
   // Scenario: Once we have a page, we should be able to read and write content.
   snprintf(page0.AsMut<char>(), 4096, "Hello");
