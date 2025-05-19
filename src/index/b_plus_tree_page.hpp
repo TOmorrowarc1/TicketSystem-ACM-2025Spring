@@ -95,7 +95,7 @@ auto LEAF_PAGE_TYPE::InsertInPage(int index, const KeyType &target_key,
 
 TEMPLATE
 auto LEAF_PAGE_TYPE::SplitPage(LeafPage *empty) -> KeyType {
-  empty->Init(GetMaxSize());
+  new (empty) LeafPage(GetMaxSize());
   empty->SetPageType(GetPageType());
   empty->SetSize(GetSize() >> 1);
   SetSize(GetSize() - empty->GetSize());
@@ -171,6 +171,7 @@ public:
   InternalPage(const InternalPage &other) = delete;
 
   auto KeyAt(int index) const -> KeyType { return key_array_[index]; }
+  void SetKeyAt(int index, const KeyType &key) { key_array_[index] = key; }
   auto ValueAt(int index) const -> ValueType { return value_array_[index]; }
   auto KeyIndex(const KeyType &key) const -> int;
 
@@ -224,7 +225,7 @@ auto INTERNAL_PAGE_TYPE::InsertInPage(int index, const ValueType &page_id)
 
 TEMPLATE
 auto INTERNAL_PAGE_TYPE::SplitPage(InternalPage *empty) -> KeyType {
-  empty->Init(GetMaxSize());
+  new (empty) InternalPage(GetMaxSize());
   empty->SetPageType(GetPageType());
   empty->SetSize(GetSize() >> 1);
   SetSize(GetSize() - empty->GetSize());

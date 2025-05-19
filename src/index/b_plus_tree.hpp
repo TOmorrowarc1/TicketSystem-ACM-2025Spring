@@ -12,6 +12,10 @@ struct Trace {
   int levels = 0;
 };
 
+struct HeaderPage {
+  int root_page_id_ = INVALID_PAGE_ID;
+};
+
 TEMPLATE
 class BPlusTree {
   using InternalPage = InternalPage<KeyType, page_id_t, KeyComparator>;
@@ -25,6 +29,7 @@ private:
   int internal_min_size_;
   page_id_t header_page_id_;
 
+  void FindPath(Trace &trace, const KeyType &key) const;
   auto SplitLeafNode(LeafPage *cursor) -> std::pair<KeyType, page_id_t>;
   auto SplitInternalNode(InternalPage *cursor) -> std::pair<KeyType, page_id_t>;
 
@@ -44,46 +49,39 @@ public:
 
 TEMPLATE
 BPT_TYPE::BPlusTree(page_id_t header_page_id,
-                    BufferPoolManager *buffer_pool_manager, int leaf_max_size,
-                    int internal_max_size)
+                    BufferPoolManager *buffer_pool_manager,
+                    int leaf_max_size = PAGE_MAX_SIZE,
+                    int internal_max_size = PAGE_MAX_SIZE - 1)
     : bpm_(buffer_pool_manager), leaf_max_size_(leaf_max_size),
       internal_max_size_(internal_max_size + 1),
       header_page_id_(header_page_id) {
-  PageGuard guard = bpm_->VisitPage(header_page_id_);
-  auto head_page = guard.AsMut<BPlusTreeHeaderPage>();
+  PageGuard guard = bpm_->VisitPage(header_page_id_, false);
+  auto head_page = guard.AsMut<HeaderPage>();
   head_page->root_page_id_ = INVALID_PAGE_ID;
   leaf_min_size_ = leaf_max_size_ >> 1;
   internal_min_size_ = internal_max_size_ >> 1;
 }
 
 TEMPLATE
-auto BPT_TYPE::IsEmpty() const -> bool {
-  VisitPageGuard guard = bpm_->VisitPage(header_page_id_);
-  auto head_page = guard.As<BPlusTreeHeaderPage>();
-  return head_page->root_page_id_ == INVALID_PAGE_ID;
-}
-
-TEMPLATE
 auto BPT_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result)
     -> bool {
   // Declaration of context instance.
-  ReadPageGuard read_guard = bpm_->ReadPage(header_page_id_);
-  page_id_t root_id = read_guard.As<BPlusTreeHeaderPage>()->root_page_id_;
+  PageGuard read_guard = bpm_->VisitPage(header_page_id_, true);
+  page_id_t root_id = read_guard.As<HeaderPage>()->root_page_id_;
   if (root_id == INVALID_PAGE_ID) {
     return false;
   }
-  read_guard = bpm_->ReadPage(root_id);
+  read_guard = bpm_->VisitPage(root_id, true);
   auto cursor_pointer = read_guard.As<InternalPage>();
   while (!cursor_pointer->IsLeafPage()) {
-    auto temp = bpm_->ReadPage(cursor_pointer->ValueAt(
-        cursor_pointer->KeyIndex(key, comparator_) - 1));
-    read_guard = std::move(temp);
+    read_guard = bpm_->VisitPage(
+        cursor_pointer->ValueAt(cursor_pointer->KeyIndex(key) - 1));
     cursor_pointer = read_guard.As<InternalPage>();
   }
   auto cursor_leaf_pointer = read_guard.As<LeafPage>();
-  int cursor = cursor_leaf_pointer->KeyIndex(key, comparator_);
+  int cursor = cursor_leaf_pointer->KeyIndex(key);
   if (cursor >= cursor_leaf_pointer->GetSize() ||
-      comparator_(cursor_leaf_pointer->KeyAt(cursor), key) != 0) {
+      KeyComparator(cursor_leaf_pointer->KeyAt(cursor), key) != 0) {
     return false;
   }
   result->push_back(cursor_leaf_pointer->ValueAt(cursor));
@@ -91,186 +89,20 @@ auto BPT_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result)
 }
 
 TEMPLATE
-auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
-  // Declaration of context instance.
-  Context ctx;
-  ctx.header_page_.emplace(bpm_->VisitPage(header_page_id_));
-  auto header_page = ctx.header_page_.value().AsMut<BPlusTreeHeaderPage>();
-  ctx.root_page_id_ = header_page->root_page_id_;
-  if (ctx.root_page_id_ == INVALID_PAGE_ID) {
-    // The tree is empty.
-    int new_leaf = bpm_->NewPage();
-    auto root_guard = bpm_->VisitPage(new_leaf);
-    auto cursor_leaf_pointer = root_guard.AsMut<LeafPage>();
-    cursor_leaf_pointer->Init(leaf_max_size_);
-    cursor_leaf_pointer->InsertInPage(0, key, value);
-    header_page->root_page_id_ = new_leaf;
-    ctx.header_page_.reset();
-    return true;
-  }
-  ctx.write_set_.push_back(bpm_->VisitPage(ctx.root_page_id_));
-  FindPath(ctx, OperationType::INSERT, key);
-  /*Situation 2: the tree is not empty.*/
-  auto *cursor_leaf_pointer = ctx.write_set_.back().AsMut<LeafPage>();
-  int cursor = cursor_leaf_pointer->KeyIndex(key, comparator_);
-  if (cursor < cursor_leaf_pointer->GetSize() &&
-      comparator_(cursor_leaf_pointer->KeyAt(cursor), key) == 0) {
-    return false;
-  }
-  /*Here comes the adjustment after insert.*/
-  int number = cursor_leaf_pointer->InsertInPage(cursor, key, value);
-  std::pair<KeyType, page_id_t> info;
-  if (number >= leaf_max_size_) {
-    info = SplitLeafNode(cursor_leaf_pointer);
-    ctx.write_set_.pop_back();
-    InternalPage *cursor_pointer = nullptr;
-    if (ctx.level_ > 0) {
-      cursor_pointer = ctx.write_set_.back().AsMut<InternalPage>();
-      number = cursor_pointer->InsertInPage(ctx.location_set_.back(),
-                                            info.first, info.second);
-      ctx.location_set_.pop_back();
-      --ctx.level_;
-      while (number >= internal_max_size_ && ctx.level_ > 0) {
-        info = SplitInternalNode(cursor_pointer);
-        ctx.write_set_.pop_back();
-        cursor_pointer = ctx.write_set_.back().AsMut<InternalPage>();
-        number = cursor_pointer->InsertInPage(ctx.location_set_.back(),
-                                              info.first, info.second);
-        ctx.location_set_.pop_back();
-        --ctx.level_;
-      }
-      if (number >= internal_max_size_) {
-        info = SplitInternalNode(cursor_pointer);
-        cursor = bpm_->NewPage();
-        cursor_pointer = bpm_->VisitPage(cursor).AsMut<InternalPage>();
-        cursor_pointer->Init(internal_max_size_);
-        cursor_pointer->InsertInPage(0, ctx.root_page_id_);
-        cursor_pointer->InsertInPage(1, info.first, info.second);
-        auto header_page =
-            ctx.header_page_.value().AsMut<BPlusTreeHeaderPage>();
-        header_page->root_page_id_ = cursor;
-        ctx.header_page_.reset();
-      }
-    } else {
-      cursor = bpm_->NewPage();
-      cursor_pointer = bpm_->VisitPage(cursor).AsMut<InternalPage>();
-      cursor_pointer->Init(internal_max_size_);
-      cursor_pointer->InsertInPage(0, ctx.root_page_id_);
-      cursor_pointer->InsertInPage(1, info.first, info.second);
-      auto header_page = ctx.header_page_.value().AsMut<BPlusTreeHeaderPage>();
-      header_page->root_page_id_ = cursor;
-      ctx.header_page_.reset();
-    }
-  }
-  return true;
-}
-
-TEMPLATE
-void BPT_TYPE::Remove(const KeyType &key) {
-  // Declaration of context instance.
-  Context ctx;
-  ctx.header_page_.emplace(bpm_->VisitPage(header_page_id_));
-  auto header_page = ctx.header_page_.value().AsMut<BPlusTreeHeaderPage>();
-  ctx.root_page_id_ = header_page->root_page_id_;
-  if (ctx.root_page_id_ == INVALID_PAGE_ID) {
-    // The tree is empty.
-    ctx.header_page_.reset();
-    return;
-  }
-  ctx.write_set_.push_back(bpm_->VisitPage(ctx.root_page_id_));
-  FindPath(ctx, OperationType::DELETE, key);
-  /*Situation 2: the tree is not empty.*/
-  auto *cursor_leaf_pointer = ctx.write_set_.back().AsMut<LeafPage>();
-  int cursor = cursor_leaf_pointer->KeyIndex(key, comparator_);
-  if (cursor >= cursor_leaf_pointer->GetSize() ||
-      comparator_(cursor_leaf_pointer->KeyAt(cursor), key) != 0) {
-    return;
-  }
-  int number = cursor_leaf_pointer->DeleteInPage(cursor);
-  /*Here comes the adjustment after delete.*/
-  if (number >= leaf_min_size_ || ctx.level_ == 0) {
-    if (number == 0) {
-      auto header_page = ctx.header_page_.value().AsMut<BPlusTreeHeaderPage>();
-      header_page->root_page_id_ = INVALID_PAGE_ID;
-      ctx.header_page_.reset();
-    }
-    return;
-  }
-  /*First, we need to merge the leaf, as its items not enough and it is not the
-   * root.*/
-  VisitPageGuard sibling;
-  VisitPageGuard guard_child = std::move(ctx.write_set_.back());
-  ctx.write_set_.pop_back();
-  auto *cursor_parent = ctx.write_set_.back().AsMut<InternalPage>();
-  InternalPage *cursor_child = nullptr;
-  bool sibling_right = false;
-  sibling_right = SelectSibling(cursor_parent, key, sibling);
-  if (sibling.As<LeafPage>()->GetSize() + number >= leaf_max_size_) {
-    KeyType temp = cursor_leaf_pointer->BorrowFromPage(
-        sibling.AsMut<LeafPage>(), sibling_right);
-    cursor_parent->SetKeyAt(
-        ctx.location_set_.back() + static_cast<int>(sibling_right) - 1, temp);
-  } else {
-    cursor_leaf_pointer->MergePage(sibling.AsMut<LeafPage>(), sibling_right);
-    /*It is the place we start to deal with internal pages.*/
-    number = cursor_parent->DeleteInPage(ctx.location_set_.back() +
-                                         static_cast<int>(sibling_right) - 1);
-    ctx.location_set_.pop_back();
-    --ctx.level_;
-    while (number < internal_min_size_ && ctx.level_ != 0) {
-      guard_child = std::move(ctx.write_set_.back());
-      cursor_child = guard_child.AsMut<InternalPage>();
-      ctx.write_set_.pop_back();
-      cursor_parent = ctx.write_set_.back().AsMut<InternalPage>();
-      sibling_right = SelectSibling(cursor_parent, key, sibling);
-      if (sibling.As<InternalPage>()->GetSize() + number >=
-          internal_max_size_) {
-        KeyType temp = cursor_child->BorrowFromPage(
-            sibling.AsMut<InternalPage>(),
-            cursor_parent->KeyAt(ctx.location_set_.back() +
-                                 static_cast<int>(sibling_right) - 1),
-            sibling_right);
-        cursor_parent->SetKeyAt(ctx.location_set_.back() +
-                                    static_cast<int>(sibling_right) - 1,
-                                temp);
-        number = internal_max_size_;
-      } else {
-        cursor_child->MergePage(
-            sibling.AsMut<InternalPage>(),
-            cursor_parent->KeyAt(ctx.location_set_.back() +
-                                 static_cast<int>(sibling_right) - 1),
-            sibling_right);
-        number = cursor_parent->DeleteInPage(
-            ctx.location_set_.back() + static_cast<int>(sibling_right) - 1);
-        ctx.location_set_.pop_back();
-        --ctx.level_;
-      }
-    }
-    if (ctx.level_ == 0 && cursor_parent->GetSize() == 1) {
-      auto header_page = ctx.header_page_.value().AsMut<BPlusTreeHeaderPage>();
-      header_page->root_page_id_ = cursor_parent->ValueAt(0);
-      ctx.header_page_.reset();
-    }
-  }
-}
-
-TEMPLATE
-void BPT_TYPE::FindPath(bustub::Context &ctx, OperationType type,
-                        const KeyType &key) const {
+void BPT_TYPE::FindPath(Trace &trace, const KeyType &key) const {
   page_id_t cursor = 0;
-  VisitPageGuard write_guard;
-  auto cursor_pointer = ctx.write_set_.back().As<InternalPage>();
+  PageGuard page_guard;
+  cursor = trace.place_trace[0];
+  page_guard = bpm_->VisitPage(cursor, false);
+  auto cursor_pointer = page_guard.As<InternalPage>();
+  trace.pages_trace[trace.levels] = std::move(page_guard);
   while (!cursor_pointer->IsLeafPage()) {
-    cursor = cursor_pointer->KeyIndex(key, comparator_) - 1;
-    ctx.location_set_.push_back(cursor + 1);
-    ++ctx.level_;
-    write_guard = bpm_->VisitPage(cursor_pointer->ValueAt(cursor));
-    cursor_pointer = write_guard.As<InternalPage>();
-    if (IsNodeSafe(cursor_pointer, type)) {
-      ctx.header_page_.reset();
-      ctx.write_set_.clear();
-    }
-    ctx.write_set_.push_back(std::move(write_guard));
+    cursor = cursor_pointer->KeyIndex(key) - 1;
+    trace.place_trace[trace.levels] = cursor;
+    ++trace.level_;
+    page_guard = bpm_->VisitPage(cursor_pointer->ValueAt(cursor), false);
+    cursor_pointer = page_guard.As<InternalPage>();
+    trace.pages_trace[trace.levels] = std::move(page_guard);
   }
 }
 
@@ -278,8 +110,8 @@ TEMPLATE
 auto BPT_TYPE::SplitLeafNode(LeafPage *cursor)
     -> std::pair<KeyType, page_id_t> {
   page_id_t new_leaf = bpm_->NewPage();
-  VisitPageGuard write_guard = bpm_->VisitPage(new_leaf);
-  auto cursor_new_leaf = write_guard.AsMut<LeafPage>();
+  PageGuard page_guard = bpm_->VisitPage(new_leaf, false);
+  auto cursor_new_leaf = page_guard.AsMut<LeafPage>();
   KeyType middle_key = cursor->SplitPage(cursor_new_leaf);
   cursor_new_leaf->SetNextPageId(cursor->GetNextPageId());
   cursor->SetNextPageId(new_leaf);
@@ -289,15 +121,15 @@ TEMPLATE
 auto BPT_TYPE::SplitInternalNode(InternalPage *cursor)
     -> std::pair<KeyType, page_id_t> {
   page_id_t new_internal = bpm_->NewPage();
-  VisitPageGuard write_guard = bpm_->VisitPage(new_internal);
-  auto cursor_new_internal = write_guard.AsMut<InternalPage>();
+  PageGuard page_guard = bpm_->VisitPage(new_internal, false);
+  auto cursor_new_internal = page_guard.AsMut<InternalPage>();
   return {cursor->SplitPage(cursor_new_internal), new_internal};
 }
 
 TEMPLATE
 auto BPT_TYPE::SelectSibling(InternalPage *parent, const KeyType &key,
-                             VisitPageGuard &result) -> bool {
-  int location = parent->KeyIndex(key, comparator_) - 1;
+                             PageGuard &result) -> bool {
+  int location = parent->KeyIndex(key, KeyComparator) - 1;
   bool result_right = false;
   if (location == 0) {
     result = bpm_->VisitPage(parent->ValueAt(1));
@@ -313,6 +145,151 @@ auto BPT_TYPE::SelectSibling(InternalPage *parent, const KeyType &key,
     result = result_right ? std::move(result2) : std::move(result1);
   }
   return result_right;
+}
+
+TEMPLATE
+auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
+  Trace trace;
+  trace.pages_trace[trace.levels] = bpm_->VisitPage(header_page_id_, false);
+  trace.place_trace[trace.levels] =
+      trace.pages_trace[trace.levels].AsMut<HeaderPage>()->root_page_id_;
+  ++trace.levels;
+  if (trace.place_trace[0] == INVALID_PAGE_ID) {
+    // The tree is empty.
+    int new_leaf = bpm_->NewPage();
+    auto root_guard = bpm_->VisitPage(new_leaf, false);
+    auto cursor_leaf_pointer = root_guard.AsMut<LeafPage>();
+    new (cursor_leaf_pointer) LeafPage(leaf_max_size_);
+    cursor_leaf_pointer->InsertInPage(0, key, value);
+    trace.pages_trace[0].AsMut<HeaderPage>()->root_page_id_ = new_leaf;
+    return true;
+  }
+  /*Situation 2: the tree is not empty.*/
+  FindPath(trace, key);
+  auto cursor_leaf_pointer = trace.pages_trace[trace.levels].AsMut<LeafPage>();
+  int cursor = cursor_leaf_pointer->KeyIndex(key);
+  if (cursor < cursor_leaf_pointer->GetSize() &&
+      KeyComparator(cursor_leaf_pointer->KeyAt(cursor), key) == 0) {
+    return false;
+  }
+  /*Here comes the adjustment after insert.*/
+  int number = cursor_leaf_pointer->InsertInPage(cursor, key, value);
+  std::pair<KeyType, page_id_t> info;
+  if (number >= leaf_max_size_) {
+    info = SplitLeafNode(cursor_leaf_pointer);
+    --trace.levels;
+    InternalPage *cursor_pointer = nullptr;
+    if (trace.levels > 1) {
+      cursor_pointer = trace.pages_trace[trace.levels].AsMut<InternalPage>();
+      number = cursor_pointer->InsertInPage(trace.place_trace[trace.levels],
+                                            info.first, info.second);
+      --trace.levels;
+      while (number >= internal_max_size_ && trace.level_ > 1) {
+        info = SplitInternalNode(cursor_pointer);
+        cursor_pointer = trace.pages_trace[trace.levels].AsMut<InternalPage>();
+        number = cursor_pointer->InsertInPage(trace.place_trace[trace.levels],
+                                              info.first, info.second);
+        --trace.level_;
+      }
+      if (number >= internal_max_size_) {
+        info = SplitInternalNode(cursor_pointer);
+        cursor = bpm_->NewPage();
+        cursor_pointer = bpm_->VisitPage(cursor, false).AsMut<InternalPage>();
+        new (cursor_pointer) InternalPage(internal_max_size_);
+        cursor_pointer->InsertInPage(0, trace.root_page_id_);
+        cursor_pointer->InsertInPage(1, info.first, info.second);
+        trace.pages_trace[0].AsMut<HeaderPage>()->root_page_id_ = cursor;
+      }
+    } else {
+      cursor = bpm_->NewPage();
+      cursor_pointer = bpm_->VisitPage(cursor, false).AsMut<InternalPage>();
+      new (cursor_pointer) InternalPage(internal_max_size_);
+      cursor_pointer->InsertInPage(0, trace.root_page_id_);
+      cursor_pointer->InsertInPage(1, info.first, info.second);
+      trace.pages_trace[0].AsMut<HeaderPage>()->root_page_id_ = cursor;
+    }
+  }
+  return true;
+}
+
+TEMPLATE
+void BPT_TYPE::Remove(const KeyType &key) {
+  Trace trace;
+  trace.pages_trace[trace.levels] = bpm_->VisitPage(header_page_id_, false);
+  trace.place_trace[trace.levels] =
+      trace.pages_trace[trace.levels].AsMut<HeaderPage>()->root_page_id_;
+  ++trace.levels;
+  if (trace.root_page_id_ == INVALID_PAGE_ID) {
+    return;
+  }
+  FindPath(trace, key);
+  /*Situation 2: the tree is not empty.*/
+  auto cursor_leaf_pointer = trace.pages_trace[trace.levels].AsMut<LeafPage>();
+  int cursor = cursor_leaf_pointer->KeyIndex(key);
+  if (cursor >= cursor_leaf_pointer->GetSize() ||
+      KeyComparator(cursor_leaf_pointer->KeyAt(cursor), key) != 0) {
+    return;
+  }
+  int number = cursor_leaf_pointer->DeleteInPage(cursor);
+  /*Here comes the adjustment after delete.*/
+  if (number >= leaf_min_size_ || trace.level_ == 1) {
+    if (number == 0) {
+      trace.pages_trace[0].AsMut<HeaderPage>()->root_page_id_ = INVALID_PAGE_ID;
+    }
+    return;
+  }
+  /*First, we need to merge the leaf, which is lack of items and not the root.*/
+  PageGuard sibling;
+  PageGuard guard_child = std::move(trace.pages_trace[trace.levels]);
+  --trace.levels;
+  InternalPage *cursor_parent =
+      trace.pages_trace[trace.levels].AsMut<InternalPage>();
+  InternalPage *cursor_child = nullptr;
+  bool sibling_right = SelectSibling(cursor_parent, key, sibling);
+  if (sibling.As<LeafPage>()->GetSize() + number >= leaf_max_size_) {
+    KeyType temp = cursor_leaf_pointer->BorrowFromPage(
+        sibling.AsMut<LeafPage>(), sibling_right);
+    cursor_parent->SetKeyAt(trace.place_trace[trace.levels] +
+                                static_cast<int>(sibling_right) - 1,
+                            temp);
+  } else {
+    cursor_leaf_pointer->MergePage(sibling.AsMut<LeafPage>(), sibling_right);
+    /*It is the place we start to deal with internal pages.*/
+    number = cursor_parent->DeleteInPage(trace.place_trace[trace.levels] +
+                                         static_cast<int>(sibling_right) - 1);
+    while (number < internal_min_size_ && trace.level_ > 1) {
+      guard_child = std::move(trace.pages_trace[trace.levels]);
+      cursor_child = guard_child.AsMut<InternalPage>();
+      --trace.levels;
+      cursor_parent = trace.pages_trace[trace.levels].AsMut<InternalPage>();
+      sibling_right = SelectSibling(cursor_parent, key, sibling);
+      if (sibling.As<InternalPage>()->GetSize() + number >=
+          internal_max_size_) {
+        KeyType temp = cursor_child->BorrowFromPage(
+            sibling.AsMut<InternalPage>(),
+            cursor_parent->KeyAt(trace.place_trace[trace.levels] +
+                                 static_cast<int>(sibling_right) - 1),
+            sibling_right);
+        cursor_parent->SetKeyAt(trace.place_trace[trace.levels] +
+                                    static_cast<int>(sibling_right) - 1,
+                                temp);
+        number = internal_max_size_;
+      } else {
+        cursor_child->MergePage(
+            sibling.AsMut<InternalPage>(),
+            cursor_parent->KeyAt(trace.place_trace[trace.levels] +
+                                 static_cast<int>(sibling_right) - 1),
+            sibling_right);
+        number =
+            cursor_parent->DeleteInPage(trace.place_trace[trace.levels] +
+                                        static_cast<int>(sibling_right) - 1);
+      }
+    }
+    if (trace.level_ == 1 && cursor_parent->GetSize() == 1) {
+      trace.pages_trace[0].AsMut<HeaderPage>()->root_page_id_ =
+          cursor_parent->ValueAt(0);
+    }
+  }
 }
 
 } // namespace bpt
