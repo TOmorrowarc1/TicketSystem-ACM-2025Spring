@@ -34,7 +34,7 @@ public:
   void SetMaxSize(int size) { max_size_ = size; }
   auto GetMinSize() const -> int { return max_size_ >> 1; }
 };
-
+/*————————————————————————————————————————————————————————————————————————————————————————————————————————*/
 TEMPLATE
 class LeafPage : public TreePage {
 private:
@@ -71,7 +71,7 @@ auto LEAF_PAGE_TYPE::KeyIndex(const KeyType &target) const -> int {
   int middle = 0;
   while (left < right) {
     middle = (left + right) >> 1;
-    if (KeyComparator(key_array_[middle], target) < 0) {
+    if (KeyComparator(key_array_[middle], target) <= 0) {
       left = middle + 1;
     } else {
       right = middle;
@@ -158,7 +158,7 @@ void LEAF_PAGE_TYPE::MergePage(LeafPage *sibling, bool sibling_right) {
     SetSize(0);
   }
 };
-
+/*————————————————————————————————————————————————————————————————————————————————————————————————————————*/
 TEMPLATE
 class InternalPage : public TreePage {
 private:
@@ -166,8 +166,12 @@ private:
   ValueType value_array_[(4096 - 16) / (sizeof(KeyType) + sizeof(ValueType))];
 
 public:
-  auto KeyAt(int index) const -> KeyType;
-  auto ValueAt(int index) const -> ValueType;
+  InternalPage() = delete;
+  InternalPage(int max_size) : TreePage(max_size, PageType::INTERNAL){};
+  InternalPage(const InternalPage &other) = delete;
+
+  auto KeyAt(int index) const -> KeyType { return key_array_[index]; }
+  auto ValueAt(int index) const -> ValueType { return value_array_[index]; }
   auto KeyIndex(const KeyType &key) const -> int;
 
   auto InsertInPage(int index, const KeyType &target_key,
@@ -181,6 +185,112 @@ public:
   void MergePage(InternalPage *sibling, const KeyType &middle,
                  bool sibling_right);
 };
+
+TEMPLATE
+auto INTERNAL_PAGE_TYPE::KeyIndex(const KeyType &key) const -> int {
+  int left = 1;
+  int right = GetSize();
+  int middle = 0;
+  while (left < right) {
+    middle = (left + right) >> 1;
+    if (KeyComparator(key_array_[middle], key) <= 0) {
+      left = middle + 1;
+    } else {
+      right = middle;
+    }
+  }
+  return left;
+}
+
+TEMPLATE
+auto INTERNAL_PAGE_TYPE::InsertInPage(int index, const KeyType &target_key,
+                                      const ValueType &page_id) -> int {
+  std::memmove(key_array_ + index + 1, key_array_ + index,
+               (GetSize() - index) * sizeof(KeyType));
+  key_array_[index] = target_key;
+  std::memmove(value_array_ + index + 1, value_array_ + index,
+               (GetSize() - index) * sizeof(ValueType));
+  value_array_[index] = page_id;
+  SetSize(GetSize() + 1);
+  return GetSize();
+}
+TEMPLATE
+auto INTERNAL_PAGE_TYPE::InsertInPage(int index, const ValueType &page_id)
+    -> int {
+  value_array_[0] = page_id;
+  SetSize(GetSize() + 1);
+  return GetSize();
+}
+
+TEMPLATE
+auto INTERNAL_PAGE_TYPE::SplitPage(InternalPage *empty) -> KeyType {
+  empty->Init(GetMaxSize());
+  empty->SetPageType(GetPageType());
+  empty->SetSize(GetSize() >> 1);
+  SetSize(GetSize() - empty->GetSize());
+  std::memcpy(empty->key_array_ + 1, key_array_ + GetSize() + 1,
+              (empty->GetSize() - 1) * sizeof(KeyType));
+  std::memcpy(empty->value_array_, value_array_ + GetSize(),
+              empty->GetSize() * sizeof(ValueType));
+  return key_array_[GetSize()];
+}
+
+TEMPLATE
+auto INTERNAL_PAGE_TYPE::DeleteInPage(int index) -> int {
+  std::memmove(key_array_ + index, key_array_ + index + 1,
+               (GetSize() - index - 1) * sizeof(KeyType));
+  std::memmove(value_array_ + index, value_array_ + index + 1,
+               (GetSize() - index - 1) * sizeof(ValueType));
+  SetSize(GetSize() - 1);
+  return GetSize();
+}
+
+TEMPLATE
+auto INTERNAL_PAGE_TYPE::BorrowFromPage(InternalPage *sibling,
+                                        const KeyType &middle,
+                                        bool sibling_right) -> KeyType {
+  SetSize(GetSize() + 1);
+  sibling->SetSize(sibling->GetSize() - 1);
+  if (sibling_right) {
+    key_array_[GetSize() - 1] = middle;
+    value_array_[GetSize() - 1] = sibling->value_array_[0];
+    KeyType temp = sibling->key_array_[1];
+    std::memmove(sibling->key_array_ + 1, sibling->key_array_ + 2,
+                 (sibling->GetSize() - 1) * sizeof(KeyType));
+    std::memmove(sibling->value_array_, sibling->value_array_ + 1,
+                 sibling->GetSize() * sizeof(ValueType));
+    return temp;
+  }
+  std::memmove(key_array_ + 2, key_array_ + 1,
+               (GetSize() - 2) * sizeof(KeyType));
+  std::memmove(value_array_ + 1, value_array_,
+               (GetSize() - 1) * sizeof(ValueType));
+  key_array_[1] = middle;
+  value_array_[0] = sibling->value_array_[sibling->GetSize()];
+  return sibling->key_array_[sibling->GetSize()];
+}
+
+TEMPLATE
+void INTERNAL_PAGE_TYPE::MergePage(InternalPage *sibling, const KeyType &middle,
+                                   bool sibling_right) {
+  if (sibling_right) {
+    key_array_[GetSize()] = middle;
+    std::memcpy(key_array_ + GetSize() + 1, sibling->key_array_ + 1,
+                (sibling->GetSize() - 1) * sizeof(KeyType));
+    std::memcpy(value_array_ + GetSize(), sibling->value_array_,
+                sibling->GetSize() * sizeof(ValueType));
+    SetSize(GetSize() + sibling->GetSize());
+    sibling->SetSize(0);
+  } else {
+    sibling->key_array_[sibling->GetSize()] = middle;
+    std::memcpy(sibling->key_array_ + sibling->GetSize() + 1, key_array_ + 1,
+                (GetSize() - 1) * sizeof(KeyType));
+    std::memcpy(sibling->value_array_ + sibling->GetSize(), value_array_,
+                GetSize() * sizeof(ValueType));
+    sibling->SetSize(sibling->GetSize() + GetSize());
+    SetSize(0);
+  }
+}
 
 } // namespace bpt
 #endif
