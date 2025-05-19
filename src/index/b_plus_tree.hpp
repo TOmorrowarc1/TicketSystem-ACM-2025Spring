@@ -129,18 +129,18 @@ auto BPT_TYPE::SplitInternalNode(InternalPage *cursor)
 TEMPLATE
 auto BPT_TYPE::SelectSibling(InternalPage *parent, const KeyType &key,
                              PageGuard &result) -> bool {
-  int location = parent->KeyIndex(key, KeyComparator) - 1;
+  int location = parent->KeyIndex(key) - 1;
   bool result_right = false;
   if (location == 0) {
-    result = bpm_->VisitPage(parent->ValueAt(1));
+    result = bpm_->VisitPage(parent->ValueAt(1), false);
     result_right = true;
   } else if (location == parent->GetSize() - 1) {
-    result = bpm_->VisitPage(parent->ValueAt(location - 1));
+    result = bpm_->VisitPage(parent->ValueAt(location - 1), false);
   } else {
-    VisitPageGuard result1 = bpm_->VisitPage(parent->ValueAt(location - 1));
-    VisitPageGuard result2 = bpm_->VisitPage(parent->ValueAt(location + 1));
-    auto left_sibling = result1.AsMut<BPlusTreePage>();
-    auto right_sibling = result2.AsMut<BPlusTreePage>();
+    PageGuard result1 = bpm_->VisitPage(parent->ValueAt(location - 1), false);
+    PageGuard result2 = bpm_->VisitPage(parent->ValueAt(location + 1), false);
+    auto left_sibling = result1.AsMut<TreePage>();
+    auto right_sibling = result2.AsMut<TreePage>();
     result_right = (left_sibling->GetSize() < right_sibling->GetSize());
     result = result_right ? std::move(result2) : std::move(result1);
   }
