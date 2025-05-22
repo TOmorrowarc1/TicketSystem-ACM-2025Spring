@@ -308,7 +308,7 @@ auto BPT_TYPE::KeyBegin(const KeyType &key) -> Iterator {
         cursor_pointer->ValueAt(cursor_pointer->KeyIndex(key) - 1), true);
     cursor_pointer = read_guard.As<Internal>();
   }
-  auto cursor_leaf_pointer = read_guard.As<Leaf>();
+  auto cursor_leaf_pointer = read_guard.AsMut<Leaf>();
   int cursor = cursor_leaf_pointer->KeyIndex(key);
   return Iterator(bpm_, cursor_leaf_pointer, cursor);
 }
