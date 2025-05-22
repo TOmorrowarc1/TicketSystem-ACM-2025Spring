@@ -37,7 +37,7 @@ public:
         page_pointer_ = nullptr;
         return *this;
       }
-      page_guard_ = bpm_->ReadPage(page_pointer_->GetNextPageId());
+      page_guard_ = bpm_->VisitPage(page_pointer_->GetNextPageId(), true);
       page_pointer_ = page_guard_.As<LEAF_PAGE_TYPE>();
     }
     return *this;
