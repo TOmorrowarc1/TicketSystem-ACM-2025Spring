@@ -129,27 +129,6 @@ auto BPT_TYPE::SplitInternalNode(Internal *cursor)
 }
 
 TEMPLATE
-auto BPT_TYPE::SelectSibling(Internal *parent, const KeyType &key,
-                             PageGuard &result) -> bool {
-  int location = parent->KeyIndex(key) - 1;
-  bool result_right = false;
-  if (location == 0) {
-    result = bpm_->VisitPage(parent->ValueAt(1), false);
-    result_right = true;
-  } else if (location == parent->GetSize() - 1) {
-    result = bpm_->VisitPage(parent->ValueAt(location - 1), false);
-  } else {
-    PageGuard result1 = bpm_->VisitPage(parent->ValueAt(location - 1), false);
-    PageGuard result2 = bpm_->VisitPage(parent->ValueAt(location + 1), false);
-    auto left_sibling = result1.AsMut<TreePage>();
-    auto right_sibling = result2.AsMut<TreePage>();
-    result_right = (left_sibling->GetSize() < right_sibling->GetSize());
-    result = result_right ? std::move(result2) : std::move(result1);
-  }
-  return result_right;
-}
-
-TEMPLATE
 auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
   Trace trace;
   trace.pages_trace[trace.levels] = bpm_->VisitPage(header_page_id_, false);
@@ -215,6 +194,27 @@ auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
 }
 
 TEMPLATE
+auto BPT_TYPE::SelectSibling(Internal *parent, const KeyType &key,
+                             PageGuard &result) -> bool {
+  int location = parent->KeyIndex(key) - 1;
+  bool result_right = false;
+  if (location == 0) {
+    result = bpm_->VisitPage(parent->ValueAt(1), false);
+    result_right = true;
+  } else if (location == parent->GetSize() - 1) {
+    result = bpm_->VisitPage(parent->ValueAt(location - 1), false);
+  } else {
+    PageGuard result1 = bpm_->VisitPage(parent->ValueAt(location - 1), false);
+    PageGuard result2 = bpm_->VisitPage(parent->ValueAt(location + 1), false);
+    auto left_sibling = result1.AsMut<TreePage>();
+    auto right_sibling = result2.AsMut<TreePage>();
+    result_right = (left_sibling->GetSize() < right_sibling->GetSize());
+    result = result_right ? std::move(result2) : std::move(result1);
+  }
+  return result_right;
+}
+
+TEMPLATE
 void BPT_TYPE::Remove(const KeyType &key) {
   Trace trace;
   trace.pages_trace[trace.levels] = bpm_->VisitPage(header_page_id_, false);
@@ -251,13 +251,13 @@ void BPT_TYPE::Remove(const KeyType &key) {
     KeyType temp = cursor_leaf_pointer->BorrowFromPage(sibling.AsMut<Leaf>(),
                                                        sibling_right);
     cursor_parent->SetKeyAt(trace.place_trace[trace.levels] +
-                                static_cast<int>(sibling_right) - 1,
+                                static_cast<int>(sibling_right),
                             temp);
   } else {
     cursor_leaf_pointer->MergePage(sibling.AsMut<Leaf>(), sibling_right);
     /*It is the place we start to deal with internal pages.*/
     number = cursor_parent->DeleteInPage(trace.place_trace[trace.levels] +
-                                         static_cast<int>(sibling_right) - 1);
+                                         static_cast<int>(sibling_right));
     while (number < internal_min_size_ && trace.levels > 1) {
       guard_child = std::move(trace.pages_trace[trace.levels]);
       cursor_child = guard_child.AsMut<Internal>();
@@ -268,21 +268,20 @@ void BPT_TYPE::Remove(const KeyType &key) {
         KeyType temp = cursor_child->BorrowFromPage(
             sibling.AsMut<Internal>(),
             cursor_parent->KeyAt(trace.place_trace[trace.levels] +
-                                 static_cast<int>(sibling_right) - 1),
+                                 static_cast<int>(sibling_right)),
             sibling_right);
         cursor_parent->SetKeyAt(trace.place_trace[trace.levels] +
-                                    static_cast<int>(sibling_right) - 1,
+                                    static_cast<int>(sibling_right),
                                 temp);
         number = internal_max_size_;
       } else {
         cursor_child->MergePage(
             sibling.AsMut<Internal>(),
             cursor_parent->KeyAt(trace.place_trace[trace.levels] +
-                                 static_cast<int>(sibling_right) - 1),
+                                 static_cast<int>(sibling_right)),
             sibling_right);
-        number =
-            cursor_parent->DeleteInPage(trace.place_trace[trace.levels] +
-                                        static_cast<int>(sibling_right) - 1);
+        number = cursor_parent->DeleteInPage(trace.place_trace[trace.levels] +
+                                             static_cast<int>(sibling_right));
       }
     }
     if (trace.levels == 1 && cursor_parent->GetSize() == 1) {
