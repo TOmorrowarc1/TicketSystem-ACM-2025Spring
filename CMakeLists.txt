@@ -20,4 +20,4 @@ set(TEST_SOURCES
     src/index/b_plus_tree.hpp
 )
 
-add_executable(bpm_test ${TEST_SOURCES})
+add_executable(code ${TEST_SOURCES})
