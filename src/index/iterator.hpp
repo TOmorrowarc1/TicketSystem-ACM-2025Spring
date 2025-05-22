@@ -33,7 +33,7 @@ public:
 
   auto IsEnd() -> bool { return (page_pointer_ == nullptr) && (place_ == 0); };
 
-  auto operator*() -> std::pair<const KeyType &, const ValueType &> {
+  auto operator*() -> std::pair<KeyType, ValueType> {
     return {page_pointer_->KeyAt(place_), page_pointer_->ValueAt(place_)};
   }
 
