@@ -127,40 +127,24 @@ int main() {
     }
   }
   std::cout << "Checkpoint 3" << '\n';
-  for (int i = 1000; i > 500; --i) {
-    key.value = i;
-    storage.Remove(key);
-    std::vector<int> result;
-    storage.GetValue(key, &result);
-    for (auto i : result) {
-      std::cout << i << ' ';
-    }
-  }
-  std::cout << "Checkpoint 4" << '\n';
-  for (int i = 0; i < 1000; ++i) {
-    key.value = i;
-    std::vector<int> result;
-    storage.GetValue(key, &result);
-    for (auto i : result) {
-      std::cout << i << ' ';
-    }
-  }
-  std::cout << "Checkpoint 5" << '\n';
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> key.key;
     if (operation == insert) {
       std::cin >> key.value;
       storage.Insert(key, value);
     } else if (operation == del) {
-      std::cin >> value;
+      std::cin >> key.value;
       storage.Remove(key);
     } else {
-      std::vector<int> result;
-      storage.GetValue(key, &result);
-      for (auto i : result) {
-        std::cout << i << ' ';
+      int count = 0;
+      key.value = (1 << 31);
+      auto iter = storage.KeyBegin(key);
+      key.value = ~key.value;
+      while (!iter.IsEnd() && KeyComparator()((*iter).first, key) >= 0) {
+        ++count;
+        std::cout << (*iter).second << ' ';
       }
-      if (result.empty()) {
+      if (count == 0) {
         std::cout << "null";
       }
       std::cout << '\n';
