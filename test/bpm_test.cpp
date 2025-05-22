@@ -143,6 +143,7 @@ int main() {
       while (!iter.IsEnd() && KeyComparator()((*iter).first, key) <= 0) {
         ++count;
         std::cout << (*iter).second << ' ';
+        ++iter;
       }
       if (count == 0) {
         std::cout << "null";
