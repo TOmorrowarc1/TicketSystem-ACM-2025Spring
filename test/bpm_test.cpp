@@ -95,23 +95,19 @@ int main() {
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpt::BPlusTree<Key, int, KeyComparator> storage(bpm.NewPage(), &bpm, 2, 3);
   Key key;
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 1999; i >= 1000; --i) {
     key.key = "Amiya";
     key.value = value = i;
     storage.Insert(key, value);
+    assert(!storage.Insert(key, value));
     std::vector<int> result;
     storage.GetValue(key, &result);
     for (auto i : result) {
       std::cout << i << ' ';
     }
   }
-  for (int i = 999; i > 0; --i) {
-    key.key = "Amiya";
-    key.value = value = i;
-    assert(!storage.Insert(key, value));
-  }
   std::cout << "Checkpoint 1" << '\n';
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 2000; ++i) {
     key.value = i;
     std::vector<int> result;
     storage.GetValue(key, &result);
