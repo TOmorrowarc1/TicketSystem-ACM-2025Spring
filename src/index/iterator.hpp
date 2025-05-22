@@ -19,8 +19,16 @@ public:
   IndexIterator() : bpm_(nullptr), page_pointer_(nullptr), place_(0){};
   IndexIterator(BufferPoolManager *bpm, PageGuard &&page, int place = 0)
       : bpm_(bpm), page_guard_(std::move(page)), place_(place) {
-    page_pointer_ = page.As<LEAF_PAGE_TYPE>();
+    page_pointer_ = page_guard_.As<LEAF_PAGE_TYPE>();
   };
+  IndexIterator(IndexIterator &&other) {
+    bpm_ = other.bpm_;
+    other.bpm_ = nullptr;
+    page_guard_ = std::move(other.page_guard_);
+    place_ = other.place_;
+    other.page_pointer_ = nullptr;
+    page_pointer_ = page_guard_.As<LEAF_PAGE_TYPE>();
+  }
   ~IndexIterator() = default;
 
   auto IsEnd() -> bool { return (page_pointer_ == nullptr) && (place_ == 0); };
