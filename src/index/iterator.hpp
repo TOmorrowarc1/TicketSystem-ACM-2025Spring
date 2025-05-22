@@ -12,14 +12,14 @@ class IndexIterator {
 private:
   PageGuard page_guard_;
   BufferPoolManager *bpm_;
-  Leaf *page_pointer_;
+  const LEAF_PAGE_TYPE *page_pointer_;
   int place_;
 
 public:
-  IndexIterator() = delete;
+  IndexIterator() : bpm_(nullptr), page_pointer_(nullptr), place_(0){};
   IndexIterator(BufferPoolManager *bpm, PageGuard &&page, int place = 0)
       : bpm_(bpm), page_guard_(std::move(page)), place_(place) {
-    page_pointer_ = page.AsMut<LEAF_PAGE_TYPE>();
+    page_pointer_ = page.As<LEAF_PAGE_TYPE>();
   };
   ~IndexIterator() = default;
 
@@ -50,7 +50,6 @@ public:
   auto operator!=(const IndexIterator &itr) const -> bool {
     return (page_pointer_ != itr.page_pointer_) || (place_ != itr.place_);
   }
-
 };
 } // namespace bpt
 
