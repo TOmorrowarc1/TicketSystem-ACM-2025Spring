@@ -94,7 +94,7 @@ int main() {
   std::string insert = "insert", del = "delete", find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpm.NewPage();
-  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
+  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm);
   Key key;
   /*for (int i = 999; i > 0; --i) {
     key.key = "Amiya";
