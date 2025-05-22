@@ -1,3 +1,5 @@
+#ifndef BUFFER_POOL_MANAGER_HPP
+#define BUFFER_POOL_MANAGER_HPP
 #include "disk_manager.hpp"
 #include "frame_manager.hpp"
 
@@ -167,3 +169,4 @@ public:
   }
 };
 } // namespace bpt
+#endif

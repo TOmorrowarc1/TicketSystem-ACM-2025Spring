@@ -1,5 +1,7 @@
 #ifndef B_PLUS_TREE_PAGE_HPP
 #define B_PLUS_TREE_PAGE_HPP
+#include "config.hpp"
+#include <cstring>
 namespace bpt {
 
 #define TEMPLATE                                                               \
@@ -46,7 +48,7 @@ private:
 public:
   LeafPage() = delete;
   LeafPage(int maxsize = PAGE_MAX_SIZE) : TreePage(maxsize, PageType::LEAF) {}
-  LeafPage(const BPlusTreeLeafPage &other) = delete;
+  LeafPage(const LeafPage &other) = delete;
 
   auto GetNextPageId() const -> page_id_t { return next_page_id_; };
   void SetNextPageId(page_id_t next_page_id) { next_page_id_ = next_page_id; }
@@ -71,7 +73,7 @@ auto LEAF_PAGE_TYPE::KeyIndex(const KeyType &target) const -> int {
   int middle = 0;
   while (left < right) {
     middle = (left + right) >> 1;
-    if (KeyComparator(key_array_[middle], target) <= 0) {
+    if (KeyComparator{}(key_array_[middle], target) <= 0) {
       left = middle + 1;
     } else {
       right = middle;
@@ -194,7 +196,7 @@ auto INTERNAL_PAGE_TYPE::KeyIndex(const KeyType &key) const -> int {
   int middle = 0;
   while (left < right) {
     middle = (left + right) >> 1;
-    if (KeyComparator(key_array_[middle], key) <= 0) {
+    if (KeyComparator{}(key_array_[middle], key) <= 0) {
       left = middle + 1;
     } else {
       right = middle;

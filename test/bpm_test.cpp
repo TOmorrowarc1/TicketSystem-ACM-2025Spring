@@ -1,70 +1,119 @@
-#include "buffer_pool_manager.hpp"
+#include "index/b_plus_tree.hpp"
 #include <cstring>
 #include <iostream>
 #include <string>
+class MyString {
+private:
+  char content[65] = {0};
+
+public:
+  MyString() = default;
+  MyString(const std::string &);
+  ~MyString() = default;
+  MyString &operator=(const MyString &);
+  MyString &operator=(const std::string &);
+  std::string return_content();
+  char &operator[](int);
+  bool operator>(const MyString &) const;
+  bool operator==(const MyString &) const;
+  bool operator!=(const MyString &) const;
+  bool operator>=(const MyString &) const;
+  bool operator<(const MyString &) const;
+  bool operator<=(const MyString &) const;
+  friend std::ostream &operator<<(std::ostream &output, const MyString &object);
+  friend std::istream &operator>>(std::istream &output, MyString &object);
+};
+MyString::MyString(const std::string &target) {
+  std::strcpy(content, &target[0]);
+}
+std::string MyString::return_content() { return std::string(content); }
+char &MyString::operator[](int place) { return content[place]; }
+bool MyString::operator>(const MyString &B) const {
+  return std::strcmp((*this).content, B.content) > 0;
+}
+bool MyString::operator==(const MyString &B) const {
+  return std::strcmp((*this).content, B.content) == 0;
+}
+bool MyString::operator!=(const MyString &B) const {
+  return std::strcmp((*this).content, B.content) != 0;
+}
+bool MyString::operator>=(const MyString &B) const {
+  return std::strcmp((*this).content, B.content) >= 0;
+}
+bool MyString::operator<(const MyString &B) const {
+  return std::strcmp((*this).content, B.content) < 0;
+}
+bool MyString::operator<=(const MyString &B) const {
+  return std::strcmp((*this).content, B.content) <= 0;
+}
+MyString &MyString::operator=(const MyString &B) {
+  if (&B != this) {
+    std::strcpy(content, B.content);
+  }
+  return *this;
+}
+MyString &MyString::operator=(const std::string &B) {
+  std::strcpy(content, &B[0]);
+  return *this;
+}
+std::ostream &operator<<(std::ostream &output, const MyString &object) {
+  return output << object.content;
+}
+std::istream &operator>>(std::istream &input, MyString &object) {
+  std::string temp;
+  input >> temp;
+  object = temp;
+  return input;
+}
+
+struct Key {
+  MyString key;
+  int value;
+};
+struct KeyComparator {
+  auto operator()(const Key &lhs, const Key &rhs) -> int {
+    if (lhs.key > rhs.key) {
+      return 1;
+    } else if (rhs.key > lhs.key) {
+      return -1;
+    } else {
+      if (lhs.value > rhs.value) {
+        return 1;
+      } else if (rhs.value > lhs.value) {
+        return -1;
+      }
+    }
+    return 0;
+  }
+};
 
 int main() {
-  std::string file1 = "data_file";
-  std::string file2 = "disk_file";
-  const int FRAMES = 10;
-  bpt::BufferPoolManager bpm(FRAMES, 4096, file1, file2);
-
-  // Scenario: The buffer pool is empty. We should be able to create a new page.
-  bpt::page_id_t pid0 = bpm.NewPage();
-  auto page0 = bpm.VisitPage(pid0, false);
-
-  // Scenario: Once we have a page, we should be able to read and write content.
-  snprintf(page0.AsMut<char>(), 4096, "Hello");
-  assert(!std::strcmp(page0.AsMut<char>(), "Hello"));
-
-  page0.~PageGuard();
-
-  // Create a vector of unique pointers to page guards, which prevents the
-  // guards from getting destructed.
-  std::vector<bpt::PageGuard> pages;
-
-  // Scenario: We should be able to create new pages until we fill up the buffer
-  // pool.
-  for (size_t i = 0; i < FRAMES; i++) {
-    auto pid = bpm.NewPage();
-    auto page = bpm.VisitPage(pid, 0);
-    pages.push_back(std::move(page));
+  int operation_num = 0, value = 0;
+  std::cin >> operation_num;
+  MyString operation, index;
+  std::string insert = "insert", del = "delete", find = "find";
+  bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
+  bpt::BPlusTree<Key, int, KeyComparator> storage(bpm.NewPage(), &bpm);
+  Key key;
+  for (int i = 0; i < operation_num; ++i) {
+    std::cin >> operation >> key.key;
+    if (operation == insert) {
+      std::cin >> key.value;
+      storage.Insert(key, value);
+    } else if (operation == del) {
+      std::cin >> value;
+      storage.Remove(key);
+    } else {
+      std::vector<int> result;
+      storage.GetValue(key, &result);
+      for (auto i : result) {
+        std::cout << i << ' ';
+      }
+      if (result.empty()) {
+        std::cout << "null";
+      }
+      std::cout << '\n';
+    }
   }
-
-  // Scenario: All of the pin counts should be 1.
-
-  // Scenario: Once the buffer pool is full, we should not be able to create any
-  // new pages.
-
-  // Scenario: Drop the first 5 pages to unpin them.
-  for (size_t i = 0; i < FRAMES / 2; i++) {
-    pages.erase(pages.begin());
-  }
-
-  // Scenario: All of the pin counts of the pages we haven't dropped yet should
-  // still be 1.
-
-  // Scenario: After unpinning pages {1, 2, 3, 4, 5}, we should be able to
-  // create 4 new pages and bring them into memory. Bringing those 4 pages into
-  // memory should evict the first 4 pages {1, 2, 3, 4} because of LRU.
-  for (size_t i = 0; i < ((FRAMES / 2) - 1); i++) {
-    auto pid = bpm.NewPage();
-    auto page = bpm.VisitPage(pid, false);
-    pages.push_back(std::move(page));
-  }
-
-  // Scenario: There should be one frame available, and we should be able to
-  // fetch the data we wrote a while ago.
-  {
-    bpt::PageGuard original_page = bpm.VisitPage(pid0, true);
-    assert(!std::strcmp(original_page.As<char>(), "Hello"));
-  }
-
-  // Scenario: Once we unpin page 0 and then make a new page, all the buffer
-  // pages should now be pinned. Fetching page 0 again should fail.
-  auto last_pid = bpm.NewPage();
-  auto last_page = bpm.VisitPage(last_pid, false);
-
-  auto fail = bpm.VisitPage(pid0, true);
   return 0;
 }
