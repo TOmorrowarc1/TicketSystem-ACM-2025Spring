@@ -94,7 +94,7 @@ int main() {
   std::string insert = "insert", del = "delete", find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpm.NewPage();
-  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
+  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 4, 3);
   Key key;
   for (int i = 0; i < 9999; ++i) {
     key.key = "Amiya";
@@ -117,7 +117,7 @@ int main() {
   }
   std::cout << '\n';
   std::cout << "Checkpoint 1" << '\n';
-  for (int i = 0; i < 500; ++i) {
+  for (int i = 0; i < 5000; i = i + 3) {
     key.value = i;
     storage.Remove(key, i);
   }
