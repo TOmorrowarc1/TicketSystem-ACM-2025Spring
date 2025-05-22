@@ -135,7 +135,8 @@ int main() {
       storage.Insert(key, value);
     } else if (operation == del) {
       std::cin >> key.value;
-      storage.Remove(key);
+      value = key.value;
+      storage.Remove(key, value);
     } else {
       int count = 0;
       key.value = (1 << 31);
