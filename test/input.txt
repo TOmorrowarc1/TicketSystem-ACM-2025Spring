@@ -1,0 +1,13 @@
+12
+insert user1 100
+insert user1 200
+insert user1 50
+find user1
+delete user1 100
+find user1
+insert user1 100
+find user1
+insert user2 300
+insert user2 -5
+find user2
+delete user2 300
