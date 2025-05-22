@@ -296,7 +296,7 @@ auto BPT_TYPE::KeyBegin(const KeyType &key) -> Iterator {
   PageGuard read_guard = bpm_->VisitPage(header_page_id_, true);
   page_id_t root_id = read_guard.As<HeaderPage>()->root_page_id_;
   if (root_id == INVALID_PAGE_ID) {
-    return Iterator(bpm_, nullptr, 0);
+    return Iterator();
   }
   read_guard = bpm_->VisitPage(root_id, true);
   auto cursor_pointer = read_guard.As<Internal>();
@@ -305,13 +305,9 @@ auto BPT_TYPE::KeyBegin(const KeyType &key) -> Iterator {
         cursor_pointer->ValueAt(cursor_pointer->KeyIndex(key) - 1), true);
     cursor_pointer = read_guard.As<Internal>();
   }
-  auto cursor_leaf_pointer = read_guard.AsMut<Leaf>();
+  auto cursor_leaf_pointer = read_guard.As<Leaf>();
   int cursor = cursor_leaf_pointer->KeyIndex(key);
-  Iterator result(bpm_, cursor_leaf_pointer, cursor);
-  if (cursor >= cursor_leaf_pointer->GetSize()) {
-    ++result;
-  }
-  return result;
+  return Iterator(bpm_, read_guard, cursor);
 }
 
 } // namespace bpt

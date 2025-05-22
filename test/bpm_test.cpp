@@ -70,6 +70,7 @@ struct Key {
   MyString key;
   int value;
 };
+
 struct KeyComparator {
   auto operator()(const Key &lhs, const Key &rhs) -> int {
     if (lhs.key > rhs.key) {
@@ -90,22 +91,24 @@ struct KeyComparator {
 int main() {
   int operation_num = 0;
   std::cin >> operation_num;
-  MyString operation, index;
-  std::string insert = "insert", del = "delete", find = "find";
+  std::string operation;
+  std::string insert = "insert";
+  std::string del = "delete";
+  std::string find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpm.NewPage();
   bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
-  Key key;
+  Key index;
   /*for (int i = 0; i < 999; ++i) {
-    key.key = "Amiya";
-    key.value = i;
-    storage.Insert(key, key.value);
-    assert(!storage.Insert(key, key.value));
+    index.key = "Amiya";
+    index.value = i;
+    storage.Insert(index, index.value);
+    assert(!storage.Insert(index, index.value));
   }
   int count = 0;
-  key.key = "Amiya";
-  key.value = (1 << 31);
-  auto iter = storage.KeyBegin(key);
+  index.key = "Amiya";
+  index.value = (1 << 31);
+  auto iter = storage.KeyBegin(index);
   key.value = ~key.value;
   while (!iter.IsEnd() && KeyComparator{}((*iter).first, key) <= 0) {
     ++count;
@@ -141,22 +144,22 @@ int main() {
   std::cout << "Checkpoint 2" << '\n';*/
   std::vector<int> test;
   for (int i = 0; i < operation_num; ++i) {
-    std::cin >> operation >> key.key;
+    std::cin >> operation >> index.key;
     if (operation == insert) {
-      std::cin >> key.value;
-      storage.Insert(key, key.value);
-      assert(storage.GetValue(key, &test));
+      std::cin >> index.value;
+      storage.Insert(index, index.value);
+      assert(storage.GetValue(index, &test));
     } else if (operation == del) {
-      std::cin >> key.value;
-      storage.Remove(key);
-      assert(!storage.GetValue(key, &test));
+      std::cin >> index.value;
+      storage.Remove(index);
+      assert(!storage.GetValue(index, &test));
     } else {
-      /*
       int count = 0;
-      key.value = (1 << 31);
-      auto iter = storage.KeyBegin(key);
-      key.value = ~key.value;
-      while (!iter.IsEnd() && KeyComparator{}((*iter).first, key) <= 0) {
+      Key min{index.key, (1 << 31)};
+      Key max{index.key, ~(1 << 31)};
+      auto iter = storage.KeyBegin(min);
+      while (!iter.IsEnd() && KeyComparator{}((*iter).first, max) <= 0 &&
+             KeyComparator{}((*iter).first, min) >= 0) {
         ++count;
         std::cout << (*iter).second << ' ';
         ++iter;
@@ -164,7 +167,7 @@ int main() {
       if (count == 0) {
         std::cout << "null";
       }
-      std::cout << '\n';*/
+      std::cout << '\n';
     }
   }
   return 0;
