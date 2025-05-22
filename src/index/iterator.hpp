@@ -35,11 +35,11 @@ public:
       while (place_ >= page_->GetSize()) {
         place_ = 0;
         page_id_t next_page = page_->GetNextPageId();
-        if (next_page == -1) {
+        if (next_page == INVALID_PAGE_ID) {
           page_ = nullptr;
           break;
         }
-        auto guard = bpm_->VisitPage(page_->GetNextPageId(), false);
+        auto guard = bpm_->VisitPage(next_page, false);
         page_ = guard.template AsMut<Leaf>();
       }
     }
@@ -55,9 +55,7 @@ public:
   }
 
   // A helper function print out the statement of the iterator.
-  auto Getinfo() const -> std::pair<page_id_t, int> {
-    return {page_.GetPageId(), place_};
-  }
+  auto Getinfo() const -> std::pair<Leaf *, int> { return {page_, place_}; }
 };
 } // namespace bpt
 
