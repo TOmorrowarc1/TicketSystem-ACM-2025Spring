@@ -88,7 +88,7 @@ struct KeyComparator {
 };
 
 int main() {
-  int operation_num = 0, value = 0;
+  int operation_num = 0;
   std::cin >> operation_num;
   MyString operation, index;
   std::string insert = "insert", del = "delete", find = "find";
@@ -140,11 +140,9 @@ int main() {
     std::cin >> operation >> key.key;
     if (operation == insert) {
       std::cin >> key.value;
-      value = key.value;
-      storage.Insert(key, value);
+      storage.Insert(key, key.value);
     } else if (operation == del) {
       std::cin >> key.value;
-      value = key.value;
       storage.Remove(key);
     } else {
       int count = 0;
