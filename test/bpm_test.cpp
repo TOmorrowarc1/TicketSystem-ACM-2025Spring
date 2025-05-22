@@ -93,8 +93,18 @@ int main() {
   MyString operation, index;
   std::string insert = "insert", del = "delete", find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
-  bpt::BPlusTree<Key, int, KeyComparator> storage(bpm.NewPage(), &bpm);
+  bpt::BPlusTree<Key, int, KeyComparator> storage(bpm.NewPage(), &bpm, 2, 3);
   Key key;
+  for (int i = 0; i < 50; ++i) {
+    key.key = "Amiya";
+    key.value = value = i;
+    storage.Insert(key, value);
+    std::vector<int> result;
+    storage.GetValue(key, &result);
+    for (auto i : result) {
+      std::cout << i << ' ';
+    }
+  }
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> key.key;
     if (operation == insert) {
