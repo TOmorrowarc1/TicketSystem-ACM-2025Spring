@@ -14,6 +14,7 @@ struct Trace {
 
 struct HeaderPage {
   int root_page_id_ = INVALID_PAGE_ID;
+  bool is_exist = false;
 };
 
 TEMPLATE
@@ -56,7 +57,10 @@ BPT_TYPE::BPlusTree(page_id_t header_page_id,
       header_page_id_(header_page_id) {
   PageGuard guard = bpm_->VisitPage(header_page_id_, false);
   auto head_page = guard.AsMut<HeaderPage>();
-  head_page->root_page_id_ = INVALID_PAGE_ID;
+  if (!head_page->is_exist) {
+    head_page->root_page_id_ = INVALID_PAGE_ID;
+    head_page->is_exist = true;
+  }
   leaf_min_size_ = leaf_max_size_ >> 1;
   internal_min_size_ = internal_max_size_ >> 1;
 }
