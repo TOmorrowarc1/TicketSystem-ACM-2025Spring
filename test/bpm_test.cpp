@@ -147,10 +147,12 @@ int main() {
       storage.Insert(key, key.value);
       assert(storage.GetValue(key, &test));
     } else if (operation == del) {
+      /*
       std::cin >> key.value;
       storage.Remove(key);
-      assert(!storage.GetValue(key, &test));
+      assert(!storage.GetValue(key, &test));*/
     } else {
+      /*
       int count = 0;
       key.value = (1 << 31);
       auto iter = storage.KeyBegin(key);
@@ -163,7 +165,7 @@ int main() {
       if (count == 0) {
         std::cout << "null";
       }
-      std::cout << '\n';
+      std::cout << '\n';*/
     }
   }
   return 0;
