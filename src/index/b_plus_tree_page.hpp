@@ -47,7 +47,8 @@ private:
 
 public:
   LeafPage() = delete;
-  LeafPage(int maxsize = PAGE_MAX_SIZE) : TreePage(maxsize, PageType::LEAF) {}
+  LeafPage(int maxsize = PAGE_MAX_SIZE)
+      : TreePage(maxsize, PageType::LEAF), next_page_id_(INVALID_PAGE_ID) {}
   LeafPage(const LeafPage &other) = delete;
 
   auto GetNextPageId() const -> page_id_t { return next_page_id_; };
