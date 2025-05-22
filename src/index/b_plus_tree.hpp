@@ -177,20 +177,20 @@ auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
     info = SplitLeafNode(cursor_leaf_pointer);
     --trace.levels;
     Internal *cursor_pointer = nullptr;
-    if (trace.levels > 1) {
+    if (trace.levels > 0) {
       cursor_pointer = trace.pages_trace[trace.levels].AsMut<Internal>();
       number = cursor_pointer->InsertInPage(trace.place_trace[trace.levels],
                                             info.first, info.second);
-      --trace.levels;
       while (number >= internal_max_size_ && trace.levels > 1) {
         info = SplitInternalNode(cursor_pointer);
+        --trace.levels;
         cursor_pointer = trace.pages_trace[trace.levels].AsMut<Internal>();
         number = cursor_pointer->InsertInPage(trace.place_trace[trace.levels],
                                               info.first, info.second);
-        --trace.levels;
       }
       if (number >= internal_max_size_) {
         info = SplitInternalNode(cursor_pointer);
+        --trace.levels;
         cursor = bpm_->NewPage();
         cursor_pointer = bpm_->VisitPage(cursor, false).AsMut<Internal>();
         new (cursor_pointer) Internal(internal_max_size_);
