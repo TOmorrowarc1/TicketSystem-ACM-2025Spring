@@ -47,8 +47,8 @@ private:
 
 public:
   LeafPage() = delete;
-  LeafPage(int maxsize = PAGE_MAX_SIZE)
-      : TreePage(maxsize, PageType::LEAF), next_page_id_(INVALID_PAGE_ID) {}
+  LeafPage(int max_size = PAGE_MAX_SIZE)
+      : TreePage(max_size, PageType::LEAF), next_page_id_(INVALID_PAGE_ID) {}
   LeafPage(const LeafPage &other) = delete;
 
   auto GetNextPageId() const -> page_id_t { return next_page_id_; };
@@ -99,7 +99,6 @@ auto LEAF_PAGE_TYPE::InsertInPage(int index, const KeyType &target_key,
 TEMPLATE
 auto LEAF_PAGE_TYPE::SplitPage(LeafPage *empty) -> KeyType {
   new (empty) LeafPage(GetMaxSize());
-  empty->SetPageType(GetPageType());
   empty->SetSize(GetSize() >> 1);
   SetSize(GetSize() - empty->GetSize());
   std::memcpy(empty->key_array_, key_array_ + GetSize(),
@@ -229,7 +228,6 @@ auto INTERNAL_PAGE_TYPE::InsertInPage(int index, const ValueType &page_id)
 TEMPLATE
 auto INTERNAL_PAGE_TYPE::SplitPage(InternalPage *empty) -> KeyType {
   new (empty) InternalPage(GetMaxSize());
-  empty->SetPageType(GetPageType());
   empty->SetSize(GetSize() >> 1);
   SetSize(GetSize() - empty->GetSize());
   std::memcpy(empty->key_array_ + 1, key_array_ + GetSize() + 1,

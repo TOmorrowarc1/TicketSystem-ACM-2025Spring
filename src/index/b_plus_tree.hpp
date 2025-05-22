@@ -72,7 +72,6 @@ BPT_TYPE::BPlusTree(page_id_t header_page_id,
 TEMPLATE
 auto BPT_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result)
     -> bool {
-  // Declaration of context instance.
   PageGuard read_guard = bpm_->VisitPage(header_page_id_, true);
   page_id_t root_id = read_guard.As<HeaderPage>()->root_page_id_;
   if (root_id == INVALID_PAGE_ID) {
