@@ -96,17 +96,26 @@ int main() {
   bpm.NewPage();
   bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
   Key key;
-  /*for (int i = 999; i > 0; --i) {
+  for (int i = 0; i < 1000; ++i) {
     key.key = "Amiya";
     key.value = value = i;
     storage.Insert(key, value);
     assert(!storage.Insert(key, value));
-    std::vector<int> result;
-    storage.GetValue(key, &result);
-    for (auto i : result) {
-      std::cout << i << ' ';
-    }
   }
+  int count = 0;
+  key.key = "Amiya";
+  key.value = (1 << 31);
+  auto iter = storage.KeyBegin(key);
+  key.value = ~key.value;
+  while (!iter.IsEnd() && KeyComparator{}((*iter).first, key) <= 0) {
+    ++count;
+    std::cout << (*iter).second << ' ';
+    ++iter;
+  }
+  if (count == 0) {
+    std::cout << "null";
+  }
+  std::cout << '\n';
   std::cout << "Checkpoint 1" << '\n';
   for (int i = 0; i < 1000; ++i) {
     key.value = i;
@@ -126,7 +135,7 @@ int main() {
       std::cout << i << ' ';
     }
   }
-  std::cout << "Checkpoint 3" << '\n';*/
+  std::cout << "Checkpoint 3" << '\n';
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> key.key;
     if (operation == insert) {
