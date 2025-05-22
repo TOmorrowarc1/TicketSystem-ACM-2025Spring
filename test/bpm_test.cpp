@@ -98,9 +98,9 @@ int main() {
   Key key;
   /*for (int i = 0; i < 9999; ++i) {
     key.key = "Amiya";
-    key.value = value = i;
-    storage.Insert(key, value);
-    assert(!storage.Insert(key, value));
+    key.value = i;
+    storage.Insert(key, key.value);
+    assert(!storage.Insert(key, key.value));
   }
   int count = 0;
   key.key = "Amiya";
@@ -119,7 +119,7 @@ int main() {
   std::cout << "Checkpoint 1" << '\n';
   for (int i = 0; i < 5000; i = i + 3) {
     key.value = i;
-    storage.Remove(key, i);
+    storage.Remove(key);
   }
   count = 0;
   key.key = "Amiya";
@@ -153,6 +153,7 @@ int main() {
         ++count;
         std::cout << (*iter).second << ' ';
         ++iter;
+        assert(count < 1000);
       }
       if (count == 0) {
         std::cout << "null";
