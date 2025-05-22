@@ -94,9 +94,9 @@ int main() {
   std::string insert = "insert", del = "delete", find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpm.NewPage();
-  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm);
+  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
   Key key;
-  /*for (int i = 0; i < 9999; ++i) {
+  for (int i = 0; i < 999; ++i) {
     key.key = "Amiya";
     key.value = i;
     storage.Insert(key, key.value);
@@ -110,6 +110,8 @@ int main() {
   while (!iter.IsEnd() && KeyComparator{}((*iter).first, key) <= 0) {
     ++count;
     std::cout << (*iter).second << ' ';
+    assert(count - 1 == (*iter).second);
+    std::cout << iter.Getinfo().first << ' ' << iter.Getinfo().second << '\n';
     ++iter;
   }
   if (count == 0) {
@@ -117,7 +119,7 @@ int main() {
   }
   std::cout << '\n';
   std::cout << "Checkpoint 1" << '\n';
-  for (int i = 0; i < 5000; i = i + 3) {
+  for (int i = 0; i < 500; i = i + 3) {
     key.value = i;
     storage.Remove(key);
   }
@@ -129,13 +131,14 @@ int main() {
   while (!iter.IsEnd() && KeyComparator{}((*iter).first, key) <= 0) {
     ++count;
     std::cout << (*iter).second << ' ';
+    std::cout << iter.Getinfo().first << ' ' << iter.Getinfo().second << '\n';
     ++iter;
   }
   if (count == 0) {
     std::cout << "null";
   }
   std::cout << '\n';
-  std::cout << "Checkpoint 2" << '\n';*/
+  std::cout << "Checkpoint 2" << '\n';
   std::vector<int> test;
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> key.key;
