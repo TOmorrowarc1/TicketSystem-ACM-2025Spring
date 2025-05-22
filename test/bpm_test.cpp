@@ -136,14 +136,17 @@ int main() {
   }
   std::cout << '\n';
   std::cout << "Checkpoint 2" << '\n';*/
+  std::vector<int> test;
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> key.key;
     if (operation == insert) {
       std::cin >> key.value;
       storage.Insert(key, key.value);
+      assert(storage.GetValue(key, &test));
     } else if (operation == del) {
       std::cin >> key.value;
       storage.Remove(key);
+      assert(!storage.GetValue(key, &test));
     } else {
       int count = 0;
       key.value = (1 << 31);
