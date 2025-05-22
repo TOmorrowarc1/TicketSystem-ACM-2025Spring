@@ -7,8 +7,8 @@ namespace bpt {
 
 #define BPT_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
 struct Trace {
-  PageGuard pages_trace[10];
-  int place_trace[10] = {0};
+  PageGuard pages_trace[50];
+  int place_trace[50] = {0};
   int levels = 0;
 };
 
