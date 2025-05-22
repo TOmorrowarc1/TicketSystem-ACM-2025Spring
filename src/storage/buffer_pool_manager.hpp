@@ -81,16 +81,10 @@ private:
   }
   void FetchPage(page_id_t target_page, frame_id_t target_frame) {
     data_file_.seekg(target_page * page_size_);
-    if (!data_file_.good()) {
-      throw std::runtime_error("Seek failed in FlushPage");
-    }
     data_file_.read(cache_[target_frame], page_size_);
   }
   void FlushPage(page_id_t target_page, frame_id_t target_frame) {
     data_file_.seekp(target_page * page_size_);
-    if (!data_file_.good()) {
-      throw std::runtime_error("Seek failed in FlushPage");
-    }
     data_file_.write(cache_[target_frame], page_size_);
   }
 
