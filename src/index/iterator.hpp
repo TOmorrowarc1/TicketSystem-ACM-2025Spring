@@ -28,15 +28,20 @@ public:
   }
 
   auto operator++() -> IndexIterator & {
-    ++place_;
-    if (place_ >= page_->GetSize()) {
-      page_id_t next_page = page_->GetNextPageId();
-      if (next_page == -1) {
-        page_ = nullptr;
-      } else {
-        page_ =bpm_->VisitPage(page_->GetNextPageId(), false).template AsMut<Leaf>();
-      }
+    if (page_ == nullptr) {
       place_ = 0;
+    } else {
+      ++place_;
+      while (place_ >= page_->GetSize()) {
+        place_ = 0;
+        page_id_t next_page = page_->GetNextPageId();
+        if (next_page == -1) {
+          page_ = nullptr;
+          break;
+        }
+        auto guard = bpm_->VisitPage(page_->GetNextPageId(), false);
+        page_ = guard.template AsMut<Leaf>();
+      }
     }
     return *this;
   }
