@@ -131,6 +131,7 @@ int main() {
     std::cin >> operation >> key.key;
     if (operation == insert) {
       std::cin >> key.value;
+      value = key.value;
       storage.Insert(key, value);
     } else if (operation == del) {
       std::cin >> key.value;
