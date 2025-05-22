@@ -310,7 +310,11 @@ auto BPT_TYPE::KeyBegin(const KeyType &key) -> Iterator {
   }
   auto cursor_leaf_pointer = read_guard.AsMut<Leaf>();
   int cursor = cursor_leaf_pointer->KeyIndex(key);
-  return Iterator(bpm_, cursor_leaf_pointer, cursor);
+  Iterator result(bpm_, cursor_leaf_pointer, cursor);
+  if (cursor >= cursor_leaf_pointer->GetSize()) {
+    ++result;
+  }
+  return result;
 }
 
 } // namespace bpt

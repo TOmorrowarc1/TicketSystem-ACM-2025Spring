@@ -29,7 +29,7 @@ public:
 
   auto operator++() -> IndexIterator & {
     ++place_;
-    if (place_ == page_->GetSize()) {
+    if (place_ >= page_->GetSize()) {
       page_id_t next_page = page_->GetNextPageId();
       if (next_page == -1) {
         page_ = nullptr;
