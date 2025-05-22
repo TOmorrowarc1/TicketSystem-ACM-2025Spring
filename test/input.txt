@@ -1,13 +1,16 @@
-12
-insert user1 100
-insert user1 200
-insert user1 50
-find user1
-delete user1 100
-find user1
-insert user1 100
-find user1
-insert user2 300
-insert user2 -5
-find user2
-delete user2 300
+15
+insert x 5
+insert x 3
+insert x 7
+find x
+delete x 5
+find x
+insert y -2
+insert y 8
+find y
+delete y 8
+find y
+delete y -2
+find y
+insert x 1
+find x
