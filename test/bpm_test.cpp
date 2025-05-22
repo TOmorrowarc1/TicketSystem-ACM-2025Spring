@@ -140,7 +140,7 @@ int main() {
       key.value = (1 << 31);
       auto iter = storage.KeyBegin(key);
       key.value = ~key.value;
-      while (!iter.IsEnd() && KeyComparator()((*iter).first, key) >= 0) {
+      while (!iter.IsEnd() && KeyComparator()((*iter).first, key) <= 0) {
         ++count;
         std::cout << (*iter).second << ' ';
       }
