@@ -96,10 +96,8 @@ auto BPT_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result)
 
 TEMPLATE
 void BPT_TYPE::FindPath(Trace &trace, const KeyType &key) const {
-  page_id_t cursor = 0;
-  PageGuard page_guard;
-  cursor = trace.place_trace[0];
-  page_guard = bpm_->VisitPage(cursor, false);
+  page_id_t cursor = trace.place_trace[0];
+  auto page_guard = bpm_->VisitPage(cursor, false);
   auto cursor_pointer = page_guard.As<Internal>();
   trace.pages_trace[trace.levels] = std::move(page_guard);
   while (!cursor_pointer->IsLeafPage()) {
@@ -115,7 +113,7 @@ void BPT_TYPE::FindPath(Trace &trace, const KeyType &key) const {
 TEMPLATE
 auto BPT_TYPE::SplitLeafNode(Leaf *cursor) -> std::pair<KeyType, page_id_t> {
   page_id_t new_leaf = bpm_->NewPage();
-  PageGuard page_guard = bpm_->VisitPage(new_leaf, false);
+  auto page_guard = bpm_->VisitPage(new_leaf, false);
   auto cursor_new_leaf = page_guard.AsMut<Leaf>();
   KeyType middle_key = cursor->SplitPage(cursor_new_leaf);
   cursor_new_leaf->SetNextPageId(cursor->GetNextPageId());
@@ -126,7 +124,7 @@ TEMPLATE
 auto BPT_TYPE::SplitInternalNode(Internal *cursor)
     -> std::pair<KeyType, page_id_t> {
   page_id_t new_internal = bpm_->NewPage();
-  PageGuard page_guard = bpm_->VisitPage(new_internal, false);
+  auto page_guard = bpm_->VisitPage(new_internal, false);
   auto cursor_new_internal = page_guard.AsMut<Internal>();
   return {cursor->SplitPage(cursor_new_internal), new_internal};
 }
@@ -156,7 +154,7 @@ auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
       KeyComparator{}(cursor_leaf_pointer->KeyAt(cursor), key) == 0) {
     return false;
   }
-  /*Here comes the adjustment after insert.*/
+  /*Here comes the insert and adjustment after it.*/
   int number = cursor_leaf_pointer->InsertInPage(cursor, key, value);
   std::pair<KeyType, page_id_t> info;
   if (number >= leaf_max_size_) {
@@ -176,7 +174,6 @@ auto BPT_TYPE::Insert(const KeyType &key, const ValueType &value) -> bool {
       }
       if (number >= internal_max_size_) {
         info = SplitInternalNode(cursor_pointer);
-        --trace.levels;
         cursor = bpm_->NewPage();
         cursor_pointer = bpm_->VisitPage(cursor, false).AsMut<Internal>();
         new (cursor_pointer) Internal(internal_max_size_);
