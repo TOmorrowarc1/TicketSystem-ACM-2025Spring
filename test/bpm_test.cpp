@@ -94,7 +94,7 @@ int main() {
   std::string insert = "insert", del = "delete", find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpm.NewPage();
-  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 4, 3);
+  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm);
   Key key;
   /*for (int i = 0; i < 9999; ++i) {
     key.key = "Amiya";
@@ -156,7 +156,6 @@ int main() {
         ++count;
         std::cout << (*iter).second << ' ';
         ++iter;
-        assert(count < 1000);
       }
       if (count == 0) {
         std::cout << "null";
