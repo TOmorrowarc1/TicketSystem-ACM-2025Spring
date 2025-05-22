@@ -117,25 +117,25 @@ int main() {
   }
   std::cout << '\n';
   std::cout << "Checkpoint 1" << '\n';
-  for (int i = 0; i < 1000; ++i) {
-    key.value = i;
-    std::vector<int> result;
-    storage.GetValue(key, &result);
-    for (auto i : result) {
-      std::cout << i << ' ';
-    }
-  }
-  std::cout << "Checkpoint 2" << '\n';
   for (int i = 0; i < 500; ++i) {
     key.value = i;
-    storage.Remove(key);
-    std::vector<int> result;
-    storage.GetValue(key, &result);
-    for (auto i : result) {
-      std::cout << i << ' ';
-    }
+    storage.Remove(key, i);
   }
-  std::cout << "Checkpoint 3" << '\n';
+  count = 0;
+  key.key = "Amiya";
+  key.value = (1 << 31);
+  iter = storage.KeyBegin(key);
+  key.value = ~key.value;
+  while (!iter.IsEnd() && KeyComparator{}((*iter).first, key) <= 0) {
+    ++count;
+    std::cout << (*iter).second << ' ';
+    ++iter;
+  }
+  if (count == 0) {
+    std::cout << "null";
+  }
+  std::cout << '\n';
+  std::cout << "Checkpoint 2" << '\n';
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> key.key;
     if (operation == insert) {
