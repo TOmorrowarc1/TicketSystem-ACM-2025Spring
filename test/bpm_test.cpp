@@ -105,6 +105,11 @@ int main() {
       std::cout << i << ' ';
     }
   }
+  for (int i = 999; i > 0; --i) {
+    key.key = "Amiya";
+    key.value = value = i;
+    assert(!storage.Insert(key, value));
+  }
   std::cout << "Checkpoint 1" << '\n';
   for (int i = 0; i < 1000; ++i) {
     key.value = i;
