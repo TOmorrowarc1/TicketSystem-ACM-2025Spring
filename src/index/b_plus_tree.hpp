@@ -22,6 +22,7 @@ TEMPLATE
 class BPlusTree {
   using Internal = InternalPage<KeyType, page_id_t, KeyComparator>;
   using Leaf = LeafPage<KeyType, ValueType, KeyComparator>;
+  using Iterator = IndexIterator<KeyType, ValueType, KeyComparator>;
 
 private:
   BufferPoolManager *bpm_;
@@ -47,6 +48,8 @@ public:
   auto GetValue(const KeyType &key, std::vector<ValueType> *result) -> bool;
   auto Insert(const KeyType &key, const ValueType &value) -> bool;
   void Remove(const KeyType &key);
+
+  auto KeyBegin(const KeyType &key) -> Iterator;
 };
 
 TEMPLATE
@@ -290,6 +293,24 @@ void BPT_TYPE::Remove(const KeyType &key) {
           cursor_parent->ValueAt(0);
     }
   }
+}
+TEMPLATE
+auto BPT_TYPE::KeyBegin(const KeyType &key) -> Iterator {
+  PageGuard read_guard = bpm_->VisitPage(header_page_id_, true);
+  page_id_t root_id = read_guard.As<HeaderPage>()->root_page_id_;
+  if (root_id == INVALID_PAGE_ID) {
+    return Iterator(bpm_, nullptr, 0);
+  }
+  read_guard = bpm_->VisitPage(root_id, true);
+  auto cursor_pointer = read_guard.As<Internal>();
+  while (!cursor_pointer->IsLeafPage()) {
+    read_guard = bpm_->VisitPage(
+        cursor_pointer->ValueAt(cursor_pointer->KeyIndex(key) - 1), true);
+    cursor_pointer = read_guard.As<Internal>();
+  }
+  auto cursor_leaf_pointer = read_guard.As<Leaf>();
+  int cursor = cursor_leaf_pointer->KeyIndex(key);
+  return Iterator(bpm_, cursor_leaf_pointer, cursor);
 }
 
 } // namespace bpt
