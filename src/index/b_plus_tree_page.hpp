@@ -73,7 +73,7 @@ auto LEAF_PAGE_TYPE::KeyIndex(const KeyType &target) const -> int {
   int middle = 0;
   while (left < right) {
     middle = (left + right) >> 1;
-    if (KeyComparator{}(key_array_[middle], target) <= 0) {
+    if (KeyComparator{}(key_array_[middle], target) < 0) {
       left = middle + 1;
     } else {
       right = middle;
