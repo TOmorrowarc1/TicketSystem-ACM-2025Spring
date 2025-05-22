@@ -32,9 +32,9 @@ public:
     if (place_ == page_->GetSize()) {
       page_id_t next_page = page_->GetNextPageId();
       if (next_page == -1) {
-        place_ = nullptr;
+        page_ = nullptr;
       } else {
-        page_ = bpm_->VisitPage(page_->GetNextPageId()).template AsMut<Leaf>();
+        page_ =bpm_->VisitPage(page_->GetNextPageId(), false).template AsMut<Leaf>();
       }
       place_ = 0;
     }
