@@ -1,11 +1,10 @@
 #ifndef ITERATOR_HPP
 #define ITERATOR_HPP
 
-#include "b_plus_tree.hpp"
+#include "b_plus_tree_page.hpp"
+#include "buffer_pool_manager.hpp"
 
 namespace bpt {
-
-#define ITERATOR_TYPE IndexIterator<KeyType, ValueType, KeyComparator>
 
 TEMPLATE
 class IndexIterator {
@@ -35,7 +34,7 @@ public:
       if (next_page == -1) {
         place_ = nullptr;
       } else {
-        page_ = bpm_->VisitPage(page_->GetNextPageId()).AsMut<Leaf>();
+        page_ = bpm_->VisitPage(page_->GetNextPageId()).template AsMut<Leaf>();
       }
       place_ = 0;
     }

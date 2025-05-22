@@ -3,6 +3,7 @@
 
 #include "b_plus_tree_page.hpp"
 #include "buffer_pool_manager.hpp"
+#include "iterator.hpp"
 namespace bpt {
 
 #define BPT_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
