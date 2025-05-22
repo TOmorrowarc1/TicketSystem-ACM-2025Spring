@@ -40,6 +40,7 @@ public:
 
   void ConnectPage(frame_id_t target_frame, page_id_t target_page) {
     frame_info_[target_frame].page_in_ = target_page;
+    frame_info_[target_frame].is_dirty_ = false;
   }
 
   void Pin(frame_id_t target_frame, bool is_read) {
