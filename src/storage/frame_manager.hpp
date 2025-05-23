@@ -25,10 +25,10 @@ public:
       frame_info_[i] = {INVALID_PAGE_ID, 0, 0, 0};
     }
   }
-  ~FrameManager() { delete frame_info_; }
+  ~FrameManager() { delete[] frame_info_; }
 
   auto EvictFrame() -> std::pair<frame_id_t, page_id_t> {
-    frame_id_t victim = INVALID_FRMAE_ID;
+    frame_id_t victim = INVALID_FRAME_ID;
     int time = current_time_stamp_;
     for (int i = 0; i < size_; ++i) {
       if (frame_info_[i].pin_count_ == 0 && frame_info_[i].history_ <= time) {
