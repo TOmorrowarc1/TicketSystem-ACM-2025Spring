@@ -139,7 +139,7 @@ int main() {
          KeyComparator{}((*iter1).first, min) >= 0) {
     ++count;
     std::cout << (*iter1).second << ' ';
-    ++iter;
+    ++iter1;
   }
   if (count == 0) {
     std::cout << "null";
