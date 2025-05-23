@@ -2,7 +2,6 @@
 #define FRAME_MANAGER_HPP
 #include "config.hpp"
 #include <cassert>
-#include <vector>
 namespace bpt {
 
 struct FrameHeader {
@@ -14,19 +13,24 @@ struct FrameHeader {
 
 class FrameManager {
 private:
-  std::vector<FrameHeader> frame_info_;
+  FrameHeader *frame_info_;
   int current_time_stamp_;
+  int size_;
 
 public:
   FrameManager() = delete;
-  FrameManager(int size) : current_time_stamp_(0) {
-    frame_info_.resize(size, {INVALID_PAGE_ID, 0, 0, 0});
+  FrameManager(int size) : current_time_stamp_(0), size_(size) {
+    frame_info_ = new FrameHeader[size_];
+    for (int i = 0; i < size_; ++i) {
+      frame_info_[i] = {INVALID_PAGE_ID, 0, 0, 0};
+    }
   }
+  ~FrameManager() { delete frame_info_; }
 
   auto EvictFrame() -> std::pair<frame_id_t, page_id_t> {
     frame_id_t victim = INVALID_FRMAE_ID;
     int time = current_time_stamp_;
-    for (int i = 0; i < frame_info_.size(); ++i) {
+    for (int i = 0; i < size_; ++i) {
       if (frame_info_[i].pin_count_ == 0 && frame_info_[i].history_ <= time) {
         victim = i;
         time = frame_info_[i].history_;
