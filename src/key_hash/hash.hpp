@@ -1,6 +1,16 @@
 #ifndef HASH_HPP
 #define HASH_HPP
 #include <string>
+
+auto djb2_hash(const std::string &target) -> unsigned long long int {
+  unsigned long long hash = 5381;
+  int c;
+  for (int place = 0; target[place] != 0; ++place) {
+    hash = ((hash << 5) + hash) + static_cast<int>(target[place]);
+  }
+  return hash;
+}
+
 struct Key {
   unsigned long long int string_hash_;
   int value_;
@@ -9,17 +19,7 @@ struct Key {
   Key(const std::string &index, int value) : value_(value) {
     string_hash_ = djb2_hash(index);
   }
-  auto djb2_hash(const std::string &target) -> unsigned long long int;
 };
-
-auto Key::djb2_hash(const std::string &target) -> unsigned long long int {
-  unsigned long long hash = 5381;
-  int c;
-  for (int place = 0; target[place] != 0; ++place) {
-    hash = ((hash << 5) + hash) + static_cast<int>(target[place]);
-  }
-  return hash;
-}
 
 struct KeyComparator {
   auto operator()(const Key &lhs, const Key &rhs) -> int {
@@ -29,6 +29,5 @@ struct KeyComparator {
     return 0;
   }
 };
-
 
 #endif
