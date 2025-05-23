@@ -5,9 +5,11 @@
 auto djb2_hash(const std::string &target) -> unsigned long long int {
   unsigned long long hash = 5381;
   for (int place = 0; target[place] != 0; ++place) {
-    hash = ((hash << 5) + hash) + static_cast<int>(target[place]);
+    hash = ((hash << 5) + hash) +
+           static_cast<unsigned long long int>(target[place]);
+    hash ^= hash >> 13;
   }
-  return hash;
+  return hash ^ (hash >> 21);
 }
 
 struct Key {
