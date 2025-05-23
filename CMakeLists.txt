@@ -11,6 +11,7 @@ include_directories(
     src
     src/storage
     src/index
+    src/key_hash
     test
 )
 
