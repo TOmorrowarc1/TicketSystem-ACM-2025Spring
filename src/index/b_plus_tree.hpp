@@ -48,7 +48,6 @@ public:
   auto GetValue(const KeyType &key, std::vector<ValueType> *result) -> bool;
   auto Insert(const KeyType &key, const ValueType &value) -> bool;
   void Remove(const KeyType &key);
-  void Remove(const KeyType &key, const ValueType &value);
   auto KeyBegin(const KeyType &key) -> Iterator;
 };
 
