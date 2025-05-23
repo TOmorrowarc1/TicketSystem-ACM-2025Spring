@@ -23,10 +23,21 @@ struct Key {
 
 struct KeyComparator {
   auto operator()(const Key &lhs, const Key &rhs) -> int {
-    int result = (lhs.string_hash_ == rhs.string_hash_)
-                     ? (lhs.value_ - rhs.value_)
-                     : (lhs.string_hash_ - rhs.string_hash_);
-    return 0;
+    int result = 0;
+    if (lhs.string_hash_ == rhs.string_hash_) {
+      if (lhs.value_ > rhs.value_) {
+        result = 1;
+      } else if (lhs.value_ < rhs.value_) {
+        result = -1;
+      } else {
+        result = 0;
+      }
+    } else if (lhs.string_hash_ > rhs.string_hash_) {
+      result = 1;
+    } else {
+      result = -1;
+    }
+    return result;
   }
 };
 
