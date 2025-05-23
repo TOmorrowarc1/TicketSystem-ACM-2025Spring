@@ -4,7 +4,6 @@
 
 auto djb2_hash(const std::string &target) -> unsigned long long int {
   unsigned long long hash = 5381;
-  int c;
   for (int place = 0; target[place] != 0; ++place) {
     hash = ((hash << 5) + hash) + static_cast<int>(target[place]);
   }
