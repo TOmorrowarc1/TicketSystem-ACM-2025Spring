@@ -11,7 +11,7 @@ public:
 
   struct Node {
     page_id_t key_ = INVALID_PAGE_ID;
-    frame_id_t value_ = INVALID_FRMAE_ID;
+    frame_id_t value_ = INVALID_FRAME_ID;
     State state_ = State::EMPTY;
   };
 
@@ -26,7 +26,7 @@ public:
       : SIZE_(size_prime), STEP_(step_prime) {
     array_ = new Node[SIZE_];
   }
-  ~MyHashMap() { delete array_; }
+  ~MyHashMap() { delete[] array_; }
 
   void insert(page_id_t key, frame_id_t value) {
     int init_place = key % SIZE_;
@@ -38,44 +38,39 @@ public:
         array_[now_place].state_ = State::EXIST;
         break;
       }
-      now_place += STEP_;
-      now_place %= SIZE_;
+      now_place = (now_place + STEP_) % SIZE_;
     } while (now_place != init_place);
   }
 
   auto find(page_id_t key) -> frame_id_t {
-    frame_id_t result = INVALID_FRMAE_ID;
     int init_place = key % SIZE_;
     int now_place = init_place;
     do {
-      if (array_[now_place].state_ != State::DELETE) {
-        if (array_[now_place].key_ == key) {
-          result = array_[now_place].value_;
-        }
-        break;
+      if (array_[now_place].state_ == State::EMPTY) {
+        return INVALID_FRAME_ID;
+      } else if (array_[now_place].state_ == State::EXIST &&
+                 array_[now_place].key_ == key) {
+        return array_[now_place].value_;
       }
-      now_place += STEP_;
-      now_place %= SIZE_;
+      now_place = (now_place + STEP_) % SIZE_;
     } while (now_place != init_place);
-    return result;
+    return INVALID_FRAME_ID;
   }
 
   auto erase(page_id_t key) -> frame_id_t {
-    frame_id_t result = INVALID_FRMAE_ID;
     int init_place = key % SIZE_;
     int now_place = init_place;
     do {
-      if (array_[now_place].state_ != State::DELETE) {
-        if (array_[now_place].key_ == key) {
-          result = array_[now_place].value_;
-          array_[now_place].state_ = State::DELETE;
-        }
-        break;
+      if (array_[now_place].state_ == State::EMPTY) {
+        return INVALID_FRAME_ID;
+      } else if (array_[now_place].state_ == State::EXIST &&
+                 array_[now_place].key_ == key) {
+        array_[now_place].state_ = State::DELETE;
+        return array_[now_place].value_;
       }
-      now_place += STEP_;
-      now_place %= SIZE_;
+      now_place = (now_place + STEP_) % SIZE_;
     } while (now_place != init_place);
-    return result;
+    return INVALID_FRAME_ID;
   }
 
   friend class BufferPoolManager;
@@ -212,7 +207,7 @@ public:
   auto DeletePage(page_id_t target_page) -> bool {
     disk_manager_->DeletePage(target_page);
     frame_id_t target_frame = page_table_.find(target_page);
-    if (target_frame != INVALID_FRMAE_ID) {
+    if (target_frame != INVALID_FRAME_ID) {
       frame_manager_->Erase(target_frame);
       InitPage(target_page);
     }
@@ -222,7 +217,7 @@ public:
 
   auto VisitPage(page_id_t target_page, bool read) -> PageGuard {
     frame_id_t frame_in = page_table_.find(target_page);
-    if (frame_in != INVALID_FRMAE_ID) {
+    if (frame_in != INVALID_FRAME_ID) {
       frame_manager_->Pin(frame_in, read);
       return PageGuard(cache_[frame_in], target_page, frame_in, frame_manager_);
     }
