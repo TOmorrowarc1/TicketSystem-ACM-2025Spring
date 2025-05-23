@@ -2,9 +2,85 @@
 #define BUFFER_POOL_MANAGER_HPP
 #include "disk_manager.hpp"
 #include "frame_manager.hpp"
-#include <unordered_map>
 #include <utility>
 namespace bpt {
+class BufferPoolManager;
+class MyHashMap {
+public:
+  enum class State : int { EMPTY = 0, EXIST, DELETE };
+
+  struct Node {
+    page_id_t key_ = INVALID_PAGE_ID;
+    frame_id_t value_ = INVALID_FRMAE_ID;
+    State state_ = State::EMPTY;
+  };
+
+private:
+  Node *array_;
+  const int SIZE_;
+  const int STEP_;
+
+public:
+  MyHashMap() = delete;
+  MyHashMap(int size_prime, int step_prime)
+      : SIZE_(size_prime), STEP_(step_prime) {
+    array_ = new Node[SIZE_];
+  }
+  ~MyHashMap() { delete array_; }
+
+  void insert(page_id_t key, frame_id_t value) {
+    int init_place = key % SIZE_;
+    int now_place = init_place;
+    do {
+      if (array_[now_place].state_ != State::EXIST) {
+        array_[now_place].key_ = key;
+        array_[now_place].value_ = value;
+        array_[now_place].state_ = State::EXIST;
+        break;
+      }
+      now_place += STEP_;
+      now_place %= SIZE_;
+    } while (now_place != init_place);
+  }
+
+  auto find(page_id_t key) -> frame_id_t {
+    frame_id_t result = INVALID_FRMAE_ID;
+    int init_place = key % SIZE_;
+    int now_place = init_place;
+    do {
+      if (array_[now_place].state_ != State::DELETE) {
+        if (array_[now_place].key_ == key) {
+          result = array_[now_place].value_;
+        }
+        break;
+      }
+      now_place += STEP_;
+      now_place %= SIZE_;
+    } while (now_place != init_place);
+    return result;
+  }
+
+  auto erase(page_id_t key) -> frame_id_t {
+    frame_id_t result = INVALID_FRMAE_ID;
+    int init_place = key % SIZE_;
+    int now_place = init_place;
+    do {
+      if (array_[now_place].state_ != State::DELETE) {
+        if (array_[now_place].key_ == key) {
+          result = array_[now_place].value_;
+          array_[now_place].state_ = State::DELETE;
+        }
+        break;
+      }
+      now_place += STEP_;
+      now_place %= SIZE_;
+    } while (now_place != init_place);
+    return result;
+  }
+
+  friend class BufferPoolManager;
+};
+
 class PageGuard {
 private:
   char *pointer_;
@@ -68,7 +144,7 @@ public:
 class BufferPoolManager {
 private:
   std::fstream data_file_;
-  std::unordered_map<page_id_t, frame_id_t> page_table_;
+  MyHashMap page_table_;
   DiskManager *disk_manager_;
   FrameManager *frame_manager_;
   int cache_size_;
@@ -91,7 +167,8 @@ private:
 public:
   BufferPoolManager() = delete;
   BufferPoolManager(int cache_size, int page_size, const std::string &data_file,
-                    const std::string &disk_manager_file) {
+                    const std::string &disk_manager_file)
+      : page_table_(53, 7) {
     data_file_.open(data_file, std::ios::in | std::ios::out | std::ios::binary);
     if (!data_file_.good()) {
       data_file_.close();
@@ -111,8 +188,10 @@ public:
   }
 
   ~BufferPoolManager() {
-    for (auto iter = page_table_.begin(); iter != page_table_.end(); ++iter) {
-      FlushPage(iter->first, iter->second);
+    for (int i = 0; i < 53; ++i) {
+      if (page_table_.array_[i].state_ == MyHashMap::State::EXIST) {
+        FlushPage(page_table_.array_[i].key_, page_table_.array_[i].value_);
+      }
     }
     data_file_.close();
     delete frame_manager_;
@@ -132,8 +211,9 @@ public:
   }
   auto DeletePage(page_id_t target_page) -> bool {
     disk_manager_->DeletePage(target_page);
-    if (page_table_.count(target_page)) {
-      frame_manager_->Erase(page_table_[target_page]);
+    frame_id_t target_frame = page_table_.find(target_page);
+    if (target_frame != INVALID_FRMAE_ID) {
+      frame_manager_->Erase(target_frame);
       InitPage(target_page);
     }
     page_table_.erase(target_page);
@@ -141,11 +221,10 @@ public:
   }
 
   auto VisitPage(page_id_t target_page, bool read) -> PageGuard {
-    if (page_table_.count(target_page)) {
-      auto iter = page_table_.find(target_page);
-      frame_manager_->Pin(iter->second, read);
-      return PageGuard(cache_[iter->second], iter->first, iter->second,
-                       frame_manager_);
+    frame_id_t frame_in = page_table_.find(target_page);
+    if (frame_in != INVALID_FRMAE_ID) {
+      frame_manager_->Pin(frame_in, read);
+      return PageGuard(cache_[frame_in], target_page, frame_in, frame_manager_);
     }
     std::pair<frame_id_t, page_id_t> info = frame_manager_->EvictFrame();
     if (info.second != INVALID_PAGE_ID) {
@@ -157,7 +236,7 @@ public:
     FetchPage(target_page, info.first);
     frame_manager_->ConnectPage(info.first, target_page);
     frame_manager_->Pin(info.first, read);
-    page_table_[target_page] = info.first;
+    page_table_.insert(target_page, info.first);
     return PageGuard(cache_[info.first], target_page, info.first,
                      frame_manager_);
   }
