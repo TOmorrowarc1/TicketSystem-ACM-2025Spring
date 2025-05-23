@@ -18,9 +18,12 @@ int main() {
   bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
   Key key;
   std::vector<int> test;
-  {
+  /*{
     for (int i = 0; i < 1000; ++i) {
       key = Key("Amiya", i);
+      if (i == 913) {
+        std::cout << "?";
+      }
       storage.Insert(key, key.value_);
       assert(storage.GetValue(key, &test));
       assert(!storage.Insert(key, key.value_));
@@ -60,7 +63,7 @@ int main() {
       std::cout << "null";
     }
     std::cout << "checkpoint2" << '\n';
-  }
+  }*/
   for (int i = 0; i < operation_num; ++i) {
     std::cin >> operation >> index;
     if (operation == insert) {

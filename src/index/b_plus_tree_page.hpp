@@ -41,9 +41,9 @@ public:
 TEMPLATE
 class LeafPage : public TreePage {
 private:
+  page_id_t next_page_id_;
   KeyType key_array_[PAGE_MAX_SIZE];
   ValueType value_array_[PAGE_MAX_SIZE];
-  page_id_t next_page_id_;
 
 public:
   LeafPage() = delete;
