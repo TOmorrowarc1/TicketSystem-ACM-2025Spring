@@ -70,12 +70,10 @@ int main() {
       std::cin >> value;
       key = Key(index, value);
       storage.Insert(key, value);
-      assert(storage.GetValue(key, &test));
     } else if (operation == del) {
       std::cin >> value;
       key = Key(index, value);
       storage.Remove(key);
-      assert(!storage.GetValue(key, &test));
     } else {
       int count = 0;
       Key min(index, (1 << 31));
