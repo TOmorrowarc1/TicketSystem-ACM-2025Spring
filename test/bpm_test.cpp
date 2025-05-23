@@ -103,7 +103,7 @@ int main() {
   std::string find = "find";
   bpt::BufferPoolManager bpm(50, 4096, "data_file", "disk_file");
   bpm.NewPage();
-  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm, 2, 3);
+  bpt::BPlusTree<Key, int, KeyComparator> storage(0, &bpm);
   Key index;
   std::vector<int> test;
   /*for (int i = 0; i < 999; ++i) {
