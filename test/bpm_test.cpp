@@ -135,7 +135,7 @@ int main() {
   min = {index.key, (1 << 31)};
   max = {index.key, ~(1 << 31)};
   auto iter1 = storage.KeyBegin(min);
-  while (!iter.IsEnd() && KeyComparator{}((*iter1).first, max) <= 0 &&
+  while (!iter1.IsEnd() && KeyComparator{}((*iter1).first, max) <= 0 &&
          KeyComparator{}((*iter1).first, min) >= 0) {
     ++count;
     std::cout << (*iter1).second << ' ';
