@@ -1,6 +1,5 @@
 #include "index/b_plus_tree.hpp"
 #include "key_hash/hash.hpp"
-#include <cstring>
 #include <iostream>
 #include <string>
 
