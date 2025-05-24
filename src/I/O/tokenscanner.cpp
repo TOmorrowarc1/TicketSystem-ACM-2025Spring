@@ -56,7 +56,7 @@ auto TokenScanner::operator=(const TokenScanner &target) -> TokenScanner & {
   pointer = 0;
 }
 
-auto TokenScanner::next_token() -> std::string {
+auto TokenScanner::NextToken() -> std::string {
   std::string result;
   result = content.substr(space[pointer][0],
                           space[pointer][1] - space[pointer][0] + 1);
@@ -64,11 +64,9 @@ auto TokenScanner::next_token() -> std::string {
   return result;
 }
 
-void TokenScanner::move_back() {
+void TokenScanner::MoveBack() {
   if (pointer != 0) {
     --pointer;
   }
   return;
 }
-
-auto TokenScanner::count_string() -> int { return (totalnum - pointer); }

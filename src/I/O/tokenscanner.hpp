@@ -18,9 +18,10 @@ public:
   auto operator=(const std::string &target) -> TokenScanner &;
   auto operator=(const TokenScanner &target) -> TokenScanner &;
 
-  auto next_token() -> std::string;
-  void move_back();
-  auto count_string() -> int;
+  auto NextToken() -> std::string;
+  void MoveBack();
+  auto CountString() -> int { return (totalnum - pointer); }
+  auto ReachEnd() -> bool { return pointer == totalnum; }
 };
 
 #endif
