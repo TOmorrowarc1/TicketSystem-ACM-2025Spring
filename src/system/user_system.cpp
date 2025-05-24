@@ -6,7 +6,7 @@ void user_sys::AddAdmin(const FixedString<20> &uid, const UserInfo &uinfo) {
 
 auto user_sys::AddUser(const FixedString<20> &c_uid, const FixedString<20> &uid,
                        const UserInfo &uinfo) -> bool {
-  if (!core::find(c_uid)) {
+  if (!core::Find(c_uid)) {
     return false;
   }
   // As c_user has loged in .it must has registered.
@@ -19,7 +19,7 @@ auto user_sys::AddUser(const FixedString<20> &c_uid, const FixedString<20> &uid,
 
 auto user_sys::Seek(const FixedString<20> &c_uid, const FixedString<20> &uid)
     -> std::optional<UserInfo> {
-  if (!core::find(c_uid)) {
+  if (!core::Find(c_uid)) {
     return std::nullopt;
   }
   std::optional<UserInfo> c_user = user_info.GetValue(c_uid);
@@ -38,7 +38,7 @@ auto user_sys::Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
                       const FixedString<30> *mail,
                       const FixedChineseString<5> *name,
                       int privilege = INVALID_PRIVILEGE) -> bool {
-  if (!core::find(c_uid)) {
+  if (!core::Find(c_uid)) {
     return false;
   }
   std::optional<UserInfo> c_user = user_info.GetValue(c_uid);
@@ -58,7 +58,7 @@ auto user_sys::Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
 
 auto user_sys::LogIn(const FixedString<20> &uid,
                      const FixedString<30> &password) -> bool {
-  if (core::find(uid)) {
+  if (core::Find(uid)) {
     return false;
   }
   std::optional<UserInfo> user = user_info.GetValue(uid);
@@ -68,10 +68,10 @@ auto user_sys::LogIn(const FixedString<20> &uid,
   if (user.value().password_.compare(password) != 0) {
     return false;
   }
-  core::login(uid);
+  core::LogIn(uid);
   return true;
 }
 
 auto user_sys::LogOut(const FixedString<20> &uid) -> bool {
-  return core::logout(uid);
+  return core::LogOut(uid);
 }

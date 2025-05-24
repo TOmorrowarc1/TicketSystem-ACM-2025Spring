@@ -7,7 +7,7 @@
 namespace core {
 std::list<FixedString<20>> users_id_now;
 
-auto find(const FixedString<20> &user) -> bool {
+auto Find(const FixedString<20> &user) -> bool {
   for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
     if (user.compare(*iter) == 0) {
       return true;
@@ -16,9 +16,9 @@ auto find(const FixedString<20> &user) -> bool {
   return false;
 }
 
-void login(const FixedString<20> &user) { users_id_now.push_back(user); }
+void LogIn(const FixedString<20> &user) { users_id_now.push_back(user); }
 
-auto logout(const FixedString<20> &user) -> bool {
+auto LogOut(const FixedString<20> &user) -> bool {
   for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
     if (user.compare(*iter) == 0) {
       users_id_now.erase(iter);
