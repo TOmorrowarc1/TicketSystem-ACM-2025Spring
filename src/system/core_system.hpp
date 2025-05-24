@@ -4,7 +4,7 @@
 #include "index/b_plus_tree.hpp"
 #include "item/user.hpp"
 #include <list>
-
+namespace core {
 std::list<FixedString<20>> users_id_now;
 
 auto find(const FixedString<20> &user) -> bool {
@@ -33,4 +33,6 @@ auto logout(const FixedString<20> &user) -> bool {
   }
   return false;
 }
+} // namespace core
+
 #endif
