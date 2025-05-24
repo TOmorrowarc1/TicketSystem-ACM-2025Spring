@@ -16,7 +16,7 @@ auto Seek(const FixedString<20> &c_uid, const FixedString<20> &uid)
 auto Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
             const FixedString<30> *password, const FixedString<30> *mail,
             const FixedChineseString<5> *name,
-            int privilege = INVALID_PRIVILEGE) -> bool;
+            int privilege = INVALID_PRIVILEGE) -> std::optional<UserInfo>;
 auto LogIn(const FixedString<20> &uid, const FixedString<30> &password) -> bool;
 auto LogOut(const FixedString<20> &uid) -> bool;
 } // namespace user_sys

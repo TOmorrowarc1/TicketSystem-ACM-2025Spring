@@ -37,23 +37,24 @@ auto user_sys::Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
                       const FixedString<30> *password,
                       const FixedString<30> *mail,
                       const FixedChineseString<5> *name,
-                      int privilege = INVALID_PRIVILEGE) -> bool {
+                      int privilege = INVALID_PRIVILEGE)
+    -> std::optional<UserInfo> {
   if (!core::Find(c_uid)) {
-    return false;
+    return std::nullopt;
   }
   std::optional<UserInfo> c_user = user_info.GetValue(c_uid);
   std::optional<UserInfo> user = user_info.GetValue(uid);
   if (!user.has_value()) {
-    return false;
+    return std::nullopt;
   }
   if (c_user.value().privilege_ < user.value().privilege_ ||
       c_user.value().privilege_ < privilege) {
-    return false;
+    return std::nullopt;
   }
   user.value().Modify(password, mail, name, privilege);
   user_info.Remove(uid);
   user_info.Insert(uid, user.value());
-  return true;
+  return user;
 }
 
 auto user_sys::LogIn(const FixedString<20> &uid,
