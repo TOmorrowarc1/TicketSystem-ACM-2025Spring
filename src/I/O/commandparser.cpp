@@ -43,6 +43,62 @@ auto UserParse(TokenScanner &command) -> UserCommand {
   return result;
 }
 
-void Execute(const UserCommand &parser){
-  
+void Execute(const UserCommand &parser) {
+  switch (parser.type_) {
+  case UserCommand::CommandType::ADD_USER:
+    if (user_sys::AddUser(parser.c_uid_, parser.uid_, parser.para_)) {
+      std::cout << 0;
+    } else {
+      std::cout << -1;
+    }
+    break;
+  case UserCommand::CommandType::SEEK:
+    std::optional<UserInfo> result = user_sys::Seek(parser.c_uid_, parser.uid_);
+    if (result.has_value()) {
+      std::cout << parser.uid_ << ' ' << result.value().user_name_ << ' '
+                << result.value().mail_address_ << ' '
+                << result.value().privilege_;
+    } else {
+      std::cout << -1;
+    }
+    break;
+  case UserCommand::CommandType::MODIFY:
+    const FixedString<30> *password = nullptr;
+    const FixedString<30> *mail = nullptr;
+    const FixedChineseString<5> *name = nullptr;
+    if (!parser.para_.password_.is_clear()) {
+      password = &parser.para_.password_;
+    }
+    if (!parser.para_.mail_address_.is_clear()) {
+      mail = &parser.para_.mail_address_;
+    }
+    if (!parser.para_.user_name_.is_clear()) {
+      name = &parser.para_.user_name_;
+    }
+    std::optional<UserInfo> result =
+        user_sys::Modify(parser.c_uid_, parser.uid_, password, mail, name,
+                         parser.para_.privilege_);
+    if (result.has_value()) {
+      std::cout << parser.uid_ << ' ' << result.value().user_name_ << ' '
+                << result.value().mail_address_ << ' '
+                << result.value().privilege_;
+    } else {
+      std::cout << -1;
+    }
+    break;
+  case UserCommand::CommandType::LOGIN:
+    if (user_sys::LogIn(parser.uid_, parser.para_.password_)) {
+      std::cout << 0;
+    } else {
+      std::cout << -1;
+    }
+    break;
+  case UserCommand::CommandType::LOGOUT:
+    if (user_sys::LogOut(parser.uid_)) {
+      std::cout << 0;
+    } else {
+      std::cout << -1;
+    }
+    break;
+  }
 }
