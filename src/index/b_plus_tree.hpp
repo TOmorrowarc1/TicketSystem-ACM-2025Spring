@@ -1,9 +1,9 @@
 #ifndef B_PLUS_TREE_HPP
 #define B_PLUS_TREE_HPP
-
 #include "b_plus_tree_page.hpp"
 #include "buffer_pool_manager.hpp"
 #include "iterator.hpp"
+#include <optional>
 namespace bpt {
 
 #define BPT_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
@@ -45,7 +45,7 @@ public:
                      int leaf_max_size = PAGE_MAX_SIZE,
                      int internal_max_size = PAGE_MAX_SIZE - 1);
 
-  auto GetValue(const KeyType &key, std::vector<ValueType> *result) -> bool;
+  auto GetValue(const KeyType &key) -> std::optional<ValueType>;
   auto Insert(const KeyType &key, const ValueType &value) -> bool;
   void Remove(const KeyType &key);
   auto KeyBegin(const KeyType &key) -> Iterator;
@@ -70,12 +70,11 @@ BPT_TYPE::BPlusTree(page_id_t header_page_id,
 }
 
 TEMPLATE
-auto BPT_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result)
-    -> bool {
+auto BPT_TYPE::GetValue(const KeyType &key) -> std::optional<ValueType> {
   PageGuard read_guard = bpm_->VisitPage(header_page_id_, true);
   page_id_t root_id = read_guard.As<HeaderPage>()->root_page_id_;
   if (root_id == INVALID_PAGE_ID) {
-    return false;
+    return std::nullopt;
   }
   read_guard = bpm_->VisitPage(root_id, true);
   auto cursor_pointer = read_guard.As<Internal>();
@@ -88,10 +87,9 @@ auto BPT_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result)
   int cursor = cursor_leaf_pointer->KeyIndex(key);
   if (cursor >= cursor_leaf_pointer->GetSize() ||
       KeyComparator{}(cursor_leaf_pointer->KeyAt(cursor), key) != 0) {
-    return false;
+    return std::nullopt;
   }
-  result->push_back(cursor_leaf_pointer->ValueAt(cursor));
-  return true;
+  return std::optional<ValueType>(cursor_leaf_pointer->ValueAt(cursor));
 }
 
 TEMPLATE
