@@ -7,11 +7,18 @@
 
 std::list<FixedString<20>> users_id_now;
 
-auto login(const FixedString<20> &user) -> bool {
+auto find(const FixedString<20> &user) -> bool {
   for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
     if (user.compare(*iter) == 0) {
-      return false;
+      return true;
     }
+  }
+  return false;
+}
+
+auto login(const FixedString<20> &user) -> bool {
+  if (find(user)) {
+    return false;
   }
   users_id_now.push_back(user);
   return true;
