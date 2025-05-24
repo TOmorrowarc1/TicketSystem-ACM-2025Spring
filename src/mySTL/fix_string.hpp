@@ -22,7 +22,12 @@ public:
     strncpy(data, other.data, MaxLength);
     data[MaxLength] = '\0';
   }
-  FixedString &operator=(const FixedString &other) {
+  auto operator=(const std::string &other) -> FixedString & {
+    strncpy(data, &other[0], MaxLength);
+    data[MaxLength] = '\0';
+    return *this;
+  }
+  auto operator=(const FixedString &other) -> FixedString & {
     if (this != &other) {
       strncpy(data, other.data, MaxLength);
       data[MaxLength] = '\0';
