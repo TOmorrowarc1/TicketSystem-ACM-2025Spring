@@ -59,6 +59,8 @@ class FixedChineseString : public FixedString<MaxChineseLength * 3> {
 public:
   FixedChineseString() : FixedString<MaxChineseChars * 3>() {}
   FixedChineseString(const char *str) : FixedString<MaxChineseChars * 3>(str) {}
+  FixedChineseString(const std::string &other)
+      : FixedString<MaxChineseChars * 3>(other) {}
 };
 
 template <int MaxLength> struct FixStringComparator {
