@@ -38,7 +38,7 @@ public:
   auto str() const -> std::string { return data; }
   auto c_str() const -> const char * { return data; }
   auto length() const -> int { return strlen(data); }
-
+  auto is_clear() const -> bool { return data[0] == '\0'; }
   void clear() { data[0] = '\0'; }
 
   auto compare(const FixedString &other) const -> int {
