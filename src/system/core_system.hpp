@@ -1,4 +1,27 @@
 #ifndef CORE_SYS_HPP
 #define CORE_SYS_HPP
 #include "item/user.hpp"
+#include <list>
+
+std::list<FixedString<20>> users_id_now;
+
+auto login(const FixedString<20> &user) -> bool {
+  for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
+    if (user.compare(*iter) == 0) {
+      return false;
+    }
+  }
+  users_id_now.push_back(user);
+  return true;
+}
+
+auto logout(const FixedString<20> &user) -> bool {
+  for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
+    if (user.compare(*iter) == 0) {
+      users_id_now.erase(iter);
+      return true;
+    }
+  }
+  return false;
+}
 #endif
