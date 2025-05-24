@@ -58,6 +58,7 @@ BPT_TYPE::BPlusTree(page_id_t header_page_id,
     : bpm_(buffer_pool_manager), leaf_max_size_(leaf_max_size),
       internal_max_size_(internal_max_size + 1),
       header_page_id_(header_page_id) {
+  bpm_->NewPage();
   PageGuard guard = bpm_->VisitPage(header_page_id_, false);
   auto head_page = guard.AsMut<HeaderPage>();
   if (!head_page->is_exist) {
