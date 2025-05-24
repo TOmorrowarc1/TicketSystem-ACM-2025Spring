@@ -30,13 +30,13 @@ public:
     return *this;
   }
 
-  std::string str() const { return data; }
-  const char *c_str() const { return data; }
-  size_t length() const { return strlen(data); }
+  auto str() const -> std::string { return data; }
+  auto c_str() const -> const char * { return data; }
+  auto length() const -> int { return strlen(data); }
 
   void clear() { data[0] = '\0'; }
 
-  int compare(const FixedString &other) const {
+  auto compare(const FixedString &other) const -> int {
     return strcmp(data, other.data);
   }
 
@@ -54,6 +54,13 @@ class FixedChineseString : public FixedString<MaxChineseLength * 3> {
 public:
   FixedChineseString() : FixedString<MaxChineseChars * 3>() {}
   FixedChineseString(const char *str) : FixedString<MaxChineseChars * 3>(str) {}
+};
+
+template <int MaxLength> struct FixStringComparator {
+  auto operator()(const FixedString<MaxLength> &lhs,
+                  const FixedString<MaxLength> &rhs) -> bool {
+    return lhs.compare(rhs);
+  }
 };
 
 #endif
