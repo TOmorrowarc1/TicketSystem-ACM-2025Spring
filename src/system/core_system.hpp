@@ -16,13 +16,7 @@ auto find(const FixedString<20> &user) -> bool {
   return false;
 }
 
-auto login(const FixedString<20> &user) -> bool {
-  if (find(user)) {
-    return false;
-  }
-  users_id_now.push_back(user);
-  return true;
-}
+void login(const FixedString<20> &user) { users_id_now.push_back(user); }
 
 auto logout(const FixedString<20> &user) -> bool {
   for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
