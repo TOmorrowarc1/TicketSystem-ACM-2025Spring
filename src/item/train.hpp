@@ -35,7 +35,7 @@ struct TrainTotal {
   FixedChineseString<10> stations[25];
   Clock begin;
   Clock end;
-  Clock start_time[25];
+  Clock arrive_time[25];
   Clock leave_time[25];
   int price[25];
   int station_num;
@@ -47,16 +47,18 @@ struct TrainTotal {
 struct TrainState {
   FixedChineseString<10> stations[25];
   FixedString<20> train_id;
-  Clock start_time[25];
+  Clock arrive_time[25];
   Clock leave_time[25];
   int station_num;
   int remain_tickets[25];
-  int price[25];
+  int price[25] = {0};
   char type;
 
   auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
   auto AddDay() -> TrainState &;
   auto GetKey() const -> TrainStateKey;
+
+  auto FindStation(const FixedChineseString<10> &station) -> int;
 };
 struct TrainStateKey {
   FixedString<20> train_id;
@@ -83,9 +85,9 @@ struct RouteBeginComparator {
 };
 
 struct Route {
-  FixedChineseString<10> start;
-  FixedChineseString<10> end;
   FixedString<20> train_id;
+  Clock start;
+  Clock end;
   Clock time;
   int price;
   int seat;
@@ -94,11 +96,11 @@ auto RouteCompareTime(const Route &lhs, const Route &rhs) -> bool;
 auto RouteComparePrice(const Route &lhs, const Route &rhs) -> bool;
 
 struct Order {
+  FixedChineseString<10> start;
+  FixedChineseString<10> des;
   FixedString<20> uid;
   FixedString<20> train_id;
   Clock time;
-  int start;
-  int destination;
   int amount;
 };
 struct OrderTrainComparator {

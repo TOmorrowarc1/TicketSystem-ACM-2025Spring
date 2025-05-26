@@ -37,12 +37,10 @@ auto Clock::Addit(const Clock &other) -> Clock & {
   }
   return *this;
 }
-
 auto Clock::Add(const Clock &other) const -> Clock {
   Clock result = *this;
   return result.Addit(other);
 }
-
 auto Clock::Compare(const Clock &other) const -> int {
   if (month != other.month) {
     return month - other.month;
@@ -61,7 +59,7 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
   station_num = train.station_num;
   for (int i = 0; i < station_num; ++i) {
     stations[i] = train.stations[i];
-    start_time[i] = train.start_time[i].Add(date);
+    arrive_time[i] = train.arrive_time[i].Add(date);
     leave_time[i] = train.leave_time[i].Add(date);
     remain_tickets[i] = train.tickets_num;
     price[i] = train.price[i];
@@ -72,15 +70,23 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
 auto TrainState::AddDay() -> TrainState & {
   Clock one_day{0, 1, 0, 0};
   for (int i = 0; i < station_num; ++i) {
-    start_time[i].Addit(one_day);
+    arrive_time[i].Addit(one_day);
     leave_time[i].Addit(one_day);
   }
   return *this;
 }
 auto TrainState::GetKey() const -> TrainStateKey {
-  Clock date = start_time[0];
+  Clock date = arrive_time[0];
   date.hour = date.minute = 0;
   return {train_id, date};
+}
+auto TrainState::FindStation(const FixedChineseString<10> &station) -> int {
+  for (int i = 0; i < station_num; ++i) {
+    if (stations[i].compare(station) == 0) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
