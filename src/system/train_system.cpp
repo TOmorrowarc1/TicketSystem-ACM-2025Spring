@@ -2,7 +2,7 @@
 
 bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
                                                "state_disk");
-bpt::BPlusTree<TrainState, bool, TrainStateComparator>
+bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator>
     train_sys::states(0, &state_buffer);
 
 bpt::BufferPoolManager train_sys::release_buffer(50, 4096, "release_data",
@@ -17,12 +17,12 @@ bpt::BPlusTree<RouteBegin, bool, RouteBeginComparator>
 
 bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
                                                     "order_disk_1");
-bpt::BPlusTree<Order, bool, OrderUserComparator>
+bpt::BPlusTree<Order, Order, OrderUserComparator>
     train_sys::user_order(0, &user_order_buffer);
 
 bpt::BufferPoolManager train_sys::train_order_buffer(50, 4096, "order_data_2",
                                                      "order_disk_2");
-bpt::BPlusTree<Order, bool, OrderTrainComparator>
+bpt::BPlusTree<Order, Order, OrderTrainComparator>
     train_sys::train_order(0, &train_order_buffer);
 
 auto train_sys::AddTrain(const FixedString<20> &train_id,
@@ -50,17 +50,47 @@ auto train_sys::ReleaseTrain(const FixedString<20> train_id) -> bool {
   TrainState state;
   while (date.Compare(train.value().end) != 0) {
     state.Construct(train.value(), date);
-    states.Insert(state, true);
+    states.Insert(state.GetKey(), state);
     date.Addit(one_day);
   }
   return true;
 }
 
-auto train_sys::QueryTrain(const FixedString<20>, const Clock &time) -> bool {}
+auto train_sys::QueryTrain(const FixedString<20> train_id, const Clock &time)
+    -> bool {
+  TrainStateKey target;
+  target.train_id = train_id;
+  target.time = time;
+  std::optional<TrainState> result = states.GetValue(target);
+  if (!result.has_value()) {
+    return false;
+  }
+  std::cout << result.value().train_id << ' ' << result.value().station_num
+            << '\n';
+  std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx" << '->'
+            << result.value().leave_time[0] << ' 0 '
+            << result.value().remain_tickets[0] << '\n';
+  int price = result.value().price[0];
+  for (int i = 1; i < result.value().station_num - 1; ++i) {
+    std::cout << result.value().stations[i] << ' '
+              << result.value().start_time[i] << '->'
+              << result.value().leave_time[i] << ' ' << price << ' '
+              << result.value().remain_tickets[i] << '\n';
+    price += result.value().price[i];
+  }
+  std::cout << result.value().stations[result.value().station_num] << ' '
+            << result.value().start_time[result.value().station_num]
+            << "->xx-xx xx:xx " << price << " x \n";
+  return true;
+}
 
-void train_sys::QueryTicket(const Route &target) {}
+void train_sys::QueryTicket(const Route &target) {
 
-void train_sys::QueryTransfer(const Route &target) {}
+}
+
+void train_sys::QueryTransfer(const Route &target) {
+  
+}
 
 auto train_sys::BuyTicket(const Order &target) -> int;
 

@@ -6,20 +6,20 @@
 #include <vector>
 namespace train_sys {
 extern bpt::BufferPoolManager state_buffer;
-extern bpt::BPlusTree<TrainState, bool, TrainStateComparator> states;
+extern bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator> states;
 
 extern bpt::BufferPoolManager release_buffer;
 extern bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     release;
 
 extern bpt::BufferPoolManager begin_buffer;
-extern bpt::BPlusTree<RouteBegin, bool, RouteBeginComparator> begin;
+extern bpt::BPlusTree<RouteBegin, RouteBegin, RouteBeginComparator> begin;
 
 extern bpt::BufferPoolManager user_order_buffer;
-extern bpt::BPlusTree<Order, bool, OrderUserComparator> user_order;
+extern bpt::BPlusTree<Order, Order, OrderUserComparator> user_order;
 
 extern bpt::BufferPoolManager train_order_buffer;
-extern bpt::BPlusTree<Order, bool, OrderTrainComparator> train_order;
+extern bpt::BPlusTree<Order, Order, OrderTrainComparator> train_order;
 
 auto AddTrain(const FixedString<20> &train_id, const TrainTotal &train) -> bool;
 auto DeleteTrain(const FixedString<20> train_id) -> bool;
