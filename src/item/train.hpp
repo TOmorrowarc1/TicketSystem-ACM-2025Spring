@@ -4,36 +4,52 @@
 
 const int INVAILD_NUMBER = -1;
 struct Clock {
-  int month_ = INVAILD_NUMBER;
-  int day_ = INVAILD_NUMBER;
-  int hour_ = INVAILD_NUMBER;
-  int minute_ = INVAILD_NUMBER;
+  int month = INVAILD_NUMBER;
+  int day = INVAILD_NUMBER;
+  int hour = INVAILD_NUMBER;
+  int minute = INVAILD_NUMBER;
 
+  void Init();
+  auto operator=(int minute) -> Clock &;
   auto operator=(const Clock &other) -> Clock &;
   auto Addit(const Clock &other) -> Clock &;
-  auto Add(const Clock &other) -> Clock;
+  auto Add(const Clock &other) const -> Clock;
+  auto Compare(const Clock &other) const -> int;
 };
 struct ClockComparator {
-  auto operator()(const Clock &lhs, const Clock &rhs) -> int;
+  auto operator()(const Clock &lhs, const Clock &rhs) -> int {
+    return lhs.Compare(rhs);
+  }
 };
 
-struct TrainCore {
-  FixedString<20> train_id_;
-  char type_;
-};
-struct TicketState {
-  int station_num;
+struct TrainState {
   FixedChineseString<10> stations[25];
+  FixedString<20> train_id;
   Clock start_time[25];
   Clock leave_time[25];
+  int station_num;
   int remain_tickets[25];
+  char type;
+
+  auto Compare(const TrainState &other) const -> int;
 };
 struct TicketStateComparator {
-  auto operator()(const TicketState &lhs, const TicketState &rhs) -> int;
+  auto operator()(const TrainState &lhs, const TrainState &rhs) -> int {
+    return lhs.Compare(rhs);
+  }
 };
+
 struct RouteBegin {
-  Clock time;
+  FixedChineseString<10> station_name;
   FixedString<20> train_id;
+  Clock time;
+
+  auto Compare(const RouteBegin &other) const -> int;
+};
+struct RouteBeginComparator {
+  auto operator()(const RouteBegin &lhs, const RouteBegin &rhs) -> int {
+    return lhs.Compare(rhs);
+  }
 };
 
 struct Order {
@@ -44,7 +60,11 @@ struct Order {
   int destination;
   int amount;
 };
-struct OrderTrainComparator {};
-struct OrderUserComparator {};
+struct OrderTrainComparator {
+  auto operator()(const Order &lhs, const Order &rhs) -> int;
+};
+struct OrderUserComparator {
+  auto operator()(const Order &lhs, const Order &rhs) -> int;
+};
 
 #endif
