@@ -22,6 +22,19 @@ struct ClockComparator {
   }
 };
 
+struct TrainTotal {
+  FixedChineseString<10> stations[25];
+  Clock begin;
+  Clock end;
+  Clock start_time[25];
+  Clock leave_time[25];
+  int price[25];
+  int station_num;
+  int tickets_num;
+  char type;
+  bool has_released;
+};
+
 struct TrainState {
   FixedChineseString<10> stations[25];
   FixedString<20> train_id;
@@ -29,11 +42,13 @@ struct TrainState {
   Clock leave_time[25];
   int station_num;
   int remain_tickets[25];
+  int price[25];
   char type;
 
   auto Compare(const TrainState &other) const -> int;
+  auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
 };
-struct TicketStateComparator {
+struct TrainStateComparator {
   auto operator()(const TrainState &lhs, const TrainState &rhs) -> int {
     return lhs.Compare(rhs);
   }
@@ -51,6 +66,17 @@ struct RouteBeginComparator {
     return lhs.Compare(rhs);
   }
 };
+
+struct Route {
+  FixedChineseString<10> start;
+  FixedChineseString<10> end;
+  FixedString<20> train_id;
+  Clock time;
+  int price;
+  int seat;
+};
+auto RouteCompareTime(const Route &lhs, const Route &rhs) -> bool;
+auto RouteComparePrice(const Route &lhs, const Route &rhs) -> bool;
 
 struct Order {
   FixedString<20> uid;

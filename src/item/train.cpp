@@ -63,6 +63,18 @@ auto TrainState::Compare(const TrainState &other) const -> int {
   }
   return start_time[0].Compare(other.start_time[0]);
 }
+auto TrainState::Construct(const TrainTotal &train, const Clock &date)
+    -> TrainState & {
+  station_num = train.station_num;
+  for (int i = 0; i < station_num; ++i) {
+    stations[i] = train.stations[i];
+    start_time[i] = train.start_time[i].Add(date);
+    leave_time[i] = train.leave_time[i].Add(date);
+    remain_tickets[i] = train.tickets_num;
+    price[i] = train.price[i];
+  }
+  type = train.type;
+}
 
 auto RouteBegin::Compare(const RouteBegin &other) const -> int {
   int result = station_name.compare(other.station_name);
@@ -72,17 +84,19 @@ auto RouteBegin::Compare(const RouteBegin &other) const -> int {
   return time.Compare(other.time);
 }
 
-auto OrderTrainComparator::operator()(const Order &lhs, const Order &rhs) -> int {
+auto OrderTrainComparator::operator()(const Order &lhs, const Order &rhs)
+    -> int {
   int result = lhs.train_id.compare(rhs.train_id);
   if (result != 0) {
     return result;
   }
-  return lhs.time.Compare(rhs.time);
+  return -lhs.time.Compare(rhs.time);
 }
-auto OrderUserComparator::operator()(const Order &lhs, const Order &rhs) -> int {
+auto OrderUserComparator::operator()(const Order &lhs, const Order &rhs)
+    -> int {
   int result = lhs.uid.compare(rhs.uid);
   if (result != 0) {
     return result;
   }
-  return lhs.time.Compare(rhs.time);
+  return -lhs.time.Compare(rhs.time);
 }
