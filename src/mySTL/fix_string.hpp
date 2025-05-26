@@ -67,7 +67,7 @@ public:
 
 template <int MaxLength> struct FixStringComparator {
   auto operator()(const FixedString<MaxLength> &lhs,
-                  const FixedString<MaxLength> &rhs) -> bool {
+                  const FixedString<MaxLength> &rhs) -> int {
     return lhs.compare(rhs);
   }
 };
