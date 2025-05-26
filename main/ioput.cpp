@@ -10,14 +10,14 @@ int main() {
   std::getline(std::cin, input);
   command = input;
   user_parser = UserParse(command);
-  std::cout << timestamp;
+  std::cout << timestamp << ' ';
   user_sys::AddAdmin(user_parser.uid_, user_parser.para_);
   while (input != "exit") {
     std::cin >> timestamp;
     std::getline(std::cin, input);
     command = input;
     timestamp = command.NextToken();
-    std::cout << timestamp;
+    std::cout << timestamp << ' ';
     Execute(UserParse(command));
   }
   return 0;
