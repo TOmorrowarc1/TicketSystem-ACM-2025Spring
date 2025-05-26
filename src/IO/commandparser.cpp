@@ -45,14 +45,15 @@ auto UserParse(TokenScanner &command) -> UserCommand {
 
 void Execute(const UserCommand &parser) {
   switch (parser.type_) {
-  case UserCommand::CommandType::ADD_USER:
+  case UserCommand::CommandType::ADD_USER: {
     if (user_sys::AddUser(parser.c_uid_, parser.uid_, parser.para_)) {
       std::cout << 0;
     } else {
       std::cout << -1;
     }
     break;
-  case UserCommand::CommandType::SEEK:
+  }
+  case UserCommand::CommandType::SEEK: {
     std::optional<UserInfo> result = user_sys::Seek(parser.c_uid_, parser.uid_);
     if (result.has_value()) {
       std::cout << parser.uid_ << ' ' << result.value().user_name_ << ' '
@@ -62,7 +63,8 @@ void Execute(const UserCommand &parser) {
       std::cout << -1;
     }
     break;
-  case UserCommand::CommandType::MODIFY:
+  }
+  case UserCommand::CommandType::MODIFY: {
     const FixedString<30> *password = nullptr;
     const FixedString<30> *mail = nullptr;
     const FixedChineseString<5> *name = nullptr;
@@ -86,19 +88,22 @@ void Execute(const UserCommand &parser) {
       std::cout << -1;
     }
     break;
-  case UserCommand::CommandType::LOGIN:
+  }
+  case UserCommand::CommandType::LOGIN: {
     if (user_sys::LogIn(parser.uid_, parser.para_.password_)) {
       std::cout << 0;
     } else {
       std::cout << -1;
     }
     break;
-  case UserCommand::CommandType::LOGOUT:
+  }
+  case UserCommand::CommandType::LOGOUT: {
     if (user_sys::LogOut(parser.uid_)) {
       std::cout << 0;
     } else {
       std::cout << -1;
     }
     break;
+  }
   }
 }

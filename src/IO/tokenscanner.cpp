@@ -54,6 +54,7 @@ auto TokenScanner::operator=(const TokenScanner &target) -> TokenScanner & {
     space[i][1] = target.space[i][1];
   }
   pointer = 0;
+  return *this;
 }
 
 auto TokenScanner::NextToken() -> std::string {

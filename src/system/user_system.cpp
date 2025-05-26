@@ -1,5 +1,11 @@
 #include "user_system.hpp"
 
+bpt::BufferPoolManager user_info_buffer(50, 4096, "user_info_data",
+                                        "user_info_disk");
+
+bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
+    user_info(0, &user_info_buffer);
+
 void user_sys::AddAdmin(const FixedString<20> &uid, const UserInfo &uinfo) {
   user_info.Insert(uid, uinfo);
 }
@@ -36,8 +42,7 @@ auto user_sys::Seek(const FixedString<20> &c_uid, const FixedString<20> &uid)
 auto user_sys::Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
                       const FixedString<30> *password,
                       const FixedString<30> *mail,
-                      const FixedChineseString<5> *name,
-                      int privilege = INVALID_PRIVILEGE)
+                      const FixedChineseString<5> *name, int privilege)
     -> std::optional<UserInfo> {
   if (!core::Find(c_uid)) {
     return std::nullopt;

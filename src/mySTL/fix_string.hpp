@@ -1,6 +1,7 @@
 #ifndef FIX_STRING_HPP
 #define FIX_STRING_HPP
 #include <cstring>
+#include <iostream>
 #include <string>
 
 template <int MaxLength> class FixedString {
@@ -57,10 +58,11 @@ public:
 template <int MaxChineseLength>
 class FixedChineseString : public FixedString<MaxChineseLength * 3> {
 public:
-  FixedChineseString() : FixedString<MaxChineseChars * 3>() {}
-  FixedChineseString(const char *str) : FixedString<MaxChineseChars * 3>(str) {}
+  FixedChineseString() : FixedString<MaxChineseLength * 3>() {}
+  FixedChineseString(const char *str)
+      : FixedString<MaxChineseLength * 3>(str) {}
   FixedChineseString(const std::string &other)
-      : FixedString<MaxChineseChars * 3>(other) {}
+      : FixedString<MaxChineseLength * 3>(other) {}
 };
 
 template <int MaxLength> struct FixStringComparator {

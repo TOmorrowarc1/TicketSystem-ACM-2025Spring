@@ -3,10 +3,9 @@
 #include "core_system.hpp"
 
 namespace user_sys {
-bpt::BufferPoolManager user_info_buffer(50, 4096, "user_info_data",
-                                        "user_info_disk");
-bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
-    user_info(0, &user_info_buffer);
+extern bpt::BufferPoolManager user_info_buffer;
+extern bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
+    user_info;
 
 void AddAdmin(const FixedString<20> &uid, const UserInfo &uinfo);
 auto AddUser(const FixedString<20> &c_uid, const FixedString<20> &uid,

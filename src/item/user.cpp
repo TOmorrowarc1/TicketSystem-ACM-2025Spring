@@ -12,7 +12,7 @@ void UserInfo::Init(const FixedString<30> &password,
 void UserInfo::Modify(const FixedString<30> *password,
                       const FixedString<30> *mail,
                       const FixedChineseString<5> *name,
-                      int privilege = INVALID_PRIVILEGE) {
+                      int privilege) {
   if (password != nullptr) {
     password_ = *password;
   }

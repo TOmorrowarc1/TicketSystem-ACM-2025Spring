@@ -5,7 +5,8 @@
 #include "item/user.hpp"
 #include <list>
 namespace core {
-std::list<FixedString<20>> users_id_now;
+  
+extern std::list<FixedString<20>> users_id_now;
 
 auto Find(const FixedString<20> &user) -> bool {
   for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
