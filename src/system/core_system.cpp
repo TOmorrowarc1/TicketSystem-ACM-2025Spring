@@ -1,6 +1,6 @@
 #include "core_system.hpp"
 
-std::list<FixedString<20>> users_id_now;
+std::list<FixedString<20>> core::users_id_now;
 
 auto core::Find(const FixedString<20> &user) -> bool {
   for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {

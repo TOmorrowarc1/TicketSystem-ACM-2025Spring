@@ -1,10 +1,10 @@
 #include "user_system.hpp"
 
-bpt::BufferPoolManager user_info_buffer(50, 4096, "user_info_data",
-                                        "user_info_disk");
+bpt::BufferPoolManager user_sys::user_info_buffer(50, 4096, "user_info_data",
+                                                  "user_info_disk");
 
 bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
-    user_info(0, &user_info_buffer);
+    user_sys::user_info(0, &user_info_buffer);
 
 void user_sys::AddAdmin(const FixedString<20> &uid, const UserInfo &uinfo) {
   user_info.Insert(uid, uinfo);

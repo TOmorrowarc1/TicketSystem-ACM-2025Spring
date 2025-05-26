@@ -25,6 +25,7 @@ set(TEST_SOURCES
     src/item/user.cpp
     src/IO/commandparser.cpp
     src/IO/tokenscanner.cpp
+    src/system/core_system.cpp
     src/system/user_system.cpp
 )
 
