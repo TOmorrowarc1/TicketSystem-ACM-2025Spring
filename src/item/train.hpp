@@ -45,11 +45,16 @@ struct TrainState {
   int price[25];
   char type;
 
-  auto Compare(const TrainState &other) const -> int;
   auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
+  auto GetKey() const -> TrainStateKey;
+};
+struct TrainStateKey {
+  FixedString<20> train_id;
+  Clock time;
+  auto Compare(const TrainStateKey &other) const -> int;
 };
 struct TrainStateComparator {
-  auto operator()(const TrainState &lhs, const TrainState &rhs) -> int {
+  auto operator()(const TrainStateKey &lhs, const TrainStateKey &rhs) -> int {
     return lhs.Compare(rhs);
   }
 };

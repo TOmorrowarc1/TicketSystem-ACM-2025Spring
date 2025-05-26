@@ -56,13 +56,6 @@ auto Clock::Compare(const Clock &other) const -> int {
   return minute - other.minute;
 }
 
-auto TrainState::Compare(const TrainState &other) const -> int {
-  int result = train_id.compare(other.train_id);
-  if (result != 0) {
-    return result;
-  }
-  return start_time[0].Compare(other.start_time[0]);
-}
 auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     -> TrainState & {
   station_num = train.station_num;
@@ -74,6 +67,17 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     price[i] = train.price[i];
   }
   type = train.type;
+}
+auto TrainState::GetKey() const -> TrainStateKey {
+  return {train_id, start_time[0]};
+}
+
+auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
+  int result = train_id.compare(other.train_id);
+  if (result != 0) {
+    return result;
+  }
+  return time.Compare(other.time);
 }
 
 auto RouteBegin::Compare(const RouteBegin &other) const -> int {
