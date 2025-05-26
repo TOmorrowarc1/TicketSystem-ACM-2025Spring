@@ -12,7 +12,7 @@ bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
 
 bpt::BufferPoolManager train_sys::begin_buffer(50, 4096, "begin_data",
                                                "begin_disk");
-bpt::BPlusTree<RouteBegin, bool, RouteBeginComparator>
+bpt::BPlusTree<RouteBegin, RouteBegin, RouteBeginComparator>
     train_sys::begin(0, &begin_buffer);
 
 bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
@@ -46,12 +46,20 @@ auto train_sys::ReleaseTrain(const FixedString<20> train_id) -> bool {
   }
   train.value().has_released = true;
   Clock date = train.value().begin;
-  Clock one_day = {0, 0, 1, 0};
+  Clock one_day = {0, 1, 0, 0};
   TrainState state;
-  while (date.Compare(train.value().end) != 0) {
-    state.Construct(train.value(), date);
+  state.Construct(train.value(), date);
+  RouteBegin action;
+  action.train_id = state.train_id;
+  while (date.Compare(train.value().end) <= 0) {
     states.Insert(state.GetKey(), state);
+    for (int i = 0; i < state.station_num; ++i) {
+      action.station_name = state.stations[i];
+      action.time = state.start_time[i];
+      begin.Insert(action, action);
+    }
     date.Addit(one_day);
+    state.AddDay();
   }
   return true;
 }
@@ -85,11 +93,52 @@ auto train_sys::QueryTrain(const FixedString<20> train_id, const Clock &time)
 }
 
 void train_sys::QueryTicket(const Route &target) {
-
+  std::vector<Route> routes;
+  RouteBegin min;
+  RouteBegin max;
+  min.time = target.time;
+  min.station_name = target.start;
+  max.time = target.time.Add({0, 1, 0, 0});
+  max.station_name = target.start;
+  for (auto iter = begin.KeyBegin(min); (*iter).second.Compare(max) < 0;
+       ++iter) {
+    std::optional<TrainState> result =
+        states.GetValue({(*iter).second.train_id, min.time});
+    for (int i = 0; i < result.value().station_num; ++i) {
+      if (result.value().stations[i].compare(target.end) == 0) {
+        routes.push_back(target.)
+      }
+      break;
+    }
+  }
+  // sort
+  // std::cout;
 }
 
 void train_sys::QueryTransfer(const Route &target) {
-  
+  std::vector<Route> routes;
+  RouteBegin min;
+  RouteBegin max;
+  min.time = target.time;
+  min.station_name = target.start;
+  max.time = target.time.Add({0, 1, 0, 0});
+  max.station_name = target.start;
+  for (auto iter = begin.KeyBegin(min); (*iter).second.Compare(max) < 0;
+       ++iter) {
+    std::optional<TrainState> result =
+        states.GetValue({(*iter).second.train_id, min.time});
+    for (int i = 0; i < result.value().station_num; ++i) {
+      if (result.value().stations[i].compare(target.end) == 0) {
+        for (auto iter = begin.KeyBegin(min); (*iter).second.Compare(max) < 0;
+             ++iter) {
+              
+        }
+      }
+      break;
+    }
+  }
+  // sort
+  // std::cout;
 }
 
 auto train_sys::BuyTicket(const Order &target) -> int;
