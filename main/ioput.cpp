@@ -16,9 +16,9 @@ int main() {
     std::cin >> timestamp;
     std::getline(std::cin, input);
     command = input;
-    timestamp = command.NextToken();
     std::cout << timestamp << ' ';
     Execute(UserParse(command));
+    std::cout << '\n';
   }
   return 0;
 }
