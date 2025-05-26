@@ -67,6 +67,15 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     price[i] = train.price[i];
   }
   type = train.type;
+  return *this;
+}
+auto TrainState::AddDay() -> TrainState & {
+  Clock one_day{0, 1, 0, 0};
+  for (int i = 0; i < station_num; ++i) {
+    start_time[i].Addit(one_day);
+    leave_time[i].Addit(one_day);
+  }
+  return *this;
 }
 auto TrainState::GetKey() const -> TrainStateKey {
   Clock date = start_time[0];

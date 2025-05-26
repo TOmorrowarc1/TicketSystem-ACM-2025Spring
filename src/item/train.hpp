@@ -55,6 +55,7 @@ struct TrainState {
   char type;
 
   auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
+  auto AddDay() -> TrainState &;
   auto GetKey() const -> TrainStateKey;
 };
 struct TrainStateKey {
