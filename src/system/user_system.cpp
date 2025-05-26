@@ -8,6 +8,7 @@ bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
 
 void user_sys::AddAdmin(const FixedString<20> &uid, const UserInfo &uinfo) {
   user_info.Insert(uid, uinfo);
+  std::cout << 0 << '\n';
 }
 
 auto user_sys::AddUser(const FixedString<20> &c_uid, const FixedString<20> &uid,

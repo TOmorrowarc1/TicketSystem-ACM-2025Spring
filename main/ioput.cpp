@@ -6,12 +6,15 @@ int main() {
   std::string timestamp;
   TokenScanner command;
   UserCommand user_parser;
-  std::cin >> input;
+  std::cin >> timestamp;
+  std::getline(std::cin, input);
   command = input;
   user_parser = UserParse(command);
+  std::cout << timestamp;
   user_sys::AddAdmin(user_parser.c_uid_, user_parser.para_);
   while (input != "exit") {
-    std::cin >> input;
+    std::cin >> timestamp;
+    std::getline(std::cin, input);
     command = input;
     timestamp = command.NextToken();
     std::cout << timestamp;

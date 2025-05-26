@@ -34,15 +34,18 @@ auto TokenScanner::operator=(const std::string &target) -> TokenScanner & {
   totalnum = 0;
   pointer = 0;
   space[0][0] = 0;
-  for (int i = 1; target[i] != 0; ++i) {
-    if (target[i] == ' ') {
-      space[totalnum][1] = i - 1;
+  int length;
+  for (length = 1; target[length] != 0; ++length) {
+    if (target[length] == ' ') {
+      space[totalnum][1] = length - 1;
       ++totalnum;
     }
-    if (target[i] != ' ' && target[i - 1] == ' ') {
-      space[totalnum][0] = i;
+    if (target[length] != ' ' && target[length - 1] == ' ') {
+      space[totalnum][0] = length;
     }
   }
+  space[totalnum][1] = length - 1;
+  ++totalnum;
   return *this;
 }
 

@@ -34,6 +34,7 @@ auto UserParse(TokenScanner &command) -> UserCommand {
       result.para_.mail_address_ = command.NextToken();
       break;
     case 'g':
+      // Here is a problem.
       result.para_.privilege_ = command.NextToken()[0] - '0';
       break;
     default:
