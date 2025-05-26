@@ -35,10 +35,9 @@ auto user_sys::Seek(const FixedString<20> &c_uid, const FixedString<20> &uid)
   if (!user.has_value()) {
     return std::nullopt;
   }
-  if (c_uid.compare("Savage") == 0) {
-    std::cout << c_user.value().privilege_ << ' ' << user.value().privilege_;
-  }
-  if (c_user.value().privilege_ < user.value().privilege_) {
+  if (c_user.value().privilege_ < user.value().privilege_ ||
+      (c_user.value().privilege_ == user.value().privilege_ &&
+       c_uid.compare(uid) != 0)) {
     return std::nullopt;
   }
   return user;
@@ -57,8 +56,10 @@ auto user_sys::Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
   if (!user.has_value()) {
     return std::nullopt;
   }
-  if (c_user.value().privilege_ < user.value().privilege_ ||
-      c_user.value().privilege_ < privilege) {
+  if (c_user.value().privilege_ < privilege ||
+      c_user.value().privilege_ < user.value().privilege_ ||
+      (c_user.value().privilege_ == user.value().privilege_ &&
+       c_uid.compare(uid) != 0)) {
     return std::nullopt;
   }
   user.value().Modify(password, mail, name, privilege);
