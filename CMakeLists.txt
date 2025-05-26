@@ -9,16 +9,23 @@ set(CMAKE_BUILD_TYPE Debug)
 # 包含目录
 include_directories(
     src
+    src/index 
+    src/IO 
+    src/item
+    src/key_hash 
+    src/mySTL 
     src/storage
-    src/index
-    src/key_hash
-    test
+    src/system    
+    main
 )
 
 # 查找所有源文件（根据需要调整）
 set(TEST_SOURCES 
-    test/bpm_test.cpp
-    src/index/b_plus_tree.hpp
+    main/ioput.cpp 
+    src/item/user.cpp
+    src/IO/commandparser.cpp
+    src/IO/tokenscanner.cpp
+    src/system/user_system.cpp
 )
 
 add_executable(code ${TEST_SOURCES})
