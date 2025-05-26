@@ -35,6 +35,9 @@ auto user_sys::Seek(const FixedString<20> &c_uid, const FixedString<20> &uid)
   if (!user.has_value()) {
     return std::nullopt;
   }
+  if (c_uid.compare("Savage") == 0) {
+    std::cout << c_user.value().privilege_ << ' ' << user.value().privilege_;
+  }
   if (c_user.value().privilege_ < user.value().privilege_) {
     return std::nullopt;
   }
