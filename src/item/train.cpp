@@ -69,7 +69,9 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
   type = train.type;
 }
 auto TrainState::GetKey() const -> TrainStateKey {
-  return {train_id, start_time[0]};
+  Clock date = start_time[0];
+  date.hour = date.minute = 0;
+  return {train_id, date};
 }
 
 auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
