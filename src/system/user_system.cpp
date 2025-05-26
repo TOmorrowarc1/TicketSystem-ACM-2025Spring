@@ -6,7 +6,8 @@ bpt::BufferPoolManager user_sys::user_info_buffer(50, 4096, "user_info_data",
 bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
     user_sys::user_info(0, &user_info_buffer);
 
-void user_sys::AddAdmin(const FixedString<20> &uid, const UserInfo &uinfo) {
+void user_sys::AddAdmin(const FixedString<20> &uid, UserInfo &uinfo) {
+  uinfo.privilege_ = 10;
   user_info.Insert(uid, uinfo);
   std::cout << 0 << '\n';
 }

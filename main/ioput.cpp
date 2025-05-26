@@ -11,7 +11,7 @@ int main() {
   command = input;
   user_parser = UserParse(command);
   std::cout << timestamp;
-  user_sys::AddAdmin(user_parser.c_uid_, user_parser.para_);
+  user_sys::AddAdmin(user_parser.uid_, user_parser.para_);
   while (input != "exit") {
     std::cin >> timestamp;
     std::getline(std::cin, input);

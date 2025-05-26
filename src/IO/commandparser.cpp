@@ -35,7 +35,7 @@ auto UserParse(TokenScanner &command) -> UserCommand {
       break;
     case 'g':
       // Here is a problem.
-      result.para_.privilege_ = command.NextToken()[0] - '0';
+      result.para_.privilege_ = std::atoi(&command.NextToken()[0]);
       break;
     default:
       assert(0);

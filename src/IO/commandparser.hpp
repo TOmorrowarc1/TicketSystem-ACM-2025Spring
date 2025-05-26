@@ -3,6 +3,7 @@
 #include "system/train_system.hpp"
 #include "system/user_system.hpp"
 #include "tokenscanner.hpp"
+#include <cmath>
 
 struct UserCommand {
   enum class CommandType { ADD_USER = 0, SEEK, MODIFY, LOGIN, LOGOUT };
