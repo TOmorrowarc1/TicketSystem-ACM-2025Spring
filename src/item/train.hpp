@@ -113,7 +113,6 @@ struct RouteTComparatorB {
     return lhs.train_id.compare(rhs.train_id);
   }
 };
-
 struct RouteUser {
   FixedString<20> train_id;
   Clock start_time;
@@ -124,12 +123,15 @@ struct RouteUser {
 
 enum class Status { BUY = 0, QUEUE, REFUND };
 struct Order {
-  FixedChineseString<10> start;
+  FixedChineseString<10> origin;
   FixedChineseString<10> des;
   FixedString<20> uid;
   FixedString<20> train_id;
-  Clock time;
+  Clock leave_time;
+  Clock arrive_time;
+  Clock date;
   Status status;
+  int time;
   int amount;
 };
 struct OrderTrainComparator {

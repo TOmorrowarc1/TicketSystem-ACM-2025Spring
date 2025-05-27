@@ -139,7 +139,7 @@ auto OrderTrainComparator::operator()(const Order &lhs, const Order &rhs)
   if (result != 0) {
     return result;
   }
-  return -lhs.time.Compare(rhs.time);
+  return rhs.time - lhs.time;
 }
 auto OrderUserComparator::operator()(const Order &lhs, const Order &rhs)
     -> int {
@@ -147,5 +147,5 @@ auto OrderUserComparator::operator()(const Order &lhs, const Order &rhs)
   if (result != 0) {
     return result;
   }
-  return -lhs.time.Compare(rhs.time);
+  return rhs.time - lhs.time;
 }
