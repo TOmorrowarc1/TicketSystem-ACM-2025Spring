@@ -144,6 +144,7 @@ struct Order {
   FixedChineseString<10> des;
   FixedString<20> uid;
   FixedString<20> train_id;
+  Clock date;
   Clock leave_time;
   Clock arrive_time;
   Status status;
