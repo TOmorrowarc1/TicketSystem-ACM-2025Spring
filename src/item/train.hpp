@@ -148,6 +148,7 @@ struct Order {
   Clock arrive_time;
   Status status;
   int amount;
+  int price;
   int time;
 
   auto Compare(const Order &other) const -> int;

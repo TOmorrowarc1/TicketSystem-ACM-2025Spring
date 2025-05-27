@@ -232,6 +232,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   order.leave_time = train.value().leave_time[start];
   order.arrive_time = train.value().arrive_time[des];
   order.time = target.time;
+  order.price = price;
   if (seat >= target.amount) {
     order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
@@ -251,20 +252,35 @@ void train_sys::BuyTicket(Query &target, bool queue) {
 }
 
 auto train_sys::QueryOrder(const FixedString<20> &uid) -> bool {
+  if (!core::Find(uid)) {
+    std::cout << -1 << '\n';
+    return;
+  }
   Order min;
   min.uid = uid;
   int count = 0;
   for (auto iter = user_order.KeyBegin(min);
-       (*iter).second.uid.compare(uid) == 0; ++iter) {
+       !iter.IsEnd() && (*iter).second.uid.compare(uid) == 0; ++iter) {
     ++count;
   }
   std::cout << count << '\n';
   for (auto iter = user_order.KeyBegin(min);
-       (*iter).second.uid.compare(uid) == 0; ++iter) {
-    std::cout << (*iter).second.status << ' ' << (*iter).second.train_id << ' '
-              << (*iter).second.origin << ' ' << (*iter).second.leave_time
-              << '->' << (*iter).second.arrive_time << (*iter).second.<< ' ';
+       !iter.IsEnd() && (*iter).second.uid.compare(uid) == 0; ++iter) {
+    std::cout << '[';
+    if ((*iter).second.status == Status::SUCCESS) {
+      std::cout << "SUCCESS";
+    } else if ((*iter).second.status == Status::PENDING) {
+      std::cout << "PENDING";
+    } else {
+      std::cout << "REFUNDED";
+    }
+    std::cout << '] ' << (*iter).second.train_id << ' ' << (*iter).second.origin
+              << ' ' << (*iter).second.leave_time << '->'
+              << (*iter).second.arrive_time << ' ' << (*iter).second.des << ' '
+              << (*iter).second.price << ' ' << (*iter).second.amount << '\n';
   }
 }
 
-auto train_sys::Refund(const FixedString<20> &uid, int rank = 0) -> bool {}
+auto train_sys::Refund(const FixedString<20> &uid, int rank = 0) -> bool {
+  
+}
