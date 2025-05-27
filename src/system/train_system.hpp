@@ -35,6 +35,9 @@ void QueryTransfer(const FixedChineseString<10> &start,
 void BuyTicket(Query &target, bool queue);
 auto QueryOrder(const FixedString<20> &uid) -> bool;
 auto Refund(const FixedString<20> &uid, int rank = 0) -> bool;
+
+void RouteQuickSortT(RouteUser **target, int start, int end);
+void RouteQuickSortP(RouteUser **target, int start, int end);
 } // namespace train_sys
 
 #endif
