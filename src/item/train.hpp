@@ -126,6 +126,8 @@ struct Query {
   FixedChineseString<10> des;
   FixedString<20> uid;
   FixedString<20> train_id;
+  Clock date;
+  int amount;
   int time;
 
   auto Compare(const Query &other) const -> int;
@@ -145,8 +147,8 @@ struct Order {
   Clock leave_time;
   Clock arrive_time;
   Status status;
-  int time;
   int amount;
+  int time;
 
   auto Compare(const Order &other) const -> int;
 };

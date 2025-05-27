@@ -18,9 +18,9 @@ extern bpt::BufferPoolManager routeB_buffer;
 extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorB> routeB;
 
 extern bpt::BufferPoolManager user_order_buffer;
-extern bpt::BPlusTree<Order, Order, OrderUserComparator> user_order;
+extern bpt::BPlusTree<Order, Order, OrderComparator> user_order;
 extern bpt::BufferPoolManager train_order_buffer;
-extern bpt::BPlusTree<Order, Order, OrderTrainComparator> train_order;
+extern bpt::BPlusTree<Query, Query, QueryComparator> train_order;
 
 auto AddTrain(const FixedString<20> &train_id, const TrainTotal &train) -> bool;
 auto DeleteTrain(const FixedString<20> train_id) -> bool;
@@ -32,7 +32,7 @@ void QueryTicket(const FixedChineseString<10> &start,
 void QueryTransfer(const FixedChineseString<10> &start,
                    const FixedChineseString<10> &end, const Clock date,
                    bool time);
-void BuyTicket(Order &target, bool queue);
+void BuyTicket(Query &target, bool queue);
 auto QueryOrder(const FixedString<20> &uid) -> bool;
 auto Refund(const FixedString<20> &uid, int rank = 0) -> bool;
 } // namespace train_sys

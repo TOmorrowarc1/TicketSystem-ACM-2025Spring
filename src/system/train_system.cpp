@@ -22,12 +22,12 @@ bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorB>
 
 bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
                                                     "order_disk_1");
-bpt::BPlusTree<Order, Order, OrderUserComparator>
+bpt::BPlusTree<Order, Order, OrderComparator>
     train_sys::user_order(0, &user_order_buffer);
 
 bpt::BufferPoolManager train_sys::train_order_buffer(50, 4096, "order_data_2",
                                                      "order_disk_2");
-bpt::BPlusTree<Order, Order, OrderTrainComparator>
+bpt::BPlusTree<Query, Query, QueryComparator>
     train_sys::train_order(0, &train_order_buffer);
 
 auto train_sys::AddTrain(const FixedString<20> &train_id,
@@ -165,7 +165,7 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
           {(*iter2).second.train_id, (*iter2).second.train_time});
       second_target = second_train.value().CompleteRoute((*iter2).second);
       if (time) {
-        //Here we need more compare: 4 levels, stupid.
+        // Here we need more compare: 4 levels, stupid.
         if (second_target.start_time.Add(second_target.total_time)
                 .Minus(first_target.start_time)
                 .Compare(best_time) < 0) {
@@ -201,7 +201,7 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
   }
 }
 
-void train_sys::BuyTicket(Order &target, bool queue) {
+void train_sys::BuyTicket(Query &target, bool queue) {
   if (!core::Find(target.uid)) {
     std::cout << -1 << '\n';
     return;
@@ -224,18 +224,30 @@ void train_sys::BuyTicket(Order &target, bool queue) {
     seat = std::min(seat, train.value().remain_tickets[i]);
     price += train.value().price[i];
   }
+  Order order;
+  order.train_id = target.train_id;
+  order.origin = target.origin;
+  order.uid = target.uid;
+  order.des = target.des;
+  order.leave_time = train.value().leave_time[start];
+  order.arrive_time = train.value().arrive_time[des];
+  order.time = target.time;
   if (seat >= target.amount) {
-    target.status = Status::BUY;
+    order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] -= target.amount;
     }
     std::cout << price * target.amount << '\n';
-  } else if (queue) {
-    target.status = Status::QUEUE;
-    train_order.Insert(target, target);
-    std::cout << "queue\n";
+  } else {
+    if (queue) {
+      order.status = Status::PENDING;
+      train_order.Insert(target, target);
+      std::cout << "queue\n";
+    } else {
+      std::cout << -1 << '\n';
+    }
   }
-  user_order.Insert(target, target);
+  user_order.Insert(order, order);
 }
 
 auto train_sys::QueryOrder(const FixedString<20> &uid) -> bool {
