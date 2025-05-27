@@ -1,4 +1,5 @@
 #include "commandparser.hpp"
+#include <sstream>
 
 auto UserParse(TokenScanner &command) -> UserCommand {
   UserCommand result;
@@ -106,5 +107,103 @@ void Execute(const UserCommand &parser) {
     }
     break;
   }
+  }
+}
+
+void Execute(TokenScanner &command) {
+  if (command.NextToken() == "add_train") {
+    TrainTotal train;
+    FixedString<20> train_id;
+    while (!command.ReachEnd()) {
+      switch (command.NextToken()[1]) {
+      case 'i': {
+        train_id = command.NextToken();
+        break;
+      }
+      case 'n': {
+        train.station_num = std::atoi(&command.NextToken()[0]);
+        break;
+      }
+      case 'm': {
+        train.tickets_num = std::atoi(&command.NextToken()[0]);
+        break;
+      }
+      case 's': {
+        int pointer = 0;
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        while (std::getline(iss, piece, '|')) {
+          train.stations[pointer] = piece;
+          ++pointer;
+        }
+        break;
+      }
+      case 'p': {
+        int pointer = 0;
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        while (std::getline(iss, piece, '|')) {
+          train.price[pointer] = std::atoi(&piece[0]);
+          ++pointer;
+        }
+        break;
+      }
+      case 'x': {
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        std::getline(iss, piece, ':');
+        train.leave_time[0].hour = std::atoi(&piece[0]);
+        std::getline(iss, piece, ':');
+        train.leave_time[0].minute = std::atoi(&piece[0]);
+        break;
+      }
+      case 't': {
+        int pointer = 0;
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        while (std::getline(iss, piece, '|')) {
+          train.leave_time[pointer] = std::atoi(&piece[0]);
+          ++pointer;
+        }
+        break;
+      }
+      case 'o': {
+        int pointer = 0;
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        while (std::getline(iss, piece, '|')) {
+          train.arrive_time[pointer] = std::atoi(&piece[0]);
+          ++pointer;
+        }
+        break;
+      }
+      case 'd': {
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        std::getline(iss, piece, ':');
+        train.begin = std::atoi(&piece[0]);
+        std::getline(iss, piece, ':');
+        train.end = std::atoi(&piece[0]);
+        break;
+      }
+      case 'y': {
+        train.type = command.NextToken()[0];
+      }
+      }
+    }
+    train_sys::AddTrain(train_id, train);
+  } else if (command.NextToken() == "delete_train") {
+  } else if (command.NextToken() == "release_train") {
+
+  } else if (command.NextToken() == "query_train") {
+  } else if (command.NextToken() == "query_ticket") {
+
+  } else if (command.NextToken() == "query_transfer") {
+
+  } else if (command.NextToken() == "buy_ticket") {
+
+  } else if (command.NextToken() == "query_order") {
+
+  } else if (command.NextToken() == "refund_ticket") {
   }
 }

@@ -12,12 +12,9 @@ struct UserCommand {
   FixedString<20> uid_;
   CommandType type_;
 };
-
 auto UserParse(TokenScanner &command) -> UserCommand;
 void Execute(const UserCommand &parser);
 
-struct TrainCommand {};
-auto TrainParse(TokenScanner &command) -> TrainCommand;
-void Execute(const TrainCommand &parser);
+void Execute(TokenScanner &command);
 
 #endif

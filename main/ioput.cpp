@@ -19,9 +19,19 @@ int main() {
     std::cout << timestamp << ' ';
     if (input == " exit ") {
       break;
+    } else if (input == "clear") {
+      break;
+    } else if (command.NextToken() == "add_user" ||
+               command.NextToken() == "login" ||
+               command.NextToken() == "logout" ||
+               command.NextToken() == "query_profile" ||
+               command.NextToken() == "modify_profile") {
+      command.MoveBack();
+      Execute(UserParse(command));
+      std::cout << '\n';
+    } else {
+      Execute(command);
     }
-    Execute(UserParse(command));
-    std::cout << '\n';
   }
   std::cout << "bye\n";
   return 0;
