@@ -39,6 +39,26 @@ auto Clock::Add(const Clock &other) const -> Clock {
   Clock result = *this;
   return result.Addit(other);
 }
+auto Clock::Minus(const Clock &other) const -> Clock {
+  Clock result;
+  result.day = day - other.day;
+  if (month == 8 && other.month == 7) {
+    result.day += 31;
+  } else if (month == 7 && other.month == 6) {
+    result.day += 30;
+  }
+  result.hour = hour - other.hour;
+  result.minute = minute - other.minute;
+  if (result.minute < 0) {
+    --result.hour;
+    result.minute += 60;
+  }
+  if (result.hour < 0) {
+    --result.day;
+    result.hour += 24;
+  }
+  return result;
+}
 auto Clock::Compare(const Clock &other) const -> int {
   if (month != other.month) {
     return month - other.month;
@@ -78,25 +98,26 @@ auto TrainState::GetKey() const -> TrainStateKey {
   date.hour = date.minute = 0;
   return {train_id, date};
 }
-auto TrainState::FindStation(const FixedChineseString<10> &station) -> int {
-  for (int i = 0; i < station_num; ++i) {
-    if (stations[i].compare(station) == 0) {
-      return i;
-    }
+auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
+  RouteUser info;
+  int i = 0;
+  while (stations[i].compare(target.origin) != 0) {
+    ++i;
   }
-  return -1;
+  info.start_time = target.start_time;
+  info.price = price[i];
+  info.remain = remain_tickets[i];
+  while (stations[i].compare(target.des) != 0) {
+    ++i;
+    info.price += price[i];
+    info.remain = std::min(info.remain, remain_tickets[i]);
+  }
+  info.total_time = arrive_time[i].Minus(target.start_time);
+  return info;
 }
 
 auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
   int result = train_id.compare(other.train_id);
-  if (result != 0) {
-    return result;
-  }
-  return time.Compare(other.time);
-}
-
-auto RouteBegin::Compare(const RouteBegin &other) const -> int {
-  int result = station_name.compare(other.station_name);
   if (result != 0) {
     return result;
   }

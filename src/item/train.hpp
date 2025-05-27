@@ -14,6 +14,7 @@ struct Clock {
   auto operator=(const Clock &other) -> Clock &;
   auto Addit(const Clock &other) -> Clock &;
   auto Add(const Clock &other) const -> Clock;
+  auto Minus(const Clock &other) const -> Clock;
   auto Compare(const Clock &other) const -> int;
 
   friend std::ostream &operator<<(std::ostream &os, const Clock &time) {
@@ -58,7 +59,7 @@ struct TrainState {
   auto AddDay() -> TrainState &;
   auto GetKey() const -> TrainStateKey;
 
-  auto FindStation(const FixedChineseString<10> &station) -> int;
+  auto CompleteRoute(const RouteTrain &target) -> RouteUser;
 };
 struct TrainStateKey {
   FixedString<20> train_id;
@@ -71,29 +72,53 @@ struct TrainStateComparator {
   }
 };
 
-struct RouteBegin {
-  FixedChineseString<10> station_name;
+struct RouteTrain {
+  FixedChineseString<10> origin;
+  FixedChineseString<10> des;
   FixedString<20> train_id;
-  Clock time;
-
-  auto Compare(const RouteBegin &other) const -> int;
+  Clock start_time;
 };
-struct RouteBeginComparator {
-  auto operator()(const RouteBegin &lhs, const RouteBegin &rhs) -> int {
-    return lhs.Compare(rhs);
+struct RouteTComparatorA {
+  auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
+    int result = lhs.origin.compare(rhs.origin);
+    if (result != 0) {
+      return result;
+    }
+    result = lhs.start_time.Compare(rhs.start_time);
+    if (result != 0) {
+      return result;
+    }
+    result = lhs.des.compare(rhs.des);
+    if (result != 0) {
+      return result;
+    }
+    return lhs.train_id.compare(rhs.train_id);
+  }
+};
+struct RouteTComparatorB {
+  auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
+    int result = lhs.origin.compare(rhs.origin);
+    if (result != 0) {
+      return result;
+    }
+    result = lhs.des.compare(rhs.des);
+    if (result != 0) {
+      return result;
+    }
+    result = lhs.start_time.Compare(rhs.start_time);
+    if (result != 0) {
+      return result;
+    }
+    return lhs.train_id.compare(rhs.train_id);
   }
 };
 
-struct Route {
-  FixedString<20> train_id;
-  Clock start;
-  Clock end;
-  Clock time;
+struct RouteUser {
+  Clock start_time;
+  Clock total_time;
   int price;
-  int seat;
+  int remain;
 };
-auto RouteCompareTime(const Route &lhs, const Route &rhs) -> bool;
-auto RouteComparePrice(const Route &lhs, const Route &rhs) -> bool;
 
 struct Order {
   FixedChineseString<10> start;
