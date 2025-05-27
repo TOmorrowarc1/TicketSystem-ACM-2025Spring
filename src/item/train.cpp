@@ -98,8 +98,17 @@ auto TrainState::GetKey() const -> TrainStateKey {
   date.hour = date.minute = 0;
   return {train_id, date};
 }
+auto TrainState::FindStation(const FixedChineseString<10> &station) -> int {
+  for (int i = 0; i < station_num; ++i) {
+    if (stations[i].compare(station) == 0) {
+      return i;
+    }
+  }
+  return -1;
+}
 auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
   RouteUser info;
+  info.train_id = train_id;
   int i = 0;
   while (stations[i].compare(target.origin) != 0) {
     ++i;

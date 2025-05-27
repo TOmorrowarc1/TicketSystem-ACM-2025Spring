@@ -58,7 +58,7 @@ struct TrainState {
   auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
   auto AddDay() -> TrainState &;
   auto GetKey() const -> TrainStateKey;
-
+  auto FindStation(const FixedChineseString<10> &station) -> int;
   auto CompleteRoute(const RouteTrain &target) -> RouteUser;
 };
 struct TrainStateKey {
@@ -77,6 +77,7 @@ struct RouteTrain {
   FixedChineseString<10> des;
   FixedString<20> train_id;
   Clock start_time;
+  Clock train_time;
 };
 struct RouteTComparatorA {
   auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
@@ -114,18 +115,21 @@ struct RouteTComparatorB {
 };
 
 struct RouteUser {
+  FixedString<20> train_id;
   Clock start_time;
   Clock total_time;
   int price;
   int remain;
 };
 
+enum class Status { BUY = 0, QUEUE, REFUND };
 struct Order {
   FixedChineseString<10> start;
   FixedChineseString<10> des;
   FixedString<20> uid;
   FixedString<20> train_id;
   Clock time;
+  Status status;
   int amount;
 };
 struct OrderTrainComparator {
