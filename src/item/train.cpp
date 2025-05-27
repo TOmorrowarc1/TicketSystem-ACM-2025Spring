@@ -133,19 +133,18 @@ auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
   return time.Compare(other.time);
 }
 
-auto OrderTrainComparator::operator()(const Order &lhs, const Order &rhs)
-    -> int {
-  int result = lhs.train_id.compare(rhs.train_id);
+auto Query::Compare(const Query &other) const -> int {
+  int result = train_id.compare(other.train_id);
   if (result != 0) {
     return result;
   }
-  return rhs.time - lhs.time;
+  return other.time - time;
 }
-auto OrderUserComparator::operator()(const Order &lhs, const Order &rhs)
-    -> int {
-  int result = lhs.uid.compare(rhs.uid);
+
+auto Order::Compare(const Order &other) const -> int {
+  int result = uid.compare(other.uid);
   if (result != 0) {
     return result;
   }
-  return rhs.time - lhs.time;
+  return other.time - time;
 }

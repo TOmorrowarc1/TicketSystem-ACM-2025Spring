@@ -121,7 +121,22 @@ struct RouteUser {
   int remain;
 };
 
-enum class Status { BUY = 0, QUEUE, REFUND };
+struct Query {
+  FixedChineseString<10> origin;
+  FixedChineseString<10> des;
+  FixedString<20> uid;
+  FixedString<20> train_id;
+  int time;
+
+  auto Compare(const Query &other) const -> int;
+};
+struct QueryComparator {
+  auto operator()(const Query &lhs, const Query &rhs) -> int {
+    return lhs.Compare(rhs);
+  }
+};
+
+enum class Status { SUCCESS = 0, PENDING, REFUNDED };
 struct Order {
   FixedChineseString<10> origin;
   FixedChineseString<10> des;
@@ -129,16 +144,16 @@ struct Order {
   FixedString<20> train_id;
   Clock leave_time;
   Clock arrive_time;
-  Clock date;
   Status status;
   int time;
   int amount;
+
+  auto Compare(const Order &other) const -> int;
 };
-struct OrderTrainComparator {
-  auto operator()(const Order &lhs, const Order &rhs) -> int;
-};
-struct OrderUserComparator {
-  auto operator()(const Order &lhs, const Order &rhs) -> int;
+struct OrderComparator {
+  auto operator()(const Order &lhs, const Order &rhs) -> int {
+    return lhs.Compare(rhs);
+  }
 };
 
 #endif
