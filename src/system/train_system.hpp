@@ -5,6 +5,8 @@
 #include "item/train.hpp"
 #include <vector>
 namespace train_sys {
+extern int time;
+
 extern bpt::BufferPoolManager state_buffer;
 extern bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator> states;
 

@@ -1,5 +1,7 @@
 #include "train_system.hpp"
 
+int time = 0;
+
 bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
                                                "state_disk");
 bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator>

@@ -36,7 +36,7 @@ auto UserParse(TokenScanner &command) -> UserCommand {
       break;
     case 'g':
       // Here is a problem.
-      result.para_.privilege_ = std::atoi(&command.NextToken()[0]);
+      result.para_.privilege_ = std::stoi(command.NextToken());
       break;
     default:
       assert(0);
@@ -121,11 +121,11 @@ void Execute(TokenScanner &command) {
         break;
       }
       case 'n': {
-        train.station_num = std::atoi(&command.NextToken()[0]);
+        train.station_num = std::stoi(command.NextToken());
         break;
       }
       case 'm': {
-        train.tickets_num = std::atoi(&command.NextToken()[0]);
+        train.tickets_num = std::stoi(command.NextToken());
         break;
       }
       case 's': {
@@ -143,7 +143,7 @@ void Execute(TokenScanner &command) {
         std::istringstream iss(command.NextToken());
         std::string piece;
         while (std::getline(iss, piece, '|')) {
-          train.price[pointer] = std::atoi(&piece[0]);
+          train.price[pointer] = std::stoi(piece);
           ++pointer;
         }
         break;
@@ -152,9 +152,9 @@ void Execute(TokenScanner &command) {
         std::istringstream iss(command.NextToken());
         std::string piece;
         std::getline(iss, piece, ':');
-        train.leave_time[0].hour = std::atoi(&piece[0]);
+        train.leave_time[0].hour = std::stoi(piece);
         std::getline(iss, piece, ':');
-        train.leave_time[0].minute = std::atoi(&piece[0]);
+        train.leave_time[0].minute = std::stoi(piece);
         break;
       }
       case 't': {
@@ -162,7 +162,7 @@ void Execute(TokenScanner &command) {
         std::istringstream iss(command.NextToken());
         std::string piece;
         while (std::getline(iss, piece, '|')) {
-          train.leave_time[pointer] = std::atoi(&piece[0]);
+          train.arrive_time[pointer] = std::stoi(piece);
           ++pointer;
         }
         break;
@@ -172,7 +172,7 @@ void Execute(TokenScanner &command) {
         std::istringstream iss(command.NextToken());
         std::string piece;
         while (std::getline(iss, piece, '|')) {
-          train.arrive_time[pointer] = std::atoi(&piece[0]);
+          train.arrive_time[pointer] = std::stoi(piece);
           ++pointer;
         }
         break;
@@ -180,30 +180,167 @@ void Execute(TokenScanner &command) {
       case 'd': {
         std::istringstream iss(command.NextToken());
         std::string piece;
-        std::getline(iss, piece, ':');
-        train.begin = std::atoi(&piece[0]);
-        std::getline(iss, piece, ':');
-        train.end = std::atoi(&piece[0]);
+        std::getline(iss, piece, '-');
+        train.begin.month = std::stoi(piece);
+        std::getline(iss, piece, '|');
+        train.begin.day = std::stoi(piece);
+        std::getline(iss, piece, '-');
+        train.end.month = std::stoi(piece);
+        train.end.day = std::stoi(piece);
         break;
       }
       case 'y': {
         train.type = command.NextToken()[0];
+        break;
       }
       }
     }
+    for (int i = 1; i < train.station_num; ++i) {
+      train.arrive_time[i].Addit(train.leave_time[i - 1]);
+      train.leave_time[i].Addit(train.arrive_time[i - 1]);
+    }
     train_sys::AddTrain(train_id, train);
   } else if (command.NextToken() == "delete_train") {
+    train_sys::DeleteTrain(command.NextToken());
   } else if (command.NextToken() == "release_train") {
-
+    train_sys::ReleaseTrain(command.NextToken());
   } else if (command.NextToken() == "query_train") {
+    FixedString<20> train_id;
+    Clock date;
+    date.Init();
+    while (!command.ReachEnd()) {
+      if (command.NextToken()[1] == 'd') {
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        std::getline(iss, piece, '-');
+        date.month = std::stoi(piece);
+        std::getline(iss, piece);
+        date.day = std::stoi(piece);
+      } else {
+        train_id = command.NextToken();
+      }
+    }
+    train_sys::QueryTrain(train_id, date);
   } else if (command.NextToken() == "query_ticket") {
-
+    Clock date;
+    date.Init();
+    FixedChineseString<10> origin;
+    FixedChineseString<10> des;
+    bool time = false;
+    while (!command.ReachEnd()) {
+      switch (command.NextToken()[1]) {
+      case 's': {
+        origin = command.NextToken();
+        break;
+      }
+      case 't': {
+        des = command.NextToken();
+        break;
+      }
+      case 'd': {
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        std::getline(iss, piece, '-');
+        date.month = std::stoi(piece);
+        std::getline(iss, piece);
+        date.day = std::stoi(piece);
+        break;
+      }
+      case 'p': {
+        time = (command.NextToken() == "time");
+        break;
+      }
+      }
+    }
+    train_sys::QueryTicket(origin, des, date, time);
   } else if (command.NextToken() == "query_transfer") {
-
+    Clock date;
+    date.Init();
+    FixedChineseString<10> origin;
+    FixedChineseString<10> des;
+    bool time = true;
+    while (!command.ReachEnd()) {
+      switch (command.NextToken()[1]) {
+      case 's': {
+        origin = command.NextToken();
+        break;
+      }
+      case 't': {
+        des = command.NextToken();
+        break;
+      }
+      case 'd': {
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        std::getline(iss, piece, '-');
+        date.month = std::stoi(piece);
+        std::getline(iss, piece);
+        date.day = std::stoi(piece);
+        break;
+      }
+      case 'p': {
+        time = (command.NextToken() == "time");
+        break;
+      }
+      }
+    }
+    train_sys::QueryTransfer(origin, des, date, time);
   } else if (command.NextToken() == "buy_ticket") {
-
+    Query target;
+    target.date.Init();
+    bool queue = false;
+    while (!command.ReachEnd()) {
+      switch (command.NextToken()[1]) {
+      case 'u': {
+        target.uid = command.NextToken();
+        break;
+      }
+      case 'i': {
+        target.train_id = command.NextToken();
+        break;
+      }
+      case 'd': {
+        std::istringstream iss(command.NextToken());
+        std::string piece;
+        std::getline(iss, piece, '-');
+        target.date.month = std::stoi(piece);
+        std::getline(iss, piece);
+        target.date.day = std::stoi(piece);
+        break;
+      }
+      case 'n': {
+        target.amount = std::stoi(command.NextToken());
+        break;
+      }
+      case 'f': {
+        target.origin = command.NextToken();
+        break;
+      }
+      case 't': {
+        target.des = command.NextToken();
+        break;
+      }
+      case 'q': {
+        queue = (command.NextToken() == "true");
+        break;
+      }
+      }
+    }
+    ++train_sys::time;
+    target.time = train_sys::time;
+    train_sys::BuyTicket(target, queue);
   } else if (command.NextToken() == "query_order") {
-
+    train_sys::QueryOrder(command.NextToken());
   } else if (command.NextToken() == "refund_ticket") {
+    FixedString<20> uid;
+    int rank = 1;
+    while (!command.ReachEnd()) {
+      if (command.NextToken()[1] == 'n') {
+        rank = std::stoi(command.NextToken());
+      } else {
+        uid = command.NextToken();
+      }
+    }
+    train_sys::Refund(uid, rank);
   }
 }
