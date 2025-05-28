@@ -2,14 +2,12 @@
 #define TRAIN_HPP
 #include "mySTL/fix_string.hpp"
 
-const int INVAILD_NUMBER = -1;
 struct Clock {
-  int month = INVAILD_NUMBER;
-  int day = INVAILD_NUMBER;
-  int hour = INVAILD_NUMBER;
-  int minute = INVAILD_NUMBER;
+  int month = 0;
+  int day = 0;
+  int hour = 0;
+  int minute = 0;
 
-  void Init();
   auto operator=(int minute) -> Clock &;
   auto operator=(const Clock &other) -> Clock &;
   auto Addit(const Clock &other) -> Clock &;
@@ -42,7 +40,7 @@ struct TrainTotal {
   int station_num;
   int tickets_num;
   char type;
-  bool has_released;
+  bool has_released = false;
 };
 
 struct TrainState {
@@ -63,7 +61,7 @@ struct TrainState {
 };
 struct TrainStateKey {
   FixedString<20> train_id;
-  Clock time;
+  Clock date;
   auto Compare(const TrainStateKey &other) const -> int;
 };
 struct TrainStateComparator {

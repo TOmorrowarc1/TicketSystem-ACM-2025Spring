@@ -1,7 +1,5 @@
 #include "train.hpp"
 
-void Clock::Init() { month = day = hour = minute = 0; }
-
 auto Clock::operator=(int minutes) -> Clock & {
   // The time should not be longer than a month.
   hour = minutes / 60;
@@ -82,6 +80,8 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     remain_tickets[i] = train.tickets_num;
     price[i] = train.price[i];
   }
+  remain_tickets[station_num - 1] = 0;
+  price[station_num - 1] = 0;
   type = train.type;
   return *this;
 }
@@ -113,7 +113,7 @@ auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
   while (stations[i].compare(target.origin) != 0) {
     ++i;
   }
-  info.start_time = target.start_time;
+  info.start_time = leave_time[i];
   info.price = price[i];
   info.remain = remain_tickets[i];
   while (stations[i].compare(target.des) != 0) {
@@ -121,7 +121,7 @@ auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
     info.price += price[i];
     info.remain = std::min(info.remain, remain_tickets[i]);
   }
-  info.total_time = arrive_time[i].Minus(target.start_time);
+  info.total_time = arrive_time[i].Minus(info.start_time);
   return info;
 }
 
@@ -130,7 +130,7 @@ auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
   if (result != 0) {
     return result;
   }
-  return time.Compare(other.time);
+  return date.Compare(other.date);
 }
 
 auto Query::Compare(const Query &other) const -> int {

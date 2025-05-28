@@ -32,24 +32,30 @@ bpt::BufferPoolManager train_sys::train_order_buffer(50, 4096, "order_data_2",
 bpt::BPlusTree<Query, Query, QueryComparator>
     train_sys::train_order(0, &train_order_buffer);
 
-auto train_sys::AddTrain(const FixedString<20> &train_id,
-                         const TrainTotal &train) -> bool {
-  return release.Insert(train_id, train);
-}
-
-auto train_sys::DeleteTrain(const FixedString<20> train_id) -> bool {
-  std::optional<TrainTotal> train = release.GetValue(train_id);
-  if (!train.has_value() || train.value().has_released) {
-    return false;
+void train_sys::AddTrain(const FixedString<20> &train_id,
+                         const TrainTotal &train) {
+  if (release.Insert(train_id, train)) {
+    std::cout << 0 << '\n';
+  } else {
+    std::cout << -1 << '\n';
   }
-  release.Remove(train_id);
-  return true;
 }
 
-auto train_sys::ReleaseTrain(const FixedString<20> train_id) -> bool {
+void train_sys::DeleteTrain(const FixedString<20> train_id) {
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
-    return false;
+    std::cout << -1 << '\n';
+  } else {
+    release.Remove(train_id);
+    std::cout << 0 << '\n';
+  }
+}
+
+void train_sys::ReleaseTrain(const FixedString<20> train_id) {
+  std::optional<TrainTotal> train = release.GetValue(train_id);
+  if (!train.has_value() || train.value().has_released) {
+    std::cout << -1 << '\n';
+    return;
   }
   train.value().has_released = true;
   Clock date = train.value().begin;
@@ -74,17 +80,17 @@ auto train_sys::ReleaseTrain(const FixedString<20> train_id) -> bool {
     date.Addit(one_day);
     state.AddDay();
   }
-  return true;
+  std::cout << 0 << '\n';
 }
 
-auto train_sys::QueryTrain(const FixedString<20> train_id, const Clock &time)
-    -> bool {
+void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
   TrainStateKey target;
   target.train_id = train_id;
-  target.time = time;
+  target.date = date;
   std::optional<TrainState> result = states.GetValue(target);
   if (!result.has_value()) {
-    return false;
+    std::cout << -1 << '\n';
+    return;
   }
   std::cout << result.value().train_id << ' ' << result.value().station_num
             << '\n';
@@ -102,7 +108,8 @@ auto train_sys::QueryTrain(const FixedString<20> train_id, const Clock &time)
   std::cout << result.value().stations[result.value().station_num] << ' '
             << result.value().arrive_time[result.value().station_num]
             << "->xx-xx xx:xx " << price << " x \n";
-  return true;
+  std::cout << 0 << '\n';
+  return;
 }
 
 void train_sys::QueryTicket(const FixedChineseString<10> &start,
@@ -157,13 +164,13 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
   min.start_time = date;
   min.origin = start;
   Clock max = date.Add({0, 1, 0, 0});
-  for (auto iter = routeA.KeyBegin(min);
-       !iter.IsEnd() && (*iter).second.start_time.Compare(max); ++iter) {
-    min.origin = (*iter).second.des;
-    min.des = end;
+  for (auto iter1 = routeA.KeyBegin(min);
+       !iter1.IsEnd() && (*iter1).second.start_time.Compare(max); ++iter1) {
     std::optional<TrainState> first_train =
-        states.GetValue({(*iter).second.train_id, (*iter).second.train_time});
-    first_target = first_train.value().CompleteRoute((*iter).second);
+        states.GetValue({(*iter1).second.train_id, (*iter1).second.train_time});
+    first_target = first_train.value().CompleteRoute((*iter1).second);
+    min.origin = (*iter1).second.des;
+    min.des = end;
     min.start_time = first_target.start_time.Add(first_target.total_time);
     for (auto iter2 = routeB.KeyBegin(min);
          !iter2.IsEnd() && (*iter2).second.des.compare(min.des) == 0; ++iter2) {
@@ -171,10 +178,25 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
           {(*iter2).second.train_id, (*iter2).second.train_time});
       second_target = second_train.value().CompleteRoute((*iter2).second);
       if (time) {
-        // Here we need more compare: 4 levels, stupid.
+        // A stupid 4 level comparation.
         if (second_target.start_time.Add(second_target.total_time)
-                .Minus(first_target.start_time)
-                .Compare(best_time) < 0) {
+                    .Minus(first_target.start_time)
+                    .Compare(best_time) < 0 ||
+            (second_target.start_time.Add(second_target.total_time)
+                     .Minus(first_target.start_time)
+                     .Compare(best_time) == 0 &&
+             first_target.price + second_target.price < best_price) ||
+            (second_target.start_time.Add(second_target.total_time)
+                     .Minus(first_target.start_time)
+                     .Compare(best_time) == 0 &&
+             first_target.price + second_target.price == best_price &&
+             first_target.train_id.compare(first_best_target.train_id) < 0) ||
+            (second_target.start_time.Add(second_target.total_time)
+                     .Minus(first_target.start_time)
+                     .Compare(best_time) == 0 &&
+             first_target.price + second_target.price == best_price &&
+             first_target.train_id.compare(first_best_target.train_id) == 0 &&
+             second_target.train_id.compare(second_best_target.train_id) < 0)) {
           best_time = second_target.start_time.Add(second_target.total_time)
                           .Minus(first_target.start_time);
           best_price = second_target.price + first_target.price;
@@ -182,7 +204,22 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
           second_best_target = second_target;
         }
       } else {
-        if (second_target.price + first_target.price < best_price) {
+        if (second_target.price + first_target.price < best_price ||
+            (first_target.price + second_target.price == best_price &&
+             second_target.start_time.Add(second_target.total_time)
+                     .Minus(first_target.start_time)
+                     .Compare(best_time) < 0) ||
+            (first_target.price + second_target.price == best_price &&
+             second_target.start_time.Add(second_target.total_time)
+                     .Minus(first_target.start_time)
+                     .Compare(best_time) == 0 &&
+             first_target.train_id.compare(first_best_target.train_id) < 0) ||
+            (first_target.price + second_target.price == best_price &&
+             second_target.start_time.Add(second_target.total_time)
+                     .Minus(first_target.start_time)
+                     .Compare(best_time) == 0 &&
+             first_target.train_id.compare(first_best_target.train_id) == 0 &&
+             second_target.train_id.compare(second_best_target.train_id) < 0)) {
           best_time = second_target.start_time.Add(second_target.total_time)
                           .Minus(first_target.start_time);
           best_price = second_target.price + first_target.price;
