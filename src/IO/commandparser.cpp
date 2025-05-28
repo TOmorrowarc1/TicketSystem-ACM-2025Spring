@@ -203,9 +203,13 @@ void Execute(TokenScanner &command) {
     }
     train_sys::AddTrain(train_id, train);
   } else if (command_type == "delete_train") {
-    train_sys::DeleteTrain(command.NextToken());
+    if (command.NextToken() == "-i") {
+      train_sys::DeleteTrain(command.NextToken());
+    }
   } else if (command_type == "release_train") {
-    train_sys::ReleaseTrain(command.NextToken());
+    if (command.NextToken() == "-i") {
+      train_sys::ReleaseTrain(command.NextToken());
+    }
   } else if (command_type == "query_train") {
     FixedString<20> train_id;
     Clock date;
@@ -222,7 +226,7 @@ void Execute(TokenScanner &command) {
       }
     }
     train_sys::QueryTrain(train_id, date);
-  } else if (command_type== "query_ticket") {
+  } else if (command_type == "query_ticket") {
     Clock date;
     FixedChineseString<10> origin;
     FixedChineseString<10> des;
@@ -328,8 +332,10 @@ void Execute(TokenScanner &command) {
     target.time = train_sys::order_time;
     train_sys::BuyTicket(target, queue);
   } else if (command_type == "query_order") {
-    train_sys::QueryOrder(command.NextToken());
-  } else if (command_type== "refund_ticket") {
+    if (command.NextToken() == "-u") {
+      train_sys::QueryOrder(command.NextToken());
+    }
+  } else if (command_type == "refund_ticket") {
     FixedString<20> uid;
     int rank = 1;
     while (!command.ReachEnd()) {
