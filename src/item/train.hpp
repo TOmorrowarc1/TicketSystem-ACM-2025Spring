@@ -2,6 +2,15 @@
 #define TRAIN_HPP
 #include "mySTL/fix_string.hpp"
 
+struct Clock;
+struct TrainTotal;
+struct TrainStateKey;
+struct TrainState;
+struct Route;
+struct RouteTrain;
+struct RouteUser;
+struct Query;
+struct Order;
 struct Clock {
   int month = 0;
   int day = 0;
@@ -43,6 +52,16 @@ struct TrainTotal {
   bool has_released = false;
 };
 
+struct TrainStateKey {
+  FixedString<20> train_id;
+  Clock date;
+  auto Compare(const TrainStateKey &other) const -> int;
+};
+struct TrainStateComparator {
+  auto operator()(const TrainStateKey &lhs, const TrainStateKey &rhs) -> int {
+    return lhs.Compare(rhs);
+  }
+};
 struct TrainState {
   FixedChineseString<10> stations[25];
   FixedString<20> train_id;
@@ -59,16 +78,7 @@ struct TrainState {
   auto FindStation(const FixedChineseString<10> &station) -> int;
   auto CompleteRoute(const RouteTrain &target) -> RouteUser;
 };
-struct TrainStateKey {
-  FixedString<20> train_id;
-  Clock date;
-  auto Compare(const TrainStateKey &other) const -> int;
-};
-struct TrainStateComparator {
-  auto operator()(const TrainStateKey &lhs, const TrainStateKey &rhs) -> int {
-    return lhs.Compare(rhs);
-  }
-};
+
 
 struct RouteTrain {
   FixedChineseString<10> origin;
