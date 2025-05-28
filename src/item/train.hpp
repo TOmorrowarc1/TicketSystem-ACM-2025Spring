@@ -45,7 +45,7 @@ struct TrainTotal {
   Clock end;
   Clock arrive_time[25];
   Clock leave_time[25];
-  int price[25];
+  int price[25] = {0};
   int station_num;
   int tickets_num;
   char type;
@@ -68,7 +68,7 @@ struct TrainState {
   Clock arrive_time[25];
   Clock leave_time[25];
   int station_num;
-  int remain_tickets[25];
+  int remain_tickets[25] = {0};
   int price[25] = {0};
   char type;
 
@@ -78,7 +78,6 @@ struct TrainState {
   auto FindStation(const FixedChineseString<10> &station) -> int;
   auto CompleteRoute(const RouteTrain &target) -> RouteUser;
 };
-
 
 struct RouteTrain {
   FixedChineseString<10> origin;
