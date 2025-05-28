@@ -8,7 +8,8 @@ namespace bpt {
   template <typename KeyType, typename ValueType, typename KeyComparator>
 #define LEAF_PAGE_TYPE LeafPage<KeyType, ValueType, KeyComparator>
 #define INTERNAL_PAGE_TYPE InternalPage<KeyType, ValueType, KeyComparator>
-#define PAGE_MAX_SIZE (4096 - 16) / (sizeof(KeyType) + sizeof(ValueType))
+#define LEAF_MAX_SIZE (4096 - 16) / (sizeof(KeyType) + sizeof(ValueType))
+#define INTERNAL_MAX_SIZE (4096 - 16) / (sizeof(KeyType) + sizeof(page_id_t))
 
 class TreePage {
 public:
@@ -42,12 +43,12 @@ TEMPLATE
 class LeafPage : public TreePage {
 private:
   page_id_t next_page_id_;
-  KeyType key_array_[PAGE_MAX_SIZE];
-  ValueType value_array_[PAGE_MAX_SIZE];
+  KeyType key_array_[LEAF_MAX_SIZE];
+  ValueType value_array_[LEAF_MAX_SIZE];
 
 public:
   LeafPage() = delete;
-  LeafPage(int max_size = PAGE_MAX_SIZE)
+  LeafPage(int max_size = LEAF_MAX_SIZE)
       : TreePage(max_size, PageType::LEAF), next_page_id_(INVALID_PAGE_ID) {}
   LeafPage(const LeafPage &other) = delete;
 
@@ -164,8 +165,8 @@ void LEAF_PAGE_TYPE::MergePage(LeafPage *sibling, bool sibling_right) {
 TEMPLATE
 class InternalPage : public TreePage {
 private:
-  KeyType key_array_[PAGE_MAX_SIZE];
-  ValueType value_array_[PAGE_MAX_SIZE];
+  KeyType key_array_[INTERNAL_MAX_SIZE];
+  ValueType value_array_[INTERNAL_MAX_SIZE];
 
 public:
   InternalPage() = delete;

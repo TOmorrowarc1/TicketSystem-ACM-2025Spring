@@ -42,8 +42,8 @@ private:
 public:
   explicit BPlusTree(page_id_t header_page_id,
                      BufferPoolManager *buffer_pool_manager,
-                     int leaf_max_size = PAGE_MAX_SIZE,
-                     int internal_max_size = PAGE_MAX_SIZE - 1);
+                     int leaf_max_size = LEAF_MAX_SIZE,
+                     int internal_max_size = INTERNAL_MAX_SIZE - 1);
 
   auto GetValue(const KeyType &key) -> std::optional<ValueType>;
   auto Insert(const KeyType &key, const ValueType &value) -> bool;
