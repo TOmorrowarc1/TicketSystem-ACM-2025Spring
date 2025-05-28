@@ -168,11 +168,11 @@ void Execute(TokenScanner &command) {
         break;
       }
       case 'o': {
-        int pointer = 0;
+        int pointer = 1;
         std::istringstream iss(command.NextToken());
         std::string piece;
-        while (std::getline(iss, piece, '|')) {
-          train.arrive_time[pointer] = std::stoi(piece);
+        while (std::getline(iss, piece, '|') && piece != "_") {
+          train.leave_time[pointer] = std::stoi(piece);
           ++pointer;
         }
         break;
