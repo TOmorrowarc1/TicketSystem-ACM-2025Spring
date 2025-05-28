@@ -7,6 +7,7 @@ auto Clock::operator=(int minutes) -> Clock & {
   day = hour / 24;
   hour = hour - day * 24;
   month = 0;
+  return *this;
 }
 auto Clock::operator=(const Clock &other) -> Clock & {
   minute = other.minute;

@@ -5,7 +5,7 @@
 #include "item/train.hpp"
 #include <vector>
 namespace train_sys {
-extern int time;
+extern int order_time;
 
 extern bpt::BufferPoolManager state_buffer;
 extern bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator> states;
@@ -35,8 +35,8 @@ void QueryTransfer(const FixedChineseString<10> &start,
                    const FixedChineseString<10> &end, const Clock date,
                    bool time);
 void BuyTicket(Query &target, bool queue);
-auto QueryOrder(const FixedString<20> &uid) -> bool;
-auto Refund(const FixedString<20> &uid, int rank = 0) -> bool;
+void QueryOrder(const FixedString<20> &uid);
+void Refund(const FixedString<20> &uid, int rank = 0);
 
 void RouteQuickSortT(RouteUser **target, int start, int end);
 void RouteQuickSortP(RouteUser **target, int start, int end);

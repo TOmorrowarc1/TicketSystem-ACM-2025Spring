@@ -1,6 +1,6 @@
 #include "train_system.hpp"
 
-int time = 0;
+int train_sys::order_time = 0;
 
 bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
                                                "state_disk");
@@ -94,13 +94,13 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
   }
   std::cout << result.value().train_id << ' ' << result.value().station_num
             << '\n';
-  std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx" << '->'
-            << result.value().leave_time[0] << ' 0 '
+  std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx"
+            << " -> " << result.value().leave_time[0] << " 0 "
             << result.value().remain_tickets[0] << '\n';
   int price = result.value().price[0];
   for (int i = 1; i < result.value().station_num - 1; ++i) {
     std::cout << result.value().stations[i] << ' '
-              << result.value().arrive_time[i] << '->'
+              << result.value().arrive_time[i] << " -> "
               << result.value().leave_time[i] << ' ' << price << ' '
               << result.value().remain_tickets[i] << '\n';
     price += result.value().price[i];
@@ -144,7 +144,7 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
   std::cout << routes.size() << '\n';
   for (int i = 0; i < routes.size(); ++i) {
     std::cout << answers[i]->train_id << ' ' << start << ' '
-              << answers[i]->start_time << ' -> ' << end << ' '
+              << answers[i]->start_time << " -> " << end << ' '
               << answers[i]->start_time.Add(answers[i]->total_time)
               << answers[i]->price << answers[i]->remain << '\n';
   }
@@ -233,11 +233,11 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
     std::cout << -1 << '\n';
   } else {
     std::cout << first_best_target.train_id << ' ' << start << ' '
-              << first_best_target.start_time << ' -> ' << end << ' '
+              << first_best_target.start_time << " -> " << end << ' '
               << first_best_target.start_time.Add(first_best_target.total_time)
               << first_best_target.price << first_best_target.remain << '\n';
     std::cout << second_best_target.train_id << ' ' << start << ' '
-              << second_best_target.start_time << ' -> ' << end << ' '
+              << second_best_target.start_time << " -> " << end << ' '
               << second_best_target.start_time.Add(
                      second_best_target.total_time)
               << second_best_target.price << second_best_target.remain << '\n';
@@ -295,7 +295,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   user_order.Insert(order, order);
 }
 
-auto train_sys::QueryOrder(const FixedString<20> &uid) -> bool {
+void train_sys::QueryOrder(const FixedString<20> &uid) {
   if (!core::Find(uid)) {
     std::cout << -1 << '\n';
     return;
@@ -318,14 +318,14 @@ auto train_sys::QueryOrder(const FixedString<20> &uid) -> bool {
     } else {
       std::cout << "REFUNDED";
     }
-    std::cout << '] ' << (*iter).second.train_id << ' ' << (*iter).second.origin
-              << ' ' << (*iter).second.leave_time << '->'
+    std::cout << "] " << (*iter).second.train_id << ' ' << (*iter).second.origin
+              << ' ' << (*iter).second.leave_time << " -> "
               << (*iter).second.arrive_time << ' ' << (*iter).second.des << ' '
               << (*iter).second.price << ' ' << (*iter).second.amount << '\n';
   }
 }
 
-auto train_sys::Refund(const FixedString<20> &uid, int rank = 0) -> bool {
+void train_sys::Refund(const FixedString<20> &uid, int rank) {
   if (!core::Find(uid)) {
     std::cout << -1 << '\n';
     return;

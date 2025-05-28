@@ -322,8 +322,8 @@ void Execute(TokenScanner &command) {
       }
       }
     }
-    ++train_sys::time;
-    target.time = train_sys::time;
+    ++train_sys::order_time;
+    target.time = train_sys::order_time;
     train_sys::BuyTicket(target, queue);
   } else if (command.NextToken() == "query_order") {
     train_sys::QueryOrder(command.NextToken());
