@@ -186,6 +186,7 @@ void Execute(TokenScanner &command) {
         train.begin.day = std::stoi(piece);
         std::getline(iss, piece, '-');
         train.end.month = std::stoi(piece);
+        std::getline(iss, piece);
         train.end.day = std::stoi(piece);
         break;
       }
