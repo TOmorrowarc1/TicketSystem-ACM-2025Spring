@@ -21,16 +21,16 @@ int main() {
       break;
     } else if (input == "clear") {
       break;
-    } else if (command.NextToken() == "add_user" ||
-               command.NextToken() == "login" ||
-               command.NextToken() == "logout" ||
-               command.NextToken() == "query_profile" ||
-               command.NextToken() == "modify_profile") {
-      command.MoveBack();
-      Execute(UserParse(command));
-      std::cout << '\n';
     } else {
-      Execute(command);
+      input = command.NextToken();
+      command.MoveBack();
+      if (input == "add_user" || input == "login" || input == "logout" ||
+          input == "query_profile" || input == "modify_profile") {
+        Execute(UserParse(command));
+        std::cout << '\n';
+      } else {
+        Execute(command);
+      }
     }
   }
   std::cout << "bye\n";
