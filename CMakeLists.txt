@@ -23,10 +23,12 @@ include_directories(
 set(TEST_SOURCES 
     main/ioput.cpp 
     src/item/user.cpp
+    src/item/train.cpp
     src/IO/commandparser.cpp
     src/IO/tokenscanner.cpp
     src/system/core_system.cpp
     src/system/user_system.cpp
+    src/system/train_system.cpp
 )
 
 add_executable(code ${TEST_SOURCES})
