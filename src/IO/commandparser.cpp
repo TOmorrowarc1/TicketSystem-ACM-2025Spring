@@ -111,7 +111,8 @@ void Execute(const UserCommand &parser) {
 }
 
 void Execute(TokenScanner &command) {
-  if (command.NextToken() == "add_train") {
+  std::string command_type = command.NextToken();
+  if (command_type == "add_train") {
     TrainTotal train;
     FixedString<20> train_id;
     while (!command.ReachEnd()) {
@@ -201,11 +202,11 @@ void Execute(TokenScanner &command) {
       train.leave_time[i].Addit(train.arrive_time[i]);
     }
     train_sys::AddTrain(train_id, train);
-  } else if (command.NextToken() == "delete_train") {
+  } else if (command_type == "delete_train") {
     train_sys::DeleteTrain(command.NextToken());
-  } else if (command.NextToken() == "release_train") {
+  } else if (command_type == "release_train") {
     train_sys::ReleaseTrain(command.NextToken());
-  } else if (command.NextToken() == "query_train") {
+  } else if (command_type == "query_train") {
     FixedString<20> train_id;
     Clock date;
     while (!command.ReachEnd()) {
@@ -221,7 +222,7 @@ void Execute(TokenScanner &command) {
       }
     }
     train_sys::QueryTrain(train_id, date);
-  } else if (command.NextToken() == "query_ticket") {
+  } else if (command_type== "query_ticket") {
     Clock date;
     FixedChineseString<10> origin;
     FixedChineseString<10> des;
@@ -252,7 +253,7 @@ void Execute(TokenScanner &command) {
       }
     }
     train_sys::QueryTicket(origin, des, date, time);
-  } else if (command.NextToken() == "query_transfer") {
+  } else if (command_type == "query_transfer") {
     Clock date;
     FixedChineseString<10> origin;
     FixedChineseString<10> des;
@@ -283,7 +284,7 @@ void Execute(TokenScanner &command) {
       }
     }
     train_sys::QueryTransfer(origin, des, date, time);
-  } else if (command.NextToken() == "buy_ticket") {
+  } else if (command_type == "buy_ticket") {
     Query target;
     bool queue = false;
     while (!command.ReachEnd()) {
@@ -326,9 +327,9 @@ void Execute(TokenScanner &command) {
     ++train_sys::order_time;
     target.time = train_sys::order_time;
     train_sys::BuyTicket(target, queue);
-  } else if (command.NextToken() == "query_order") {
+  } else if (command_type == "query_order") {
     train_sys::QueryOrder(command.NextToken());
-  } else if (command.NextToken() == "refund_ticket") {
+  } else if (command_type== "refund_ticket") {
     FixedString<20> uid;
     int rank = 1;
     while (!command.ReachEnd()) {
