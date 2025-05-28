@@ -198,7 +198,7 @@ void Execute(TokenScanner &command) {
     }
     for (int i = 1; i < train.station_num; ++i) {
       train.arrive_time[i].Addit(train.leave_time[i - 1]);
-      train.leave_time[i].Addit(train.arrive_time[i - 1]);
+      train.leave_time[i].Addit(train.arrive_time[i]);
     }
     train_sys::AddTrain(train_id, train);
   } else if (command.NextToken() == "delete_train") {
