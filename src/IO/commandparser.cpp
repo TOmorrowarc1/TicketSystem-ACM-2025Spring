@@ -158,7 +158,7 @@ void Execute(TokenScanner &command) {
         break;
       }
       case 't': {
-        int pointer = 0;
+        int pointer = 1;
         std::istringstream iss(command.NextToken());
         std::string piece;
         while (std::getline(iss, piece, '|')) {
