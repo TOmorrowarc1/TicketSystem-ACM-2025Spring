@@ -207,7 +207,6 @@ void Execute(TokenScanner &command) {
   } else if (command.NextToken() == "query_train") {
     FixedString<20> train_id;
     Clock date;
-    date.Init();
     while (!command.ReachEnd()) {
       if (command.NextToken()[1] == 'd') {
         std::istringstream iss(command.NextToken());
@@ -223,7 +222,6 @@ void Execute(TokenScanner &command) {
     train_sys::QueryTrain(train_id, date);
   } else if (command.NextToken() == "query_ticket") {
     Clock date;
-    date.Init();
     FixedChineseString<10> origin;
     FixedChineseString<10> des;
     bool time = false;
@@ -255,7 +253,6 @@ void Execute(TokenScanner &command) {
     train_sys::QueryTicket(origin, des, date, time);
   } else if (command.NextToken() == "query_transfer") {
     Clock date;
-    date.Init();
     FixedChineseString<10> origin;
     FixedChineseString<10> des;
     bool time = true;
@@ -287,7 +284,6 @@ void Execute(TokenScanner &command) {
     train_sys::QueryTransfer(origin, des, date, time);
   } else if (command.NextToken() == "buy_ticket") {
     Query target;
-    target.date.Init();
     bool queue = false;
     while (!command.ReachEnd()) {
       switch (command.NextToken()[1]) {
