@@ -335,6 +335,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   Order min;
   min.uid = uid;
   int count = 0;
+  bool flag = false;
   for (auto iter = user_order.KeyBegin(min);
        !iter.IsEnd() && (*iter).second.uid.compare(uid) == 0; ++iter) {
     ++count;
@@ -388,8 +389,14 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
       target.status = Status::REFUNDED;
       user_order.Remove(target);
       user_order.Insert(target, target);
+      flag = true;
       break;
     }
+  }
+  if (flag) {
+    std::cout << 0 << '\n';
+  } else {
+    std::cout << -1 << '\n';
   }
 }
 
