@@ -353,11 +353,11 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   min.time = order_time;
   int count = 0;
   bool flag = false;
-  for (auto iter = user_order.KeyBegin(min);
-       !iter.IsEnd() && (*iter).second.uid.compare(uid) == 0; ++iter) {
+  for (auto iter1 = user_order.KeyBegin(min);
+       !iter1.IsEnd() && (*iter1).second.uid.compare(uid) == 0; ++iter1) {
     ++count;
     if (count == rank) {
-      Order target = (*iter).second;
+      Order target = (*iter1).second;
       if (target.status == Status::SUCCESS) {
         std::optional<TrainState> train =
             states.GetValue({target.train_id, target.date});
@@ -369,28 +369,28 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         Query min;
         min.train_id = train.value().train_id;
         min.time = order_time;
-        for (auto iter = train_order.KeyBegin(min);
-             !iter.IsEnd() &&
-             (*iter).second.train_id.compare(min.train_id) == 0;
-             ++iter) {
-          int start = train.value().FindStation((*iter).second.origin);
-          int des = train.value().FindStation((*iter).second.des);
+        for (auto iter2 = train_order.KeyBegin(min);
+             !iter2.IsEnd() &&
+             (*iter2).second.train_id.compare(min.train_id) == 0;
+             ++iter2) {
+          int start = train.value().FindStation((*iter2).second.origin);
+          int des = train.value().FindStation((*iter2).second.des);
           int seat = train.value().remain_tickets[start];
           for (int i = start; i < des; ++i) {
             seat = std::min(seat, train.value().remain_tickets[i]);
           }
-          if (seat >= (*iter).second.amount) {
+          if (seat >= (*iter2).second.amount) {
             for (int i = start; i < des; ++i) {
-              train.value().remain_tickets[i] -= target.amount;
+              train.value().remain_tickets[i] -= (*iter2).second.amount;
             }
             Order order;
-            order.uid = (*iter).second.uid;
-            order.time = (*iter).second.time;
+            order.uid = (*iter2).second.uid;
+            order.time = (*iter2).second.time;
             std::optional<Order> order_change = user_order.GetValue(order);
             order_change.value().status = Status::SUCCESS;
             user_order.Remove(order);
             user_order.Insert(order, order_change.value());
-            train_order.Remove((*iter).second);
+            train_order.Remove((*iter2).second);
           }
         }
         states.Remove({train.value().train_id, train.value().arrive_time[0]});
