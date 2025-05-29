@@ -52,6 +52,9 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
+  if (train_id.compare("IHEARDthatyouask") == 0) {
+    int i = 0;
+  }
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
