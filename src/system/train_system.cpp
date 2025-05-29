@@ -334,6 +334,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   }
   Order min;
   min.uid = uid;
+  min.time = order_time;
   int count = 0;
   bool flag = false;
   for (auto iter = user_order.KeyBegin(min);
@@ -351,6 +352,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         }
         Query min;
         min.train_id = train.value().train_id;
+        min.time = order_time;
         for (auto iter = train_order.KeyBegin(min);
              !iter.IsEnd() &&
              (*iter).second.train_id.compare(min.train_id) == 0;
