@@ -92,8 +92,7 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
     std::cout << -1 << '\n';
     return;
   }
-  std::cout << result.value().train_id << ' ' << result.value().station_num
-            << '\n';
+  std::cout << result.value().train_id << ' ' << result.value().type << '\n';
   std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx"
             << " -> " << result.value().leave_time[0] << " 0 "
             << result.value().remain_tickets[0] << '\n';
@@ -105,8 +104,8 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
               << result.value().remain_tickets[i] << '\n';
     price += result.value().price[i];
   }
-  std::cout << result.value().stations[result.value().station_num] << ' '
-            << result.value().arrive_time[result.value().station_num]
+  std::cout << result.value().stations[result.value().station_num - 1] << ' '
+            << result.value().arrive_time[result.value().station_num - 1]
             << "->xx-xx xx:xx " << price << " x \n";
   std::cout << 0 << '\n';
   return;
@@ -277,6 +276,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   order.date = target.date;
   order.time = target.time;
   order.price = price;
+  order.amount = target.amount;
   if (seat >= target.amount) {
     order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
@@ -315,11 +315,11 @@ void train_sys::QueryOrder(const FixedString<20> &uid) {
        !iter.IsEnd() && (*iter).second.uid.compare(uid) == 0; ++iter) {
     std::cout << '[';
     if ((*iter).second.status == Status::SUCCESS) {
-      std::cout << "SUCCESS";
+      std::cout << "success";
     } else if ((*iter).second.status == Status::PENDING) {
-      std::cout << "PENDING";
+      std::cout << "pending";
     } else {
-      std::cout << "REFUNDED";
+      std::cout << "refunded";
     }
     std::cout << "] " << (*iter).second.train_id << ' ' << (*iter).second.origin
               << ' ' << (*iter).second.leave_time << " -> "
