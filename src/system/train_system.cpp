@@ -145,8 +145,8 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
   for (int i = 0; i < routes.size(); ++i) {
     std::cout << answers[i]->train_id << ' ' << start << ' '
               << answers[i]->start_time << " -> " << end << ' '
-              << answers[i]->start_time.Add(answers[i]->total_time)
-              << answers[i]->price << answers[i]->remain << '\n';
+              << answers[i]->start_time.Add(answers[i]->total_time) << ' '
+              << answers[i]->price << ' ' << answers[i]->remain << '\n';
   }
 }
 
