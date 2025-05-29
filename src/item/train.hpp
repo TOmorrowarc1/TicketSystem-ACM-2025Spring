@@ -48,6 +48,7 @@ struct TrainTotal {
 
   auto FindStation(const FixedChineseString<10> &station) -> int;
   auto DeltaDay(int station) -> Clock;
+  auto AddDate(const Clock &date) -> TrainTotal &;
 };
 
 struct TrainStateKey {
@@ -71,7 +72,7 @@ struct TrainState {
   char type;
 
   auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
-  auto AddDay() -> TrainState &;
+  auto AddDate(const Clock &date) -> TrainState &;
   auto GetKey() const -> TrainStateKey;
   auto FindStation(const FixedChineseString<10> &station) -> int;
   auto CompleteRoute(const RouteTrain &target) -> RouteUser;

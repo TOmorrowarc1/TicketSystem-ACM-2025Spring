@@ -81,7 +81,7 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
       }
     }
     date.Addit(one_day);
-    state.AddDay();
+    state.AddDate(one_day);
   }
   release.Remove(train_id);
   release.Insert(train_id, train.value());
@@ -89,30 +89,54 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
-  TrainStateKey target;
-  target.train_id = train_id;
-  target.date = date;
-  std::optional<TrainState> result = states.GetValue(target);
-  if (!result.has_value()) {
+  std::optional<TrainTotal> train = release.GetValue(train_id);
+  if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
     return;
   }
-  std::cout << result.value().train_id << ' ' << result.value().type << '\n';
-  std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx"
-            << " -> " << result.value().leave_time[0] << " 0 "
-            << result.value().remain_tickets[0] << '\n';
-  int price = result.value().price[0];
-  for (int i = 1; i < result.value().station_num - 1; ++i) {
-    std::cout << result.value().stations[i] << ' '
-              << result.value().arrive_time[i] << " -> "
-              << result.value().leave_time[i] << ' ' << price << ' '
-              << result.value().remain_tickets[i] << '\n';
-    price += result.value().price[i];
+  if (date.Compare(train.value().begin) < 0 ||
+      date.Compare(train.value().end) > 0) {
+    std::cout << -1 << '\n';
+    return;
   }
-  std::cout << result.value().stations[result.value().station_num - 1] << ' '
-            << result.value().arrive_time[result.value().station_num - 1]
-            << " -> xx-xx xx:xx " << price << " x\n";
-  return;
+  if (train.value().has_released) {
+    TrainStateKey target;
+    target.train_id = train_id;
+    target.date = date;
+    std::optional<TrainState> result = states.GetValue(target);
+    std::cout << result.value().train_id << ' ' << result.value().type << '\n';
+    std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx"
+              << " -> " << result.value().leave_time[0] << " 0 "
+              << result.value().remain_tickets[0] << '\n';
+    int price = result.value().price[0];
+    for (int i = 1; i < result.value().station_num - 1; ++i) {
+      std::cout << result.value().stations[i] << ' '
+                << result.value().arrive_time[i] << " -> "
+                << result.value().leave_time[i] << ' ' << price << ' '
+                << result.value().remain_tickets[i] << '\n';
+      price += result.value().price[i];
+    }
+    std::cout << result.value().stations[result.value().station_num - 1] << ' '
+              << result.value().arrive_time[result.value().station_num - 1]
+              << " -> xx-xx xx:xx " << price << " x\n";
+  } else {
+    train.value().AddDate(date);
+    std::cout << train_id << ' ' << train.value().type << '\n';
+    std::cout << train.value().stations[0] << ' ' << "xx-xx xx:xx"
+              << " -> " << train.value().leave_time[0] << " 0 "
+              << train.value().tickets_num << '\n';
+    int price = train.value().price[0];
+    for (int i = 1; i < train.value().station_num - 1; ++i) {
+      std::cout << train.value().stations[i] << ' '
+                << train.value().arrive_time[i] << " -> "
+                << train.value().leave_time[i] << ' ' << price << ' '
+                << train.value().tickets_num << '\n';
+      price += train.value().price[i];
+    }
+    std::cout << train.value().stations[train.value().station_num - 1] << ' '
+              << train.value().arrive_time[train.value().station_num - 1]
+              << " -> xx-xx xx:xx " << price << " x\n";
+  }
 }
 
 void train_sys::QueryTicket(const FixedChineseString<10> &start,

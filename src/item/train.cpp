@@ -111,6 +111,13 @@ auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
 auto TrainTotal::DeltaDay(int station) -> Clock {
   return leave_time[station].CutDate().Minus(leave_time[0].CutDate());
 }
+auto TrainTotal::AddDate(const Clock &date) -> TrainTotal &{
+  for (int i = 0; i < station_num; ++i) {
+    arrive_time[i].Addit(date);
+    leave_time[i].Addit(date);
+  }
+  return *this;
+}
 
 auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     -> TrainState & {
@@ -127,11 +134,10 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
   type = train.type;
   return *this;
 }
-auto TrainState::AddDay() -> TrainState & {
-  Clock one_day{0, 1, 0, 0};
+auto TrainState::AddDate(const Clock& date) -> TrainState & {
   for (int i = 0; i < station_num; ++i) {
-    arrive_time[i].Addit(one_day);
-    leave_time[i].Addit(one_day);
+    arrive_time[i].Addit(date);
+    leave_time[i].Addit(date);
   }
   return *this;
 }
