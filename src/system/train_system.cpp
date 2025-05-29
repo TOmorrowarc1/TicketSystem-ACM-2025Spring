@@ -108,7 +108,7 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
   }
   std::cout << result.value().stations[result.value().station_num - 1] << ' '
             << result.value().arrive_time[result.value().station_num - 1]
-            << " -> xx-xx xx:xx " << price << " x \n";
+            << " -> xx-xx xx:xx " << price << " x\n";
   return;
 }
 
