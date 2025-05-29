@@ -163,9 +163,9 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
   RouteTrain min;
   min.start_time = date;
   min.origin = start;
-  Clock max = date.Add({0, 1, 0, 0});
   for (auto iter1 = routeA.KeyBegin(min);
-       !iter1.IsEnd() && (*iter1).second.start_time.Compare(max); ++iter1) {
+       !iter1.IsEnd() && (*iter1).second.start_time.Compare(date) == 0;
+       ++iter1) {
     std::optional<TrainState> first_train =
         states.GetValue({(*iter1).second.train_id, (*iter1).second.train_time});
     first_target = first_train.value().CompleteRoute((*iter1).second);
@@ -230,7 +230,7 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
     }
   }
   if (best_price == ~(1 << 31)) {
-    std::cout << -1 << '\n';
+    std::cout << 0 << '\n';
   } else {
     std::cout << first_best_target.train_id << ' ' << start << ' '
               << first_best_target.start_time << " -> " << end << ' '
