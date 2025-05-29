@@ -24,15 +24,9 @@ struct Clock {
   auto Minus(const Clock &other) const -> Clock;
   auto Compare(const Clock &other) const -> int;
 
-  friend std::ostream &operator<<(std::ostream &os, const Clock &time) {
-    os << 0 << time.month << '-';
-    if (time.day < 10) {
-      os << 0;
-    }
-    os << time.day << time.hour << ':' << time.minute;
-    return os;
-  }
+  friend std::ostream &operator<<(std::ostream &os, const Clock &time);
 };
+std::ostream &operator<<(std::ostream &os, const Clock &time);
 struct ClockComparator {
   auto operator()(const Clock &lhs, const Clock &rhs) -> int {
     return lhs.Compare(rhs);

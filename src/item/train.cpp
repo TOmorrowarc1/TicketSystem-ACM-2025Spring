@@ -72,6 +72,23 @@ auto Clock::Compare(const Clock &other) const -> int {
   return minute - other.minute;
 }
 
+std::ostream &operator<<(std::ostream &os, const Clock &time) {
+  os << 0 << time.month << '-';
+  if (time.day < 10) {
+    os << 0;
+  }
+  os << time.day << ' ';
+  if (time.hour < 10) {
+    os << 0;
+  }
+  os << time.hour << ':';
+  if (time.minute < 10) {
+    os << 0;
+  };
+  os << time.minute;
+  return os;
+}
+
 auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     -> TrainState & {
   station_num = train.station_num;
@@ -116,12 +133,12 @@ auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
     ++i;
   }
   info.start_time = leave_time[i];
-  info.price = price[i];
+  info.price = 0;
   info.remain = remain_tickets[i];
   while (stations[i].compare(target.des) != 0) {
-    ++i;
     info.price += price[i];
     info.remain = std::min(info.remain, remain_tickets[i]);
+    ++i;
   }
   info.total_time = arrive_time[i].Minus(info.start_time);
   return info;

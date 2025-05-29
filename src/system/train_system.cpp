@@ -73,7 +73,6 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
         route.origin = state.stations[i];
         route.des = state.stations[ii];
         route.start_time = state.leave_time[i];
-        route.train_id = train_id;
         routeA.Insert(route, route);
         routeB.Insert(route, route);
       }
