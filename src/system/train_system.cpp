@@ -385,6 +385,9 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
             }
             Order order;
             order.uid = (*iter2).second.uid;
+            if (order.uid.compare("Breeze") == 0) {
+              int i = 0;
+            }
             order.time = (*iter2).second.time;
             std::optional<Order> order_change = user_order.GetValue(order);
             order_change.value().status = Status::SUCCESS;
