@@ -298,17 +298,18 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     }
     states.Remove({target.train_id, target.date});
     states.Insert({target.train_id, target.date}, train.value());
+    user_order.Insert(order, order);
     std::cout << price * target.amount << '\n';
   } else {
     if (queue) {
       order.status = Status::PENDING;
       train_order.Insert(target, target);
+      user_order.Insert(order, order);
       std::cout << "queue\n";
     } else {
       std::cout << -1 << '\n';
     }
   }
-  user_order.Insert(order, order);
 }
 
 void train_sys::QueryOrder(const FixedString<20> &uid) {
