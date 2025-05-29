@@ -56,7 +56,7 @@ auto Clock::Minus(const Clock &other) const -> Clock {
   // Still some question.
   if (result.day <= 0 && result.month != 0) {
     --result.month;
-    if (month == 8) {
+    if (month == 8 || month == 9) {
       result.day += 31;
     } else {
       result.day += 30;
