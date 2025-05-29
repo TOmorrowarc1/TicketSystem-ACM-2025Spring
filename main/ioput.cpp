@@ -12,12 +12,17 @@ int main() {
   if (!has_opened.good()) {
     has_opened.close();
     has_opened.open("has_opened", std::ios::out | std::ios::binary);
+    has_opened.close();
+    has_opened.open("has_opened",
+                    std::ios::in | std::ios::out | std::ios::binary);
     std::cin >> timestamp;
     std::getline(std::cin, input);
     command = input;
     user_parser = UserParse(command);
     std::cout << timestamp << ' ';
     user_sys::AddAdmin(user_parser.uid_, user_parser.para_);
+  } else {
+    has_opened.read((char *)&train_sys::order_time, sizeof(int));
   }
   while (input != " exit ") {
     std::cin >> timestamp;
@@ -41,5 +46,7 @@ int main() {
     }
   }
   std::cout << "bye\n";
+  has_opened.seekp(0);
+  has_opened.write((char *)&train_sys::order_time, sizeof(int));
   return 0;
 }
