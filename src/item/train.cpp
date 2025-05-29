@@ -24,6 +24,7 @@ auto Clock::Addit(const Clock &other) -> Clock & {
   minute %= 60;
   day += hour / 24;
   hour %= 24;
+  month += other.month;
   if (month == 6 && day > 30) {
     ++month;
     day -= 30;
@@ -32,7 +33,6 @@ auto Clock::Addit(const Clock &other) -> Clock & {
     ++month;
     day -= 31;
   }
-  month += other.month;
   return *this;
 }
 auto Clock::Add(const Clock &other) const -> Clock {
