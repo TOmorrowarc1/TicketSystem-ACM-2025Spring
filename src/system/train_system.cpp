@@ -163,8 +163,11 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
   RouteTrain min;
   min.start_time = date;
   min.origin = start;
+  RouteTrain max;
+  max.origin = start;
+  max.start_time = date.Add({0, 1, 0, 0});
   for (auto iter1 = routeA.KeyBegin(min);
-       !iter1.IsEnd() && (*iter1).second.start_time.Compare(date) == 0;
+       !iter1.IsEnd() && RouteTComparatorA()((*iter1).second, max) < 0;
        ++iter1) {
     std::optional<TrainState> first_train =
         states.GetValue({(*iter1).second.train_id, (*iter1).second.train_time});
@@ -173,7 +176,9 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
     min.des = end;
     min.start_time = first_target.start_time.Add(first_target.total_time);
     for (auto iter2 = routeB.KeyBegin(min);
-         !iter2.IsEnd() && (*iter2).second.des.compare(min.des) == 0; ++iter2) {
+         !iter2.IsEnd() && (*iter2).second.des.compare(min.des) == 0 &&
+         (*iter2).second.origin.compare(min.origin) == 0;
+         ++iter2) {
       std::optional<TrainState> second_train = states.GetValue(
           {(*iter2).second.train_id, (*iter2).second.train_time});
       second_target = second_train.value().CompleteRoute((*iter2).second);
