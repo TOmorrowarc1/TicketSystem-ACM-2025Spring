@@ -26,8 +26,8 @@ public:
     other.bpm_ = nullptr;
     page_guard_ = std::move(other.page_guard_);
     place_ = other.place_;
+    page_pointer_ = other.page_pointer_;
     other.page_pointer_ = nullptr;
-    page_pointer_ = page_guard_.As<LEAF_PAGE_TYPE>();
   }
   ~IndexIterator() = default;
 
