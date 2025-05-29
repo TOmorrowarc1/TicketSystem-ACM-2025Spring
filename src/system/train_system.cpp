@@ -267,7 +267,6 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
-
   int start = train.value().FindStation(target.origin);
   int des = train.value().FindStation(target.des);
   if (start == -1 || des == -1) {
@@ -368,9 +367,10 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         }
         Query min;
         min.train_id = train.value().train_id;
+        min.date = train.value().arrive_time[0];
         min.time = order_time;
         for (auto iter2 = train_order.KeyBegin(min);
-             !iter2.IsEnd() &&
+             !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
              (*iter2).second.train_id.compare(min.train_id) == 0;
              ++iter2) {
           int start = train.value().FindStation((*iter2).second.origin);
@@ -385,9 +385,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
             }
             Order order;
             order.uid = (*iter2).second.uid;
-            if (order.uid.compare("Breeze") == 0) {
-              int i = 0;
-            }
             order.time = (*iter2).second.time;
             std::optional<Order> order_change = user_order.GetValue(order);
             order_change.value().status = Status::SUCCESS;

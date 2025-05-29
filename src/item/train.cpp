@@ -53,7 +53,7 @@ auto Clock::Minus(const Clock &other) const -> Clock {
     --result.day;
     result.hour += 24;
   }
-  //Still some question.
+  // Still some question.
   if (result.day <= 0 && result.month != 0) {
     --result.month;
     if (month == 8) {
@@ -177,6 +177,10 @@ auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
 
 auto Query::Compare(const Query &other) const -> int {
   int result = train_id.compare(other.train_id);
+  if (result != 0) {
+    return result;
+  }
+  result = date.Compare(other.date);
   if (result != 0) {
     return result;
   }
