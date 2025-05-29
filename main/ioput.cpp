@@ -6,12 +6,19 @@ int main() {
   std::string timestamp;
   TokenScanner command;
   UserCommand user_parser;
-  std::cin >> timestamp;
-  std::getline(std::cin, input);
-  command = input;
-  user_parser = UserParse(command);
-  std::cout << timestamp << ' ';
-  user_sys::AddAdmin(user_parser.uid_, user_parser.para_);
+  std::fstream has_opened;
+  has_opened.open("has_opened",
+                  std::ios::in | std::ios::out | std::ios::binary);
+  if (!has_opened.good()) {
+    has_opened.close();
+    has_opened.open("has_opened", std::ios::out | std::ios::binary);
+    std::cin >> timestamp;
+    std::getline(std::cin, input);
+    command = input;
+    user_parser = UserParse(command);
+    std::cout << timestamp << ' ';
+    user_sys::AddAdmin(user_parser.uid_, user_parser.para_);
+  }
   while (input != " exit ") {
     std::cin >> timestamp;
     std::getline(std::cin, input);
