@@ -304,6 +304,7 @@ void train_sys::QueryOrder(const FixedString<20> &uid) {
   }
   Order min;
   min.uid = uid;
+  min.time = order_time;
   int count = 0;
   for (auto iter = user_order.KeyBegin(min);
        !iter.IsEnd() && (*iter).second.uid.compare(uid) == 0; ++iter) {
