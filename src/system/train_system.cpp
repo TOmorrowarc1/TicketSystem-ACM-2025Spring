@@ -392,7 +392,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         Query min;
         min.train_id = train.value().train_id;
         min.date = train.value().arrive_time[0];
-        min.time = order_time;
+        min.time = 0;
         for (auto iter2 = train_order.KeyBegin(min);
              !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
              (*iter2).second.train_id.compare(min.train_id) == 0;
