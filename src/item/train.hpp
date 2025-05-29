@@ -44,6 +44,9 @@ struct TrainTotal {
   int tickets_num;
   char type;
   bool has_released = false;
+
+  auto FindStation(const FixedChineseString<10> &station) -> int;
+  auto DeltaTime(int station) -> Clock;
 };
 
 struct TrainStateKey {

@@ -89,6 +89,18 @@ std::ostream &operator<<(std::ostream &os, const Clock &time) {
   return os;
 }
 
+auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
+  for (int i = 0; i < station_num; ++i) {
+    if (stations[i].compare(station) == 0) {
+      return i;
+    }
+  }
+  return -1;
+}
+auto TrainTotal::DeltaTime(int station) -> Clock {
+  return leave_time[station].Minus(leave_time[0]);
+}
+
 auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     -> TrainState & {
   station_num = train.station_num;
