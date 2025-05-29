@@ -28,7 +28,7 @@ auto Clock::Addit(const Clock &other) -> Clock & {
     ++month;
     day -= 30;
   }
-  if (month == 7 && day > 31) {
+  if ((month == 7 || month == 8) && day > 31) {
     ++month;
     day -= 31;
   }
@@ -111,7 +111,7 @@ auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
 auto TrainTotal::DeltaDay(int station) -> Clock {
   return leave_time[station].CutDate().Minus(leave_time[0].CutDate());
 }
-auto TrainTotal::AddDate(const Clock &date) -> TrainTotal &{
+auto TrainTotal::AddDate(const Clock &date) -> TrainTotal & {
   for (int i = 0; i < station_num; ++i) {
     arrive_time[i].Addit(date);
     leave_time[i].Addit(date);
@@ -134,7 +134,7 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
   type = train.type;
   return *this;
 }
-auto TrainState::AddDate(const Clock& date) -> TrainState & {
+auto TrainState::AddDate(const Clock &date) -> TrainState & {
   for (int i = 0; i < station_num; ++i) {
     arrive_time[i].Addit(date);
     leave_time[i].Addit(date);
