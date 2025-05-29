@@ -415,10 +415,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
             user_order.Remove(order);
             user_order.Insert(order, order_change.value());
             train_order.Remove((*iter2).second);
-            if (order.uid.compare("Beehunter") == 0 &&
-                order.origin.compare("河南省灵宝市") == 0) {
-              int i = 0;
-            }
           }
         }
         states.Remove({train.value().train_id, train.value().arrive_time[0]});

@@ -190,7 +190,7 @@ auto Query::Compare(const Query &other) const -> int {
   if (result != 0) {
     return result;
   }
-  return other.time - time;
+  return time - other.time;
 }
 
 auto Order::Compare(const Order &other) const -> int {
