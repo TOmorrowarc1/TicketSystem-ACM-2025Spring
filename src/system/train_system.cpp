@@ -90,7 +90,7 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
 
 void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
   std::optional<TrainTotal> train = release.GetValue(train_id);
-  if (!train.has_value() || train.value().has_released) {
+  if (!train.has_value()) {
     std::cout << -1 << '\n';
     return;
   }
