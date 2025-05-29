@@ -231,6 +231,7 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
           best_price = second_target.price + first_target.price;
           first_best_target = first_target;
           second_best_target = second_target;
+          transfer = min.origin;
         }
       } else {
         if (second_target.price + first_target.price < best_price ||
@@ -254,6 +255,7 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
           best_price = second_target.price + first_target.price;
           first_best_target = first_target;
           second_best_target = second_target;
+          transfer = min.origin;
         }
       }
     }
@@ -262,14 +264,16 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
     std::cout << 0 << '\n';
   } else {
     std::cout << first_best_target.train_id << ' ' << start << ' '
-              << first_best_target.start_time << " -> " << end << ' '
+              << first_best_target.start_time << " -> " << transfer << ' '
               << first_best_target.start_time.Add(first_best_target.total_time)
-              << first_best_target.price << first_best_target.remain << '\n';
-    std::cout << second_best_target.train_id << ' ' << start << ' '
+              << ' ' << first_best_target.price << ' '
+              << first_best_target.remain << '\n';
+    std::cout << second_best_target.train_id << ' ' << transfer << ' '
               << second_best_target.start_time << " -> " << end << ' '
               << second_best_target.start_time.Add(
                      second_best_target.total_time)
-              << second_best_target.price << second_best_target.remain << '\n';
+              << ' ' << second_best_target.price << ' '
+              << second_best_target.remain << '\n';
   }
 }
 
