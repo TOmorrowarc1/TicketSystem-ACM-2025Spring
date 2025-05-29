@@ -252,9 +252,8 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
-  target.date = target.date.Minus(train_total.value().DeltaTime(
+  target.date = target.date.Minus(train_total.value().DeltaDay(
       train_total.value().FindStation(target.origin)));
-  target.date.CutDate();
   std::optional<TrainState> train =
       states.GetValue({target.train_id, target.date});
   if (!train.has_value()) {

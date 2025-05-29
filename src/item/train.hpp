@@ -22,7 +22,7 @@ struct Clock {
   auto Addit(const Clock &other) -> Clock &;
   auto Add(const Clock &other) const -> Clock;
   auto Minus(const Clock &other) const -> Clock;
-  auto CutDate() -> Clock &;
+  auto CutDate() -> Clock;
   auto Compare(const Clock &other) const -> int;
 
   friend std::ostream &operator<<(std::ostream &os, const Clock &time);
@@ -47,7 +47,7 @@ struct TrainTotal {
   bool has_released = false;
 
   auto FindStation(const FixedChineseString<10> &station) -> int;
-  auto DeltaTime(int station) -> Clock;
+  auto DeltaDay(int station) -> Clock;
 };
 
 struct TrainStateKey {

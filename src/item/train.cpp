@@ -63,10 +63,11 @@ auto Clock::Minus(const Clock &other) const -> Clock {
   }
   return result;
 }
-auto Clock::CutDate() -> Clock & {
-  hour = 0;
-  minute = 0;
-  return *this;
+auto Clock::CutDate() -> Clock {
+  Clock result = *this;
+  result.hour = 0;
+  result.minute = 0;
+  return result;
 }
 auto Clock::Compare(const Clock &other) const -> int {
   if (month != other.month) {
@@ -106,8 +107,8 @@ auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
   }
   return -1;
 }
-auto TrainTotal::DeltaTime(int station) -> Clock {
-  return leave_time[station].Minus(leave_time[0]);
+auto TrainTotal::DeltaDay(int station) -> Clock {
+  return leave_time[station].CutDate().Minus(leave_time[0].CutDate());
 }
 
 auto TrainState::Construct(const TrainTotal &train, const Clock &date)
