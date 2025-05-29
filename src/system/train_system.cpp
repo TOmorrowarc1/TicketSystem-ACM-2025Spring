@@ -61,9 +61,10 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
   Clock date = train.value().begin;
   Clock one_day = {0, 1, 0, 0};
   TrainState state;
+  state.train_id = train_id;
   state.Construct(train.value(), date);
   RouteTrain route;
-  route.train_id = state.train_id;
+  route.train_id = train_id;
   while (date.Compare(train.value().end) <= 0) {
     states.Insert(state.GetKey(), state);
     for (int i = 0; i < state.station_num; ++i) {
