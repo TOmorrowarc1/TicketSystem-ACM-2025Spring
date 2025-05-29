@@ -80,6 +80,8 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
     date.Addit(one_day);
     state.AddDay();
   }
+  release.Remove(train_id);
+  release.Insert(train_id, train.value());
   std::cout << 0 << '\n';
 }
 
