@@ -282,6 +282,8 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] -= target.amount;
     }
+    states.Remove({target.train_id, target.date});
+    states.Insert({target.train_id, target.date}, train.value());
     std::cout << price * target.amount << '\n';
   } else {
     if (queue) {
