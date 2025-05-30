@@ -31,7 +31,7 @@ int main() {
     std::cout << timestamp << ' ';
     if (input == " exit ") {
       break;
-    } else if (input == "clear") {
+    } else if (input == "clean") {
       break;
     } else {
       input = command.NextToken();
