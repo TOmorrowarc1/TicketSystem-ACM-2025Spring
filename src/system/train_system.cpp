@@ -291,17 +291,16 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
-  target.date = target.date.Minus(train_total.value().DeltaDay(
-      train_total.value().FindStation(target.origin)));
-  std::optional<TrainState> train =
-      states.GetValue({target.train_id, target.date});
-  if (!train.has_value()) {
+  int start = train_total.value().FindStation(target.origin);
+  int des = train_total.value().FindStation(target.des);
+  if (start == -1 || start >= des) {
     std::cout << -1 << '\n';
     return;
   }
-  int start = train.value().FindStation(target.origin);
-  int des = train.value().FindStation(target.des);
-  if (start == -1 || des == -1 || start >= des) {
+  target.date = target.date.Minus(train_total.value().DeltaDay(start));
+  std::optional<TrainState> train =
+      states.GetValue({target.train_id, target.date});
+  if (!train.has_value()) {
     std::cout << -1 << '\n';
     return;
   }
@@ -311,17 +310,17 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     seat = std::min(seat, train.value().remain_tickets[i]);
     price += train.value().price[i];
   }
-  Order order;
-  order.train_id = target.train_id;
-  order.origin = target.origin;
-  order.uid = target.uid;
-  order.des = target.des;
-  order.leave_time = train.value().leave_time[start];
-  order.arrive_time = train.value().arrive_time[des];
-  order.date = target.date;
-  order.time = target.time;
-  order.price = price;
-  order.amount = target.amount;
+  Order order{target.origin,
+              target.des,
+              target.uid,
+              target.train_id,
+              target.date,
+              train.value().leave_time[start],
+              train.value().arrive_time[des],
+              Status::SUCCESS,
+              target.amount,
+              price,
+              target.time};
   if (seat >= target.amount) {
     order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
