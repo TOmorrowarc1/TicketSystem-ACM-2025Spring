@@ -126,6 +126,24 @@ struct RouteUser {
   int price;
   int remain;
 };
+struct RouteUComparatorA {
+  auto operator()(const RouteUser &lhs, const RouteUser &rhs) -> int {
+    int result = lhs.total_time.Compare(rhs.total_time);
+    if (result != 0) {
+      return result;
+    }
+    return lhs.train_id.compare(rhs.train_id);
+  }
+};
+struct RouteUComparatorB {
+  auto operator()(const RouteUser &lhs, const RouteUser &rhs) -> int {
+    int result = lhs.price - rhs.price;
+    if (result != 0) {
+      return result;
+    }
+    return lhs.train_id.compare(rhs.train_id);
+  }
+};
 
 struct Query {
   FixedChineseString<10> origin;

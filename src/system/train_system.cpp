@@ -172,7 +172,6 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
               << answers[i]->start_time.Add(answers[i]->total_time) << ' '
               << answers[i]->price << ' ' << answers[i]->remain << '\n';
   }
-  delete[] answers;
 }
 
 void train_sys::QueryTransfer(const FixedChineseString<10> &start,
@@ -288,16 +287,17 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
-  int start = train_total.value().FindStation(target.origin);
-  int des = train_total.value().FindStation(target.des);
-  if (start == -1 || des == -1) {
-    std::cout << -1 << '\n';
-    return;
-  }
-  target.date = target.date.Minus(train_total.value().DeltaDay(start));
+  target.date = target.date.Minus(train_total.value().DeltaDay(
+      train_total.value().FindStation(target.origin)));
   std::optional<TrainState> train =
       states.GetValue({target.train_id, target.date});
   if (!train.has_value()) {
+    std::cout << -1 << '\n';
+    return;
+  }
+  int start = train.value().FindStation(target.origin);
+  int des = train.value().FindStation(target.des);
+  if (start == -1 || des == -1) {
     std::cout << -1 << '\n';
     return;
   }
@@ -448,30 +448,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   }
 }
 
-void train_sys::RouteQuickSortP(RouteUser **target, int start, int end) {
-  if (start >= end) {
-    return;
-  }
-  int left = start;
-  int right = end;
-  int middle = (left + right) >> 1;
-  RouteUser *bound = target[middle];
-  target[middle] = target[left];
-  while (left < right) {
-    while (left < right && target[right]->price > bound->price) {
-      --right;
-    }
-    target[left] = target[right];
-    while (left < right && target[left]->price <= bound->price) {
-      ++left;
-    }
-    target[right] = target[left];
-  }
-  target[left] = bound;
-  RouteQuickSortP(target, start, left - 1);
-  RouteQuickSortP(target, right + 1, end);
-}
-
 void train_sys::RouteQuickSortT(RouteUser **target, int start, int end) {
   if (start >= end) {
     return;
@@ -482,13 +458,11 @@ void train_sys::RouteQuickSortT(RouteUser **target, int start, int end) {
   RouteUser *bound = target[middle];
   target[middle] = target[left];
   while (left < right) {
-    while (left < right &&
-           target[right]->total_time.Compare(bound->total_time) > 0) {
+    while (left < right && RouteUComparatorA()(*target[right], *bound) > 0) {
       --right;
     }
     target[left] = target[right];
-    while (left < right &&
-           target[left]->total_time.Compare(bound->total_time) <= 0) {
+    while (left < right && RouteUComparatorA()(*target[right], *bound) <= 0) {
       ++left;
     }
     target[right] = target[left];
@@ -496,4 +470,28 @@ void train_sys::RouteQuickSortT(RouteUser **target, int start, int end) {
   target[left] = bound;
   RouteQuickSortT(target, start, left - 1);
   RouteQuickSortT(target, right + 1, end);
+}
+
+void train_sys::RouteQuickSortP(RouteUser **target, int start, int end) {
+  if (start >= end) {
+    return;
+  }
+  int left = start;
+  int right = end;
+  int middle = (left + right) >> 1;
+  RouteUser *bound = target[middle];
+  target[middle] = target[left];
+  while (left < right) {
+    while (left < right && RouteUComparatorB()(*target[right], *bound) > 0) {
+      --right;
+    }
+    target[left] = target[right];
+    while (left < right && RouteUComparatorB()(*target[right], *bound) <= 0) {
+      ++left;
+    }
+    target[right] = target[left];
+  }
+  target[left] = bound;
+  RouteQuickSortP(target, start, left - 1);
+  RouteQuickSortP(target, right + 1, end);
 }
