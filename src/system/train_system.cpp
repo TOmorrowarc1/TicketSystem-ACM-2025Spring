@@ -462,7 +462,7 @@ void train_sys::RouteQuickSortT(RouteUser **target, int start, int end) {
       --right;
     }
     target[left] = target[right];
-    while (left < right && RouteUComparatorA()(*target[right], *bound) <= 0) {
+    while (left < right && RouteUComparatorA()(*target[left], *bound) <= 0) {
       ++left;
     }
     target[right] = target[left];
@@ -486,7 +486,7 @@ void train_sys::RouteQuickSortP(RouteUser **target, int start, int end) {
       --right;
     }
     target[left] = target[right];
-    while (left < right && RouteUComparatorB()(*target[right], *bound) <= 0) {
+    while (left < right && RouteUComparatorB()(*target[left], *bound) <= 0) {
       ++left;
     }
     target[right] = target[left];
