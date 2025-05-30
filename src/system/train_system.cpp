@@ -172,6 +172,7 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
               << answers[i]->start_time.Add(answers[i]->total_time) << ' '
               << answers[i]->price << ' ' << answers[i]->remain << '\n';
   }
+  delete[] answers;
 }
 
 void train_sys::QueryTransfer(const FixedChineseString<10> &start,
