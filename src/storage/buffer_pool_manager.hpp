@@ -194,7 +194,7 @@ public:
     for (int i = 0; i < cache_size_; ++i) {
       delete cache_[i];
     }
-    delete cache_;
+    delete[] cache_;
   }
 
   auto NewPage() -> page_id_t {

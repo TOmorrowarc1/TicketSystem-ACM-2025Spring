@@ -133,6 +133,7 @@ auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     remain_tickets[i] = max_tickets;
     price[i] = train.price[i];
   }
+  leave_time[station_num - 1] = {0, 0, 0, 0};
   remain_tickets[station_num - 1] = 0;
   price[station_num - 1] = 0;
   type = train.type;
