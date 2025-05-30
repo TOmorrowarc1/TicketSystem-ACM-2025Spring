@@ -153,7 +153,11 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
        !iter.IsEnd() && RouteTComparatorB()((*iter).second, max) < 0; ++iter) {
     std::optional<TrainState> result =
         states.GetValue({(*iter).second.train_id, (*iter).second.train_time});
-    assert(result.has_value());
+    if (!result.has_value()) {
+      std::cerr << (*iter).second.train_id << ' ' << (*iter).second.train_time
+                << '\n';
+      exit(0);
+    }
     target = result.value().CompleteRoute((*iter).second);
     routes.push_back(target);
   }
@@ -292,6 +296,11 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
+  if (target.train_id.compare("LeavesofGrass") == 0 &&
+      target.date.Compare({6, 16, 0, 0}) >= 0 &&
+      target.date.Compare({6, 19, 0, 0}) <= 0) {
+    int h = 0;
+  }
   int start = train_total.value().FindStation(target.origin);
   int des = train_total.value().FindStation(target.des);
   if (start == -1 || start >= des) {
@@ -326,10 +335,6 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] -= target.amount;
-      if (train.value().train_id.compare("LeavesofGrass") == 0 &&
-          train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0 && i == 5) {
-        int h = train.value().remain_tickets[i];
-      }
     }
     states.Remove({target.train_id, target.date});
     states.Insert({target.train_id, target.date}, train.value());
@@ -387,7 +392,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   min.uid = uid;
   min.time = order_time;
   int count = 1;
-  bool flag = false;
   auto iter1 = user_order.KeyBegin(min);
   while (!iter1.IsEnd() && (*iter1).second.uid.compare(uid) == 0 &&
          count < rank) {
