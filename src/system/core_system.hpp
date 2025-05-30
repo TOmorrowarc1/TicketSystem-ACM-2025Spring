@@ -5,7 +5,6 @@
 #include "item/user.hpp"
 #include <list>
 namespace core {
-  
 extern std::list<FixedString<20>> users_id_now;
 
 auto Find(const FixedString<20> &user) -> bool;
