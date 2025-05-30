@@ -8,8 +8,8 @@ namespace bpt {
   template <typename KeyType, typename ValueType, typename KeyComparator>
 #define LEAF_PAGE_TYPE LeafPage<KeyType, ValueType, KeyComparator>
 #define INTERNAL_PAGE_TYPE InternalPage<KeyType, ValueType, KeyComparator>
-#define LEAF_MAX_SIZE (4096 - 16) / (sizeof(KeyType) + sizeof(ValueType))
-#define INTERNAL_MAX_SIZE (4096 - 16) / (sizeof(KeyType) + sizeof(page_id_t))
+#define LEAF_MAX_SIZE (4096 - 24) / (sizeof(KeyType) + sizeof(ValueType))
+#define INTERNAL_MAX_SIZE (4096 - 24) / (sizeof(KeyType) + sizeof(page_id_t))
 
 class TreePage {
 public:
