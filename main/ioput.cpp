@@ -1,7 +1,21 @@
 #include "commandparser.hpp"
 #include <iostream>
 
+class CerrRedirect {
+  std::streambuf *orig_cerr;
+  std::ofstream file;
+
+public:
+  CerrRedirect(const std::string &filename)
+      : orig_cerr(std::cerr.rdbuf()), file(filename) {
+    std::cerr.rdbuf(file.rdbuf());
+  }
+
+  ~CerrRedirect() { std::cerr.rdbuf(orig_cerr); }
+};
+
 int main() {
+  CerrRedirect redirect("error_log.txt");
   std::string input;
   std::string timestamp;
   TokenScanner command;

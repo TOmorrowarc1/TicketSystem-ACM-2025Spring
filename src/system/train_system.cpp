@@ -77,6 +77,14 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
         routeB.Insert(route, route);
       }
     }
+    if (state.train_id.compare("LeavesofGrass") &&
+        state.arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
+      for (int i = 0; i < state.station_num; ++i) {
+        std::cerr << state.stations[i] << ' ' << state.arrive_time[i] << ' '
+                  << state.leave_time[i] << '\n';
+        std::cerr << state.max_tickets << '\n';
+      }
+    }
     state.AddDate(one_day);
     date.Addit(one_day);
   }
