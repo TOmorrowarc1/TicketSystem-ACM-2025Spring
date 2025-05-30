@@ -109,7 +109,7 @@ auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
   return -1;
 }
 auto TrainTotal::DeltaDay(int station) -> Clock {
-  return leave_time[station].CutDate().Minus(leave_time[0].CutDate());
+  return {0, leave_time[station].day - leave_time[0].day, 0, 0};
 }
 auto TrainTotal::AddDate(const Clock &date) -> TrainTotal & {
   for (int i = 0; i < station_num; ++i) {
