@@ -67,6 +67,7 @@ struct TrainState {
   Clock arrive_time[25];
   Clock leave_time[25];
   int station_num;
+  int max_tickets;
   int remain_tickets[25] = {0};
   int price[25] = {0};
   char type;

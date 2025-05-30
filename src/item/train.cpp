@@ -122,11 +122,12 @@ auto TrainTotal::AddDate(const Clock &date) -> TrainTotal & {
 auto TrainState::Construct(const TrainTotal &train, const Clock &date)
     -> TrainState & {
   station_num = train.station_num;
+  max_tickets = train.tickets_num;
   for (int i = 0; i < station_num; ++i) {
     stations[i] = train.stations[i];
     arrive_time[i] = train.arrive_time[i].Add(date);
     leave_time[i] = train.leave_time[i].Add(date);
-    remain_tickets[i] = train.tickets_num;
+    remain_tickets[i] = max_tickets;
     price[i] = train.price[i];
   }
   remain_tickets[station_num - 1] = 0;

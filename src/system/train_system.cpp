@@ -331,7 +331,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     user_order.Insert(order, order);
     std::cout << price * target.amount << '\n';
   } else {
-    if (queue) {
+    if (queue && target.amount <= train.value().max_tickets) {
       order.status = Status::PENDING;
       train_order.Insert(target, target);
       user_order.Insert(order, order);
