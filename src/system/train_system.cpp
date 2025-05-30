@@ -34,6 +34,7 @@ bpt::BPlusTree<Query, Query, QueryComparator>
 
 void train_sys::AddTrain(const FixedString<20> &train_id,
                          const TrainTotal &train) {
+  assert(!train_id.compare("LEAVESOFGRASS") == 0);
   if (release.Insert(train_id, train)) {
     std::cout << 0 << '\n';
   } else {
