@@ -67,12 +67,12 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
   route.train_id = train_id;
   while (date.Compare(train.value().end) <= 0) {
     states.Insert(state.GetKey(), state);
+    route.train_time = state.arrive_time[0];
     for (int i = 0; i < state.station_num; ++i) {
-      route.train_time = state.arrive_time[0];
+      route.origin = state.stations[i];
+      route.start_time = state.leave_time[i];
       for (int ii = i + 1; ii < state.station_num; ++ii) {
-        route.origin = state.stations[i];
         route.des = state.stations[ii];
-        route.start_time = state.leave_time[i];
         routeA.Insert(route, route);
         routeB.Insert(route, route);
       }

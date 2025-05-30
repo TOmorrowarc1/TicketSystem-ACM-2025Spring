@@ -29,7 +29,11 @@ auto Clock::Addit(const Clock &other) -> Clock & {
     ++month;
     day -= 30;
   }
-  if ((month == 7 || month == 8) && day > 31) {
+  if (month == 7 && day > 31) {
+    ++month;
+    day -= 31;
+  }
+  if (month == 8 && day > 31) {
     ++month;
     day -= 31;
   }
@@ -53,7 +57,6 @@ auto Clock::Minus(const Clock &other) const -> Clock {
     --result.day;
     result.hour += 24;
   }
-  // Still some question.
   if (result.day <= 0 && result.month != 0) {
     --result.month;
     if (month == 8 || month == 9) {
