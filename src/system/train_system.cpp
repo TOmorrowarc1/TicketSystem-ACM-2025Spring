@@ -34,7 +34,6 @@ bpt::BPlusTree<Query, Query, QueryComparator>
 
 void train_sys::AddTrain(const FixedString<20> &train_id,
                          const TrainTotal &train) {
-  assert(!train_id.compare("LEAVESOFGRASS") == 0);
   if (release.Insert(train_id, train)) {
     std::cout << 0 << '\n';
   } else {
@@ -173,6 +172,7 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
               << answers[i]->start_time.Add(answers[i]->total_time) << ' '
               << answers[i]->price << ' ' << answers[i]->remain << '\n';
   }
+  delete[] answers;
 }
 
 void train_sys::QueryTransfer(const FixedChineseString<10> &start,
