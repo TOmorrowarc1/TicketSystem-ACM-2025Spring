@@ -153,6 +153,7 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
        !iter.IsEnd() && RouteTComparatorB()((*iter).second, max) < 0; ++iter) {
     std::optional<TrainState> result =
         states.GetValue({(*iter).second.train_id, (*iter).second.train_time});
+    assert(result.has_value());
     target = result.value().CompleteRoute((*iter).second);
     routes.push_back(target);
   }
