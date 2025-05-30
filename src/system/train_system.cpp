@@ -204,6 +204,9 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
          !iter2.IsEnd() && (*iter2).second.des.compare(min.des) == 0 &&
          (*iter2).second.origin.compare(min.origin) == 0;
          ++iter2) {
+      if ((*iter2).second.train_id.compare((*iter1).second.train_id) == 0) {
+        continue;
+      }
       std::optional<TrainState> second_train = states.GetValue(
           {(*iter2).second.train_id, (*iter2).second.train_time});
       second_target = second_train.value().CompleteRoute((*iter2).second);
