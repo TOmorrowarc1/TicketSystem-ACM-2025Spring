@@ -77,7 +77,7 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
         routeB.Insert(route, route);
       }
     }
-    if (state.train_id.compare("LeavesofGrass") &&
+    if (state.train_id.compare("LeavesofGrass") == 0 &&
         state.arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
       for (int i = 0; i < state.station_num; ++i) {
         std::cerr << state.stations[i] << ' ' << state.arrive_time[i] << ' '
