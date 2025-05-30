@@ -381,74 +381,72 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   Order min;
   min.uid = uid;
   min.time = order_time;
-  int count = 0;
+  int count = 1;
   bool flag = false;
-  for (auto iter1 = user_order.KeyBegin(min);
-       !iter1.IsEnd() && (*iter1).second.uid.compare(uid) == 0; ++iter1) {
+  auto iter1 = user_order.KeyBegin(min);
+  while (!iter1.IsEnd() && (*iter1).second.uid.compare(uid) == 0 &&
+         count < rank) {
+    ++iter1;
     ++count;
-    if (count == rank) {
-      Order target = (*iter1).second;
-      if (target.status == Status::SUCCESS) {
-        std::optional<TrainState> train =
-            states.GetValue({target.train_id, target.date});
-        int start = train.value().FindStation(target.origin);
-        int des = train.value().FindStation(target.des);
-        for (int i = start; i < des; ++i) {
-          train.value().remain_tickets[i] += target.amount;
-        }
-        Query min;
-        min.train_id = train.value().train_id;
-        min.date = train.value().arrive_time[0];
-        min.time = 0;
-        for (auto iter2 = train_order.KeyBegin(min);
-             !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
-             (*iter2).second.train_id.compare(min.train_id) == 0;
-             ++iter2) {
-          int start = train.value().FindStation((*iter2).second.origin);
-          int des = train.value().FindStation((*iter2).second.des);
-          int seat = train.value().remain_tickets[start];
-          for (int i = start; i < des; ++i) {
-            seat = std::min(seat, train.value().remain_tickets[i]);
-          }
-          if (seat >= (*iter2).second.amount) {
-            for (int i = start; i < des; ++i) {
-              train.value().remain_tickets[i] -= (*iter2).second.amount;
-            }
-            Order order;
-            order.uid = (*iter2).second.uid;
-            order.time = (*iter2).second.time;
-            std::optional<Order> order_change = user_order.GetValue(order);
-            order_change.value().status = Status::SUCCESS;
-            user_order.Remove(order);
-            user_order.Insert(order, order_change.value());
-            train_order.Remove((*iter2).second);
-          }
-        }
-        states.Remove({train.value().train_id, train.value().arrive_time[0]});
-        states.Insert({train.value().train_id, train.value().arrive_time[0]},
-                      train.value());
-      } else if (target.status == Status::PENDING) {
-        Query erase_target;
-        erase_target.time = target.time;
-        erase_target.date = target.date;
-        erase_target.train_id = target.train_id;
-        train_order.Remove(erase_target);
-      } else {
-        std::cout << -1 << '\n';
-        return;
-      }
-      target.status = Status::REFUNDED;
-      user_order.Remove(target);
-      user_order.Insert(target, target);
-      flag = true;
-      break;
-    }
   }
-  if (flag) {
-    std::cout << 0 << '\n';
+  if (iter1.IsEnd() || (*iter1).second.uid.compare(uid) != 0) {
+    std::cout << -1 << '\n';
+    return;
+  }
+  Order target = (*iter1).second;
+  if (target.status == Status::SUCCESS) {
+    std::optional<TrainState> train =
+        states.GetValue({target.train_id, target.date});
+    int start = train.value().FindStation(target.origin);
+    int des = train.value().FindStation(target.des);
+    for (int i = start; i < des; ++i) {
+      train.value().remain_tickets[i] += target.amount;
+    }
+    Query min;
+    min.train_id = train.value().train_id;
+    min.date = train.value().arrive_time[0];
+    min.time = 0;
+    for (auto iter2 = train_order.KeyBegin(min);
+         !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
+         (*iter2).second.train_id.compare(min.train_id) == 0;
+         ++iter2) {
+      int start = train.value().FindStation((*iter2).second.origin);
+      int des = train.value().FindStation((*iter2).second.des);
+      int seat = train.value().remain_tickets[start];
+      for (int i = start; i < des; ++i) {
+        seat = std::min(seat, train.value().remain_tickets[i]);
+      }
+      if (seat >= (*iter2).second.amount) {
+        for (int i = start; i < des; ++i) {
+          train.value().remain_tickets[i] -= (*iter2).second.amount;
+        }
+        Order order;
+        order.uid = (*iter2).second.uid;
+        order.time = (*iter2).second.time;
+        std::optional<Order> order_change = user_order.GetValue(order);
+        order_change.value().status = Status::SUCCESS;
+        user_order.Remove(order);
+        user_order.Insert(order, order_change.value());
+        train_order.Remove((*iter2).second);
+      }
+    }
+    states.Remove({train.value().train_id, train.value().arrive_time[0]});
+    states.Insert({train.value().train_id, train.value().arrive_time[0]},
+                  train.value());
+  } else if (target.status == Status::PENDING) {
+    Query erase_target;
+    erase_target.time = target.time;
+    erase_target.date = target.date;
+    erase_target.train_id = target.train_id;
+    train_order.Remove(erase_target);
   } else {
     std::cout << -1 << '\n';
+    return;
   }
+  target.status = Status::REFUNDED;
+  user_order.Remove(target);
+  user_order.Insert(target, target);
+  std::cout << 0 << '\n';
 }
 
 void train_sys::RouteQuickSortT(RouteUser **target, int start, int end) {
