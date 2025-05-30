@@ -298,7 +298,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   }
   int start = train.value().FindStation(target.origin);
   int des = train.value().FindStation(target.des);
-  if (start == -1 || des == -1) {
+  if (start == -1 || des == -1 || start >= des) {
     std::cout << -1 << '\n';
     return;
   }

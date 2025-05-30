@@ -56,7 +56,7 @@ auto user_sys::Modify(const FixedString<20> &c_uid, const FixedString<20> &uid,
   if (!user.has_value()) {
     return std::nullopt;
   }
-  if (c_user.value().privilege_ < privilege ||
+  if (c_user.value().privilege_ <= privilege ||
       c_user.value().privilege_ < user.value().privilege_ ||
       (c_user.value().privilege_ == user.value().privilege_ &&
        c_uid.compare(uid) != 0)) {
