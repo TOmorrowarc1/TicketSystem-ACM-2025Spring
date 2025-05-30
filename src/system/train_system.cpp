@@ -427,10 +427,12 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
       } else if (target.status == Status::PENDING) {
         Query erase_target;
         erase_target.time = target.time;
+        erase_target.date = target.date;
         erase_target.train_id = target.train_id;
         train_order.Remove(erase_target);
       } else {
         std::cout << -1 << '\n';
+        return;
       }
       target.status = Status::REFUNDED;
       user_order.Remove(target);
