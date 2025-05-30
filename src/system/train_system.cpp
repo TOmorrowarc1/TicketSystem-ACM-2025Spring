@@ -322,11 +322,6 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] -= target.amount;
-      if (train.value().train_id.compare("LeavesofGrass") == 0 &&
-          train.value().arrive_time[0].Compare({6, 18, 0, 0}) == 0 && i > 3 &&
-          i < 8) {
-        int i = 0;
-      }
     }
     states.Remove({target.train_id, target.date});
     states.Insert({target.train_id, target.date}, train.value());
@@ -397,11 +392,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         int des = train.value().FindStation(target.des);
         for (int i = start; i < des; ++i) {
           train.value().remain_tickets[i] += target.amount;
-          if (train.value().train_id.compare("LeavesofGrass") == 0 &&
-              train.value().arrive_time[0].Compare({6, 18, 0, 0}) == 0 &&
-              i > 3 && i < 8) {
-            int i = 0;
-          }
         }
         Query min;
         min.train_id = train.value().train_id;
@@ -420,11 +410,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
           if (seat >= (*iter2).second.amount) {
             for (int i = start; i < des; ++i) {
               train.value().remain_tickets[i] -= (*iter2).second.amount;
-              if (train.value().train_id.compare("LeavesofGrass") == 0 &&
-                  train.value().arrive_time[0].Compare({6, 18, 0, 0}) == 0 &&
-                  i > 3 && i < 8) {
-                int i = 0;
-              }
             }
             Order order;
             order.uid = (*iter2).second.uid;
