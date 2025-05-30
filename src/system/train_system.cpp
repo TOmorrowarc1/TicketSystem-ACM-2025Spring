@@ -304,10 +304,13 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
+  bool flag = false;
   if (target.train_id.compare("LeavesofGrass") == 0 &&
       target.date.Compare({6, 16, 0, 0}) >= 0 &&
       target.date.Compare({6, 19, 0, 0}) <= 0) {
-    int h = 0;
+    std::cerr << target.date << ' ' << target.origin << ' ' << target.des << ' '
+              << target.amount << ' ' << target.time << '\n';
+    flag = true;
   }
   int start = train_total.value().FindStation(target.origin);
   int des = train_total.value().FindStation(target.des);
@@ -316,6 +319,10 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     return;
   }
   target.date = target.date.Minus(train_total.value().DeltaDay(start));
+  if (flag) {
+    std::cerr << target.date << ' ' << target.origin << ' ' << target.des << ' '
+              << target.amount << ' ' << target.time << '\n';
+  }
   std::optional<TrainState> train =
       states.GetValue({target.train_id, target.date});
   if (!train.has_value()) {
