@@ -79,6 +79,7 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
     }
     if (state.train_id.compare("LeavesofGrass") == 0 &&
         state.arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
+      std::cerr << "release\n";
       for (int i = 0; i < state.station_num; ++i) {
         std::cerr << state.stations[i] << ' ' << state.arrive_time[i] << ' '
                   << state.leave_time[i] << '\n';
@@ -308,6 +309,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   if (target.train_id.compare("LeavesofGrass") == 0 &&
       target.date.Compare({6, 16, 0, 0}) >= 0 &&
       target.date.Compare({6, 19, 0, 0}) <= 0) {
+    std::cerr << "buy\n";
     std::cerr << target.date << ' ' << target.origin << ' ' << target.des << ' '
               << target.amount << ' ' << target.time << '\n';
     flag = true;
@@ -320,6 +322,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   }
   target.date = target.date.Minus(train_total.value().DeltaDay(start));
   if (flag) {
+    std::cerr << "after_time\n";
     std::cerr << target.date << ' ' << target.origin << ' ' << target.des << ' '
               << target.amount << ' ' << target.time << '\n';
   }
