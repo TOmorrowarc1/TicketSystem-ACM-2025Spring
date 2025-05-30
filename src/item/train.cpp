@@ -112,7 +112,7 @@ auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
   return -1;
 }
 auto TrainTotal::DeltaDay(int station) -> Clock {
-  return {0, leave_time[station].day - leave_time[0].day, 0, 0};
+  return {0, leave_time[station].day, 0, 0};
 }
 auto TrainTotal::AddDate(const Clock &date) -> TrainTotal & {
   for (int i = 0; i < station_num; ++i) {
