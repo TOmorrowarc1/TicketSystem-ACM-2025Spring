@@ -325,7 +325,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     order.status = Status::SUCCESS;
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] -= target.amount;
-      if (order.train_id.compare("LeavesofGrass") &&
+      if (order.train_id.compare("LeavesofGrass") == 0 &&
           order.date.Compare({6, 17, 0, 0}) == 0 && i == 5) {
         int h = train.value().remain_tickets[i];
       }
