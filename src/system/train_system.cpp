@@ -306,14 +306,14 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     return;
   }
   bool flag = false;
-  if (target.train_id.compare("LeavesofGrass") == 0 &&
+  /*if (target.train_id.compare("LeavesofGrass") == 0 &&
       target.date.Compare({6, 16, 0, 0}) >= 0 &&
       target.date.Compare({6, 19, 0, 0}) <= 0) {
     std::cerr << "buy\n";
     std::cerr << target.date << ' ' << target.origin << ' ' << target.des << ' '
               << target.amount << ' ' << target.time << '\n';
     flag = true;
-  }
+  }*/
   int start = train_total.value().FindStation(target.origin);
   int des = train_total.value().FindStation(target.des);
   if (start == -1 || start >= des) {
@@ -321,11 +321,11 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     return;
   }
   target.date = target.date.Minus(train_total.value().DeltaDay(start));
-  if (flag) {
+  /*if (flag) {
     std::cerr << "after_time\n";
     std::cerr << target.date << ' ' << target.origin << ' ' << target.des << ' '
               << target.amount << ' ' << target.time << '\n';
-  }
+  }*/
   std::optional<TrainState> train =
       states.GetValue({target.train_id, target.date});
   if (!train.has_value()) {
@@ -474,6 +474,10 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     erase_target.time = target.time;
     erase_target.date = target.date;
     erase_target.train_id = target.train_id;
+    std::cerr << "pending" << '\n';
+    std::cerr << train_order.GetValue(erase_target).value().train_id
+              << train_order.GetValue(erase_target).value().uid
+              << train_order.GetValue(erase_target).value().date << '\n';
     train_order.Remove(erase_target);
   } else {
     std::cout << -1 << '\n';
