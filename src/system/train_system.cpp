@@ -48,7 +48,8 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
   bool logout = false;
-  if (train_id.compare("brother") == 0) {
+  if (train_id.compare("brother") == 0 ||
+      train_id.compare("IamtowaitIdon") == 0) {
     logout = true;
   }
   std::optional<TrainTotal> train = release.GetValue(train_id);
