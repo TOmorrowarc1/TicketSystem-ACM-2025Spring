@@ -258,9 +258,7 @@ void Execute(TokenScanner &command) {
       }
       }
     }
-    str_hash hash1 = origin.Hash();
-    str_hash hash2 = des.Hash();
-    train_sys::QueryTicket(hash1, hash2, date, time);
+    train_sys::QueryTicket(origin.Hash(), des.Hash(), date, time);
   } else if (command_type == "query_transfer") {
     Clock date;
     FixedChineseString<10> origin;
@@ -291,9 +289,7 @@ void Execute(TokenScanner &command) {
       }
       }
     }
-    str_hash hash1 = origin.Hash();
-    str_hash hash2 = des.Hash();
-    train_sys::QueryTransfer(hash1, hash2, date, time);
+    train_sys::QueryTransfer(origin.Hash(), des.Hash(), date, time);
   } else if (command_type == "buy_ticket") {
     Query target;
     bool queue = false;
