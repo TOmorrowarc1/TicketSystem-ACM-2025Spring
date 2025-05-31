@@ -422,21 +422,23 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   }
   Order target = (*iter1).second;
   if (target.status == Status::SUCCESS) {
+    if (target.train_id.compare("LeavesofGrass") == 0 &&
+        target.leave_time.Compare({6, 17, 0, 0}) == 0) {
+      std::cerr << "refund_success" << '\n';
+      std::cerr << target.train_id << ' ' << target.uid << ' ' << target.date
+                << target.time << ' ' << '\n';
+    }
     std::optional<TrainState> train =
         states.GetValue({target.train_id, target.date});
     int start = train.value().FindStation(target.origin);
     int des = train.value().FindStation(target.des);
     for (int i = start; i < des; ++i) {
-      if (train.value().train_id.compare("LeavesofGrass") == 0 &&
-          train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0 && i == 5) {
-        int h = train.value().remain_tickets[i];
-      }
       train.value().remain_tickets[i] += target.amount;
     }
     Query min;
     min.train_id = train.value().train_id;
     min.date = train.value().arrive_time[0];
-    min.time = 0;
+    min.time = target.time;
     for (auto iter2 = train_order.KeyBegin(min);
          !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
          (*iter2).second.train_id.compare(min.train_id) == 0;
@@ -447,13 +449,24 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
       for (int i = start; i < des; ++i) {
         seat = std::min(seat, train.value().remain_tickets[i]);
       }
+      if (target.train_id.compare("LeavesofGrass") == 0 &&
+          train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
+        std::cerr << "refund_success_pending" << '\n';
+        std::cerr << (*iter2).second.train_id << ' ' << (*iter2).second.uid
+                  << ' ' << (*iter2).second.date << ' '
+                  << (*iter2).second.amount << ' ' << (*iter2).second.time
+                  << '\n';
+      }
       if (seat >= (*iter2).second.amount) {
+        if (target.train_id.compare("LeavesofGrass") == 0 &&
+            train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
+          std::cerr << "refund_success_success" << '\n';
+          std::cerr << (*iter2).second.train_id << ' ' << (*iter2).second.uid
+                    << ' ' << (*iter2).second.date << ' '
+                    << (*iter2).second.amount << ' ' << (*iter2).second.time
+                    << '\n';
+        }
         for (int i = start; i < des; ++i) {
-          if (train.value().train_id.compare("LeavesofGrass") == 0 &&
-              train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0 &&
-              i == 5) {
-            int h = train.value().remain_tickets[i];
-          }
           train.value().remain_tickets[i] -= (*iter2).second.amount;
         }
         Order order;
