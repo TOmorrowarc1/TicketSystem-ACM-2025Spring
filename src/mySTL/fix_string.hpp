@@ -4,6 +4,31 @@
 #include <iostream>
 #include <string>
 
+using str_hash = int64_t;
+str_hash Hash(const char *str, size_t len) {
+  if (str == NULL || len == 0)
+    return 0;
+
+  const uint64_t seed = 0xcbf29ce484222325; // FNV-1a的初始种子
+  uint64_t hash = seed;
+  const uint8_t *bytes = (const uint8_t *)str; // 按字节处理
+
+  for (size_t i = 0; i < len; i++) {
+    hash ^= bytes[i];
+    hash *= 0x100000001b3; // FNV-1a质数（64位）
+    // 额外混合步骤（增强雪崩效应）
+    hash = (hash ^ (hash >> 31)) * 0x85ebca77b2;
+    hash = (hash ^ (hash >> 33)) * 0xc2b2ae3d5;
+  }
+  // 确保结果在int64_t范围内
+  return (int64_t)(hash & 0x7FFFFFFFFFFFFFFF); // 保留符号位为0
+}
+
+struct HashCompare {
+  auto operator()(const str_hash &lhs, const str_hash &rhs) const -> int {
+    return lhs - rhs;
+  }
+};
 template <int MaxLength> class FixedString {
 private:
   char data[MaxLength + 1];
@@ -41,6 +66,7 @@ public:
   auto length() const -> int { return strlen(data); }
   auto is_clear() const -> bool { return data[0] == '\0'; }
   void clear() { data[0] = '\0'; }
+  auto Hash() -> str_hash { return Hash(data, MaxLength); }
 
   auto compare(const FixedString &other) const -> int {
     return strcmp(data, other.data);

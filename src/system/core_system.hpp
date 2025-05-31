@@ -5,6 +5,9 @@
 #include "item/user.hpp"
 #include <set>
 namespace core {
+extern bpt::BufferPoolManager hash_str_buffer;
+extern bpt::BPlusTree<str_hash, FixedChineseString<10>, HashCompare> hash_str;
+
 extern std::set<FixedString<20>, FixStringLess<20>> users_id_now;
 
 auto Find(const FixedString<20> &user) -> bool;
