@@ -3,9 +3,9 @@
 //记得加入所有的item类.
 #include "index/b_plus_tree.hpp"
 #include "item/user.hpp"
-#include <list>
+#include <set>
 namespace core {
-extern std::list<FixedString<20>> users_id_now;
+extern std::set<FixedString<20>, FixStringLess<20>> users_id_now;
 
 auto Find(const FixedString<20> &user) -> bool;
 

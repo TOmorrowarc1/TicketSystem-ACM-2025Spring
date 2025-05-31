@@ -1,24 +1,17 @@
 #include "core_system.hpp"
 
-std::list<FixedString<20>> core::users_id_now;
+std::set<FixedString<20>, FixStringLess<20>> core::users_id_now;
 
 auto core::Find(const FixedString<20> &user) -> bool {
-  for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
-    if (user.compare(*iter) == 0) {
-      return true;
-    }
-  }
-  return false;
+  return users_id_now.count(user);
 }
 
-void core::LogIn(const FixedString<20> &user) { users_id_now.push_back(user); }
+void core::LogIn(const FixedString<20> &user) { users_id_now.insert(user); }
 
 auto core::LogOut(const FixedString<20> &user) -> bool {
-  for (auto iter = users_id_now.begin(); iter != users_id_now.end(); ++iter) {
-    if (user.compare(*iter) == 0) {
-      users_id_now.erase(iter);
-      return true;
-    }
+  if (users_id_now.count(user)) {
+    users_id_now.erase(user);
+    return true;
   }
   return false;
 }
