@@ -204,16 +204,6 @@ public:
     }
     return result.first;
   }
-  auto DeletePage(page_id_t target_page) -> bool {
-    disk_manager_->DeletePage(target_page);
-    frame_id_t target_frame = page_table_.find(target_page);
-    if (target_frame != INVALID_FRAME_ID) {
-      frame_manager_->Erase(target_frame);
-      InitPage(target_page);
-    }
-    page_table_.erase(target_page);
-    return true;
-  }
 
   auto VisitPage(page_id_t target_page, bool read) -> PageGuard {
     frame_id_t frame_in = page_table_.find(target_page);

@@ -211,7 +211,8 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
           0) {
         second_train_date.Addit({0, 1, 0, 0});
       }
-      second_train_date.day -= (*iter2).second.delta_day;
+      second_train_date =
+          second_train_date.Minus({0, (*iter2).second.delta_day, 0, 0});
       if (second_train_date.Compare((*iter2).second.start_time.CutDate()) < 0) {
         second_train_date = (*iter2).second.start_time.CutDate();
       }
