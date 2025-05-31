@@ -26,12 +26,8 @@ void AddTrain(const FixedString<20> &train_id, const TrainTotal &train);
 void DeleteTrain(const FixedString<20> train_id);
 void ReleaseTrain(const FixedString<20> train_id);
 void QueryTrain(const FixedString<20> train_id, const Clock &time);
-void QueryTicket(const FixedChineseString<10> &origin,
-                 const FixedChineseString<10> &des, const Clock date,
-                 bool time);
-void QueryTransfer(const FixedChineseString<10> &origin,
-                   const FixedChineseString<10> &des, const Clock date,
-                   bool time);
+void QueryTicket(str_hash origin, str_hash des, const Clock date, bool time);
+void QueryTransfer(str_hash origin, str_hash des, const Clock date, bool time);
 void BuyTicket(Query &target, bool queue);
 void QueryOrder(const FixedString<20> &uid);
 void Refund(const FixedString<20> &uid, int rank = 0);

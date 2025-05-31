@@ -102,37 +102,44 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
               << result.value().remain_tickets[0] << '\n';
     int price = result.value().price[0];
     for (int i = 1; i < result.value().station_num - 1; ++i) {
-      std::cout << result.value().stations[i] << ' '
-                << result.value().arrive_time[i] << " -> "
+      std::cout << core::hash_str.GetValue(result.value().stations[i]).value()
+                << ' ' << result.value().arrive_time[i] << " -> "
                 << result.value().leave_time[i] << ' ' << price << ' '
                 << result.value().remain_tickets[i] << '\n';
       price += result.value().price[i];
     }
-    std::cout << result.value().stations[result.value().station_num - 1] << ' '
-              << result.value().arrive_time[result.value().station_num - 1]
-              << " -> xx-xx xx:xx " << price << " x\n";
+    std::cout
+        << core::hash_str
+               .GetValue(
+                   result.value().stations[result.value().station_num - 1])
+               .value()
+        << ' ' << result.value().arrive_time[result.value().station_num - 1]
+        << " -> xx-xx xx:xx " << price << " x\n";
   } else {
     train.value().AddDate(date);
     std::cout << train_id << ' ' << train.value().type << '\n';
-    std::cout << train.value().stations[0] << ' ' << "xx-xx xx:xx"
+    std::cout << core::hash_str.GetValue(train.value().stations[0]).value()
+              << ' ' << "xx-xx xx:xx"
               << " -> " << train.value().leave_time[0] << " 0 "
               << train.value().tickets_num << '\n';
     int price = train.value().price[0];
     for (int i = 1; i < train.value().station_num - 1; ++i) {
-      std::cout << train.value().stations[i] << ' '
-                << train.value().arrive_time[i] << " -> "
+      std::cout << core::hash_str.GetValue(train.value().stations[i]).value()
+                << ' ' << train.value().arrive_time[i] << " -> "
                 << train.value().leave_time[i] << ' ' << price << ' '
                 << train.value().tickets_num << '\n';
       price += train.value().price[i];
     }
-    std::cout << train.value().stations[train.value().station_num - 1] << ' '
-              << train.value().arrive_time[train.value().station_num - 1]
+    std::cout << core::hash_str
+                     .GetValue(
+                         train.value().stations[train.value().station_num - 1])
+                     .value()
+              << ' ' << train.value().arrive_time[train.value().station_num - 1]
               << " -> xx-xx xx:xx " << price << " x\n";
   }
 }
 
-void train_sys::QueryTicket(const FixedChineseString<10> &origin,
-                            const FixedChineseString<10> &des, const Clock date,
+void train_sys::QueryTicket(str_hash origin, str_hash des, const Clock date,
                             bool time) {
   std::vector<RouteUser> results;
   RouteUser target;
@@ -140,8 +147,8 @@ void train_sys::QueryTicket(const FixedChineseString<10> &origin,
   min.origin = origin;
   min.des = des;
   for (auto iter = routes.KeyBegin(min);
-       !iter.IsEnd() && (*iter).second.origin.compare(origin) == 0 &&
-       (*iter).second.des.compare(des) == 0;
+       !iter.IsEnd() && (*iter).second.origin == origin &&
+       (*iter).second.des == des;
        ++iter) {
     Clock train_date = date.Minus({0, (*iter).second.delta_day, 0, 0});
     std::optional<TrainState> train =
@@ -162,28 +169,29 @@ void train_sys::QueryTicket(const FixedChineseString<10> &origin,
   }
   std::cout << results.size() << '\n';
   for (int i = 0; i < results.size(); ++i) {
-    std::cout << answers[i]->train_id << ' ' << origin << ' '
-              << answers[i]->start_time << " -> " << des << ' '
+    std::cout << answers[i]->train_id << ' '
+              << core::hash_str.GetValue(origin).value() << ' '
+              << answers[i]->start_time << " -> "
+              << core::hash_str.GetValue(des).value() << ' '
               << answers[i]->start_time.Add(answers[i]->total_time) << ' '
               << answers[i]->price << ' ' << answers[i]->remain << '\n';
   }
   delete[] answers;
 }
 
-void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
-                              const FixedChineseString<10> &des,
-                              const Clock date, bool time) {
+void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
+                              bool time) {
   int best_price = ~(1 << 31);
   Clock best_time = {0, 32, 0, 0};
   RouteUser first_target;
   RouteUser second_target;
   RouteUser first_best_target;
   RouteUser second_best_target;
-  FixedChineseString<10> transfer;
+  str_hash transfer;
   RouteTrain min;
   min.origin = origin;
   for (auto iter1 = routes.KeyBegin(min);
-       !iter1.IsEnd() && (*iter1).second.origin.compare(origin) == 0; ++iter1) {
+       !iter1.IsEnd() && (*iter1).second.origin == origin; ++iter1) {
     Clock first_train_date = date.Minus({0, (*iter1).second.delta_day, 0, 0});
     std::optional<TrainState> first_train =
         states.GetValue({(*iter1).second.train_id, first_train_date});
@@ -194,8 +202,8 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
     min.origin = (*iter1).second.des;
     min.des = des;
     for (auto iter2 = routes.KeyBegin(min);
-         !iter2.IsEnd() && (*iter2).second.des.compare(min.des) == 0 &&
-         (*iter2).second.origin.compare(min.origin) == 0;
+         !iter2.IsEnd() && (*iter2).second.des == min.des &&
+         (*iter2).second.origin == min.origin;
          ++iter2) {
       Clock arrive_time = first_target.start_time.Add(first_target.total_time);
       Clock second_train_date = arrive_time.CutDate();
@@ -274,13 +282,17 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
   if (best_price == ~(1 << 31)) {
     std::cout << 0 << '\n';
   } else {
-    std::cout << first_best_target.train_id << ' ' << origin << ' '
-              << first_best_target.start_time << " -> " << transfer << ' '
+    std::cout << first_best_target.train_id << ' '
+              << core::hash_str.GetValue(origin).value() << ' '
+              << first_best_target.start_time << " -> "
+              << core::hash_str.GetValue(transfer).value() << ' '
               << first_best_target.start_time.Add(first_best_target.total_time)
               << ' ' << first_best_target.price << ' '
               << first_best_target.remain << '\n';
-    std::cout << second_best_target.train_id << ' ' << transfer << ' '
-              << second_best_target.start_time << " -> " << des << ' '
+    std::cout << second_best_target.train_id << ' '
+              << core::hash_str.GetValue(transfer).value() << ' '
+              << second_best_target.start_time << " -> "
+              << core::hash_str.GetValue(des).value() << ' '
               << second_best_target.start_time.Add(
                      second_best_target.total_time)
               << ' ' << second_best_target.price << ' '
@@ -374,10 +386,12 @@ void train_sys::QueryOrder(const FixedString<20> &uid) {
     } else {
       std::cout << "refunded";
     }
-    std::cout << "] " << (*iter).second.train_id << ' ' << (*iter).second.origin
-              << ' ' << (*iter).second.leave_time << " -> "
-              << (*iter).second.des << ' ' << (*iter).second.arrive_time << ' '
-              << (*iter).second.price << ' ' << (*iter).second.amount << '\n';
+    std::cout << "] " << (*iter).second.train_id << ' '
+              << core::hash_str.GetValue((*iter).second.origin).value() << ' '
+              << (*iter).second.leave_time << " -> "
+              << core::hash_str.GetValue((*iter).second.des).value() << ' '
+              << (*iter).second.arrive_time << ' ' << (*iter).second.price
+              << ' ' << (*iter).second.amount << '\n';
   }
 }
 
