@@ -6,13 +6,12 @@
 
 using str_hash = int64_t;
 str_hash Hash(const char *str, size_t len) {
-  if (str == NULL || len == 0)
+  if (str == NULL || len == 0){
     return 0;
-
+  }
   const uint64_t seed = 0xcbf29ce484222325; // FNV-1a的初始种子
   uint64_t hash = seed;
   const uint8_t *bytes = (const uint8_t *)str; // 按字节处理
-
   for (size_t i = 0; i < len; i++) {
     hash ^= bytes[i];
     hash *= 0x100000001b3; // FNV-1a质数（64位）
