@@ -47,6 +47,10 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
+  bool logout = false;
+  if (train_id.compare("brother") == 0) {
+    logout = true;
+  }
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
@@ -72,6 +76,11 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
     route.delta_day = train.value().leave_time[i].day;
     for (int ii = i + 1; ii < train.value().station_num; ++ii) {
       route.des = train.value().stations[ii];
+      if (logout) {
+        std::cerr << core::hash_str.GetValue(route.origin).value() << ' '
+                  << core::hash_str.GetValue(route.des).value() << ' '
+                  << route.start_time << ' ' << route.delta_day << '\n';
+      }
       routes.Insert(route, route);
     }
   }
@@ -199,6 +208,9 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
   for (auto iter1 = routes.KeyBegin(min);
        !iter1.IsEnd() && (*iter1).second.origin == origin; ++iter1) {
     Clock first_train_date = date.Minus({0, (*iter1).second.delta_day, 0, 0});
+    if (logout) {
+      std::cerr << core::hash_str.GetValue((*iter1).second.des).value() << '\n';
+    }
     std::optional<TrainState> first_train =
         states.GetValue({(*iter1).second.train_id, first_train_date});
     if (!first_train.has_value()) {
@@ -211,6 +223,9 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
          !iter2.IsEnd() && (*iter2).second.des == min.des &&
          (*iter2).second.origin == min.origin;
          ++iter2) {
+      if (logout) {
+        std::cerr << core::hash_str.GetValue(min.origin).value() << '\n';
+      }
       Clock arrive_time = first_target.start_time.Add(first_target.total_time);
       Clock second_train_date = arrive_time.CutDate();
       if (first_target.train_id.compare((*iter2).second.train_id) == 0) {
