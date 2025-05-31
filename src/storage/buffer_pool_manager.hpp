@@ -144,11 +144,12 @@ private:
   FrameManager *frame_manager_;
   int cache_size_;
   int page_size_;
+  char zeros[4096] = {0};
   char **cache_;
 
   void InitPage(page_id_t target_page) {
     data_file_.seekp(target_page * page_size_);
-    data_file_.write(cache_[0], page_size_);
+    data_file_.write(zeros, page_size_);
   }
   void FetchPage(page_id_t target_page, frame_id_t target_frame) {
     data_file_.seekg(target_page * page_size_);
