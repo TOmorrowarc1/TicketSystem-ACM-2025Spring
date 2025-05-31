@@ -67,7 +67,8 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
   route.train_id = train_id;
   for (int i = 0; i < train.value().station_num - 1; ++i) {
     route.origin = train.value().stations[i];
-    route.start_time = train.value().leave_time[i].CutTime();
+    route.start_time =
+        train.value().leave_time[i].CutTime().Add(train.value().begin);
     route.delta_day = train.value().leave_time[i].day;
     for (int ii = i + 1; ii < train.value().station_num; ++ii) {
       route.des = state.stations[ii];
@@ -204,9 +205,13 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
       Clock arrive_time = first_target.start_time.Add(first_target.total_time);
       Clock second_train_date = arrive_time.CutDate();
       // The train with the same ID on the second day?
-      if (arrive_time.CutTime().Compare((*iter2).second.start_time) > 0 ||
+      if (arrive_time.CutTime().Compare((*iter2).second.start_time.CutTime()) >
+              0 ||
           first_target.train_id.compare((*iter2).second.train_id) == 0) {
         second_train_date.Addit({0, 1, 0, 0});
+      }
+      if (second_train_date.Compare((*iter2).second.start_time.CutDate()) < 0) {
+        second_train_date = (*iter2).second.start_time.CutDate();
       }
       std::optional<TrainState> second_train =
           states.GetValue({(*iter2).second.train_id, second_train_date});
