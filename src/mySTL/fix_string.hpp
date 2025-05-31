@@ -51,8 +51,9 @@ public:
   auto Hash() const -> str_hash {
     const uint64_t seed = 0xcbf29ce484222325; // FNV-1a的初始种子
     uint64_t hash = seed;
-    for (int i = 0; data[i] != 0; i++) {
-      hash ^= data[i];
+    const uint8_t *bytes = (const uint8_t *)data;
+    for (int i = 0; bytes[i] != 0; i++) {
+      hash ^= bytes[i];
       hash *= 0x100000001b3; // FNV-1a质数（64位）
       // 额外混合步骤（增强雪崩效应）
       hash = (hash ^ (hash >> 31)) * 0x85ebca77b2;
