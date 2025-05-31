@@ -136,6 +136,7 @@ void Execute(TokenScanner &command) {
         while (std::getline(iss, piece, '|')) {
           FixedChineseString<10> name = piece;
           train.stations[pointer] = name.Hash();
+          core::hash_str.Insert(train.stations[pointer], name);
           ++pointer;
         }
         break;
