@@ -90,10 +90,10 @@ struct RouteTrain {
 struct RouteTComparator {
   auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
     if (lhs.origin != rhs.origin) {
-      return lhs.origin - rhs.origin;
+      return HashCompare()(lhs.origin, rhs.origin);
     }
     if (lhs.des != rhs.des) {
-      return lhs.des - rhs.des;
+      return HashCompare()(lhs.des, rhs.des);
     }
     int result = lhs.start_time.Compare(rhs.start_time);
     if (result != 0) {

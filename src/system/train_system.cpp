@@ -97,7 +97,8 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
     target.date = date;
     std::optional<TrainState> result = states.GetValue(target);
     std::cout << result.value().train_id << ' ' << result.value().type << '\n';
-    std::cout << result.value().stations[0] << ' ' << "xx-xx xx:xx"
+    std::cout << core::hash_str.GetValue(result.value().stations[0]).value()
+              << ' ' << "xx-xx xx:xx"
               << " -> " << result.value().leave_time[0] << " 0 "
               << result.value().remain_tickets[0] << '\n';
     int price = result.value().price[0];

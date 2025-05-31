@@ -7,7 +7,12 @@
 using str_hash = int64_t;
 struct HashCompare {
   auto operator()(const str_hash &lhs, const str_hash &rhs) const -> int {
-    return lhs - rhs;
+    if (lhs > rhs) {
+      return 1;
+    } else if (lhs < rhs) {
+      return -1;
+    }
+    return 0;
   }
 };
 template <int MaxLength> class FixedString {
