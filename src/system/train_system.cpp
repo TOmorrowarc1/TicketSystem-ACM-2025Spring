@@ -27,10 +27,10 @@ bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
 bpt::BPlusTree<Order, Order, OrderComparator>
     train_sys::user_order(0, &user_order_buffer);
 
-bpt::BufferPoolManager train_sys::train_order_buffer(50, 4096, "order_data_2",
+bpt::BufferPoolManager train_sys::train_query_buffer(50, 4096, "order_data_2",
                                                      "order_disk_2");
 bpt::BPlusTree<Query, Query, QueryComparator>
-    train_sys::train_order(0, &train_order_buffer);
+    train_sys::train_query(0, &train_query_buffer);
 
 void train_sys::AddTrain(const FixedString<20> &train_id,
                          const TrainTotal &train) {
@@ -366,7 +366,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
         std::cerr << target.uid << ' ' << target.amount << ' ' << target.time
                   << ' ' << '\n';
       }
-      train_order.Insert(target, target);
+      train_query.Insert(target, target);
       user_order.Insert(order, order);
       std::cout << "queue\n";
     } else {
@@ -446,11 +446,12 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] += target.amount;
     }
+    std::vector<Query> complete_query;
     Query min;
     min.train_id = train.value().train_id;
     min.date = train.value().arrive_time[0];
     min.time = 0;
-    for (auto iter2 = train_order.KeyBegin(min);
+    for (auto iter2 = train_query.KeyBegin(min);
          !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
          (*iter2).second.train_id.compare(min.train_id) == 0;
          ++iter2) {
@@ -469,6 +470,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
                   << '\n';
       }
       if (seat >= (*iter2).second.amount) {
+        complete_query.push_back((*iter2).second);
         if (target.train_id.compare("LeavesofGrass") == 0 &&
             train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
           std::cerr << "refund_success_success" << '\n';
@@ -487,8 +489,10 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         order_change.value().status = Status::SUCCESS;
         user_order.Remove(order);
         user_order.Insert(order, order_change.value());
-        train_order.Remove((*iter2).second);
       }
+    }
+    for (int i = 0; i < complete_query.size(); ++i) {
+      train_query.Remove(complete_query[i]);
     }
     states.Remove({train.value().train_id, train.value().arrive_time[0]});
     states.Insert({train.value().train_id, train.value().arrive_time[0]},
@@ -499,10 +503,10 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     erase_target.date = target.date;
     erase_target.train_id = target.train_id;
     std::cerr << "pending" << '\n';
-    std::cerr << train_order.GetValue(erase_target).value().train_id
-              << train_order.GetValue(erase_target).value().uid
-              << train_order.GetValue(erase_target).value().date << '\n';
-    train_order.Remove(erase_target);
+    std::cerr << train_query.GetValue(erase_target).value().train_id
+              << train_query.GetValue(erase_target).value().uid
+              << train_query.GetValue(erase_target).value().date << '\n';
+    train_query.Remove(erase_target);
   } else {
     std::cout << -1 << '\n';
     return;

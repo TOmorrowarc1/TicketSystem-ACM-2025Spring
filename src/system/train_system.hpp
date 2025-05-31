@@ -21,8 +21,8 @@ extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorB> routeB;
 
 extern bpt::BufferPoolManager user_order_buffer;
 extern bpt::BPlusTree<Order, Order, OrderComparator> user_order;
-extern bpt::BufferPoolManager train_order_buffer;
-extern bpt::BPlusTree<Query, Query, QueryComparator> train_order;
+extern bpt::BufferPoolManager train_query_buffer;
+extern bpt::BPlusTree<Query, Query, QueryComparator> train_query;
 
 void AddTrain(const FixedString<20> &train_id, const TrainTotal &train);
 void DeleteTrain(const FixedString<20> train_id);
