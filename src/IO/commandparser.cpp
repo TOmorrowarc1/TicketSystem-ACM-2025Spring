@@ -134,7 +134,9 @@ void Execute(TokenScanner &command) {
         std::istringstream iss(command.NextToken());
         std::string piece;
         while (std::getline(iss, piece, '|')) {
-          train.stations[pointer] = piece;
+          FixedChineseString<10> name = piece;
+          train.stations[pointer] = name.Hash();
+          core::hash_str.Insert(train.stations[pointer], name);
           ++pointer;
         }
         break;
@@ -256,7 +258,9 @@ void Execute(TokenScanner &command) {
       }
       }
     }
-    train_sys::QueryTicket(origin, des, date, time);
+    str_hash hash1 = origin.Hash();
+    str_hash hash2 = des.Hash();
+    train_sys::QueryTicket(hash1, hash2, date, time);
   } else if (command_type == "query_transfer") {
     Clock date;
     FixedChineseString<10> origin;
@@ -287,7 +291,9 @@ void Execute(TokenScanner &command) {
       }
       }
     }
-    train_sys::QueryTransfer(origin, des, date, time);
+    str_hash hash1 = origin.Hash();
+    str_hash hash2 = des.Hash();
+    train_sys::QueryTransfer(hash1, hash2, date, time);
   } else if (command_type == "buy_ticket") {
     Query target;
     bool queue = false;
@@ -315,11 +321,11 @@ void Execute(TokenScanner &command) {
         break;
       }
       case 'f': {
-        target.origin = command.NextToken();
+        target.origin = FixedChineseString<10>(command.NextToken()).Hash();
         break;
       }
       case 't': {
-        target.des = command.NextToken();
+        target.des = FixedChineseString<10>(command.NextToken()).Hash();
         break;
       }
       case 'q': {
