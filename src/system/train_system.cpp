@@ -204,10 +204,11 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
          ++iter2) {
       Clock arrive_time = first_target.start_time.Add(first_target.total_time);
       Clock second_train_date = arrive_time.CutDate();
-      // The train with the same ID on the second day?
+      if (first_target.train_id.compare((*iter2).second.train_id) == 0) {
+        continue;
+      }
       if (arrive_time.CutTime().Compare((*iter2).second.start_time.CutTime()) >
-              0 ||
-          first_target.train_id.compare((*iter2).second.train_id) == 0) {
+          0) {
         second_train_date.Addit({0, 1, 0, 0});
       }
       if (second_train_date.Compare((*iter2).second.start_time.CutDate()) < 0) {
