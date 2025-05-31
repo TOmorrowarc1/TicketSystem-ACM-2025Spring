@@ -182,6 +182,11 @@ void train_sys::QueryTicket(str_hash origin, str_hash des, const Clock date,
 
 void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
                               bool time) {
+  bool logout = false;
+  if (origin == FixedChineseString<10>("甘肃省玉门市").Hash() &&
+      des == FixedChineseString<10>("江苏省镇江市").Hash()) {
+    logout = true;
+  }
   int best_price = ~(1 << 31);
   Clock best_time = {0, 32, 0, 0};
   RouteUser first_target;
@@ -252,6 +257,24 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
           first_best_target = first_target;
           second_best_target = second_target;
           transfer = min.origin;
+          if (logout) {
+            std::cerr << first_best_target.train_id << ' '
+                      << core::hash_str.GetValue(origin).value() << ' '
+                      << first_best_target.start_time << " -> "
+                      << core::hash_str.GetValue(transfer).value() << ' '
+                      << first_best_target.start_time.Add(
+                             first_best_target.total_time)
+                      << ' ' << first_best_target.price << ' '
+                      << first_best_target.remain << '\n';
+            std::cerr << second_best_target.train_id << ' '
+                      << core::hash_str.GetValue(transfer).value() << ' '
+                      << second_best_target.start_time << " -> "
+                      << core::hash_str.GetValue(des).value() << ' '
+                      << second_best_target.start_time.Add(
+                             second_best_target.total_time)
+                      << ' ' << second_best_target.price << ' '
+                      << second_best_target.remain << '\n';
+          }
         }
       } else {
         if (second_target.price + first_target.price < best_price ||
