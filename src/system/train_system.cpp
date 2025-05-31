@@ -52,6 +52,9 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
+  if (train_id.compare("Butsubtleclandest") == 0) {
+    std::cerr << "It is here\n";
+  }
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
@@ -75,15 +78,6 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
         route.des = state.stations[ii];
         routeA.Insert(route, route);
         routeB.Insert(route, route);
-      }
-    }
-    if (state.train_id.compare("LeavesofGrass") == 0 &&
-        state.arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
-      std::cerr << "release\n";
-      for (int i = 0; i < state.station_num; ++i) {
-        std::cerr << state.stations[i] << ' ' << state.arrive_time[i] << ' '
-                  << state.leave_time[i] << '\n';
-        std::cerr << state.max_tickets << '\n';
       }
     }
     state.AddDate(one_day);
@@ -158,15 +152,15 @@ void train_sys::QueryTicket(const FixedChineseString<10> &start,
   max.start_time = date.Add({0, 1, 0, 0});
   max.origin = start;
   max.des = end;
+  if (min.origin.compare("河南省漯河市") == 0 &&
+      min.des.compare("江西省赣州市") == 0 &&
+      min.start_time.Compare({7, 4, 0, 0}) == 0) {
+    int i = 0;
+  }
   for (auto iter = routeB.KeyBegin(min);
        !iter.IsEnd() && RouteTComparatorB()((*iter).second, max) < 0; ++iter) {
     std::optional<TrainState> result =
         states.GetValue({(*iter).second.train_id, (*iter).second.train_time});
-    if (!result.has_value()) {
-      std::cerr << (*iter).second.train_id << ' ' << (*iter).second.train_time
-                << '\n';
-      exit(0);
-    }
     target = result.value().CompleteRoute((*iter).second);
     routes.push_back(target);
   }
