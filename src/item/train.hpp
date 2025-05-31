@@ -36,11 +36,11 @@ struct ClockComparator {
 };
 
 struct TrainTotal {
-  str_hash stations[25];
   Clock begin;
   Clock end;
   Clock arrive_time[25];
   Clock leave_time[25];
+  str_hash stations[25] = {0};
   int price[25] = {0};
   int station_num;
   int tickets_num;
@@ -63,10 +63,10 @@ struct TrainStateComparator {
   }
 };
 struct TrainState {
-  str_hash stations[25];
   FixedString<20> train_id;
   Clock arrive_time[25];
   Clock leave_time[25];
+  str_hash stations[25] = {0};
   int station_num;
   int max_tickets;
   int remain_tickets[25] = {0};
