@@ -319,12 +319,6 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     std::cout << -1 << '\n';
     return;
   }
-  if (target.train_id.compare("LeavesofGrass") == 0 &&
-      target.date.Compare({6, 17, 0, 0}) == 0) {
-    std::cerr << "buy" << '\n';
-    std::cerr << target.uid << ' ' << target.amount << ' ' << target.time << ' '
-              << '\n';
-  }
   int price = 0;
   int seat = train.value().remain_tickets[start];
   for (int i = start; i < des; ++i) {
@@ -350,32 +344,14 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     states.Remove({target.train_id, target.date});
     states.Insert({target.train_id, target.date}, train.value());
     user_order.Insert(order, order);
-    if (target.train_id.compare("LeavesofGrass") == 0 &&
-        target.date.Compare({6, 17, 0, 0}) == 0) {
-      std::cerr << "buy_success" << '\n';
-      std::cerr << target.uid << ' ' << target.amount << ' ' << target.time
-                << ' ' << '\n';
-    }
     std::cout << price * target.amount << '\n';
   } else {
     if (queue && target.amount <= train.value().max_tickets) {
       order.status = Status::PENDING;
-      if (target.train_id.compare("LeavesofGrass") == 0 &&
-          target.date.Compare({6, 17, 0, 0}) == 0) {
-        std::cerr << "buy_quque" << '\n';
-        std::cerr << target.uid << ' ' << target.amount << ' ' << target.time
-                  << ' ' << '\n';
-      }
       train_query.Insert(target, target);
       user_order.Insert(order, order);
       std::cout << "queue\n";
     } else {
-      if (target.train_id.compare("LeavesofGrass") == 0 &&
-          target.date.Compare({6, 17, 0, 0}) == 0) {
-        std::cerr << "buy_failed" << '\n';
-        std::cerr << target.uid << ' ' << target.amount << ' ' << target.time
-                  << ' ' << '\n';
-      }
       std::cout << -1 << '\n';
     }
   }
@@ -433,12 +409,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   }
   Order target = (*iter1).second;
   if (target.status == Status::SUCCESS) {
-    if (target.train_id.compare("LeavesofGrass") == 0 &&
-        target.date.Compare({6, 17, 0, 0}) == 0) {
-      std::cerr << "refund_success" << '\n';
-      std::cerr << target.train_id << ' ' << target.uid << ' ' << target.date
-                << ' ' << target.time << ' ' << '\n';
-    }
     std::optional<TrainState> train =
         states.GetValue({target.train_id, target.date});
     int start = train.value().FindStation(target.origin);
@@ -461,24 +431,8 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
       for (int i = start; i < des; ++i) {
         seat = std::min(seat, train.value().remain_tickets[i]);
       }
-      if (target.train_id.compare("LeavesofGrass") == 0 &&
-          train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
-        std::cerr << "refund_success_pending" << '\n';
-        std::cerr << (*iter2).second.train_id << ' ' << (*iter2).second.uid
-                  << ' ' << (*iter2).second.date << ' '
-                  << (*iter2).second.amount << ' ' << (*iter2).second.time
-                  << '\n';
-      }
       if (seat >= (*iter2).second.amount) {
         complete_query.push_back((*iter2).second);
-        if (target.train_id.compare("LeavesofGrass") == 0 &&
-            train.value().arrive_time[0].Compare({6, 17, 0, 0}) == 0) {
-          std::cerr << "refund_success_success" << '\n';
-          std::cerr << (*iter2).second.train_id << ' ' << (*iter2).second.uid
-                    << ' ' << (*iter2).second.date << ' '
-                    << (*iter2).second.amount << ' ' << (*iter2).second.time
-                    << '\n';
-        }
         for (int i = start; i < des; ++i) {
           train.value().remain_tickets[i] -= (*iter2).second.amount;
         }
@@ -502,10 +456,6 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     erase_target.time = target.time;
     erase_target.date = target.date;
     erase_target.train_id = target.train_id;
-    std::cerr << "pending" << '\n';
-    std::cerr << train_query.GetValue(erase_target).value().train_id
-              << train_query.GetValue(erase_target).value().uid
-              << train_query.GetValue(erase_target).value().date << '\n';
     train_query.Remove(erase_target);
   } else {
     std::cout << -1 << '\n';
