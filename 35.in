@@ -32832,3 +32832,4 @@
 [1655920] query_ticket -d 07-03 -p cost -s 广东省阳江市 -t 河北省迁安市
 [1655929] release_train -i are
 [1655945] query_ticket -t 广东省花都市 -s 辽宁省本溪市 -d 08-09 -p cost
+[552713] exit 

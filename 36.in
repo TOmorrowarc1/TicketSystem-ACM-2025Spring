@@ -32910,3 +32910,4 @@
 [2208541] query_ticket -p cost -d 08-05 -s 云南省楚雄市 -t 江西省南康市
 [2208542] query_ticket -s 黑龙江省双城市 -t 北京市 -d 08-30 -p time
 [2208571] query_ticket -p cost -t 北京市 -d 06-05 -s 海南省琼海市
+[552713] exit 

@@ -33077,3 +33077,4 @@
 [1104541] query_ticket -t 湖北省汉川市 -d 08-15 -p time -s 吉林省大安市
 [1104558] query_ticket -s 辽宁省沈阳市 -t 浙江省衢州市 -d 08-24 -p cost
 [1104570] query_ticket -t 浙江省杭州市 -p time -d 08-06 -s 河南省林州市
+[552713] exit 

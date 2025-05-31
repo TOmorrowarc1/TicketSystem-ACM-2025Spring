@@ -32929,3 +32929,4 @@
 [552684] query_ticket -s 山东省烟台市 -d 08-08 -t 湖北省咸宁市 -p cost
 [552688] query_ticket -s 辽宁省普兰店市 -t 广东省肇庆市 -d 07-14 -p time
 [552713] query_ticket -p time -s 黑龙江省黑河市 -t 黑龙江省穆棱市 -d 08-09
+[552713] exit 

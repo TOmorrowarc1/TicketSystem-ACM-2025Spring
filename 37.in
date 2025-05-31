@@ -32756,3 +32756,4 @@
 [2760469] query_ticket -s 北京市 -p time -d 07-30 -t 福建省晋江市
 [2760470] query_ticket -t 四川省华蓥市 -s 河北省任丘市 -p cost -d 07-21
 [2760480] query_ticket -d 06-09 -s 辽宁省瓦房店市 -t 云南省宣威市 -p cost
+[552713] exit 
