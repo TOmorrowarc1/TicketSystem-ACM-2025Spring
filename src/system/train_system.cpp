@@ -71,7 +71,7 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
         train.value().leave_time[i].CutTime().Add(train.value().begin);
     route.delta_day = train.value().leave_time[i].day;
     for (int ii = i + 1; ii < train.value().station_num; ++ii) {
-      route.des = state.stations[ii];
+      route.des = train.value().stations[ii];
       routes.Insert(route, route);
     }
   }

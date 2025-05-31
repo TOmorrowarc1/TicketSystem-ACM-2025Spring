@@ -129,8 +129,8 @@ struct RouteUComparatorB {
 };
 
 struct Query {
-  str_hash origin;
-  str_hash des;
+  str_hash origin = 0;
+  str_hash des = 0;
   FixedString<20> uid;
   FixedString<20> train_id;
   Clock date;
@@ -147,8 +147,8 @@ struct QueryComparator {
 
 enum class Status { SUCCESS = 0, PENDING, REFUNDED };
 struct Order {
-  str_hash origin;
-  str_hash des;
+  str_hash origin = 0;
+  str_hash des = 0;
   FixedString<20> uid;
   FixedString<20> train_id;
   Clock date;

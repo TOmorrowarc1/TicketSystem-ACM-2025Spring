@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-using str_hash = int64_t;
+using str_hash = uint64_t;
 struct HashCompare {
   auto operator()(const str_hash &lhs, const str_hash &rhs) const -> int {
     if (lhs > rhs) {
@@ -54,19 +54,32 @@ public:
   auto is_clear() const -> bool { return data[0] == '\0'; }
   void clear() { data[0] = '\0'; }
 
-  auto Hash() const -> str_hash {
-    const uint64_t seed = 0xcbf29ce484222325; // FNV-1a的初始种子
-    uint64_t hash = seed;
-    const uint8_t *bytes = (const uint8_t *)data;
-    for (int i = 0; bytes[i] != 0; i++) {
-      hash ^= bytes[i];
-      hash *= 0x100000001b3; // FNV-1a质数（64位）
-      // 额外混合步骤（增强雪崩效应）
-      hash = (hash ^ (hash >> 31)) * 0x85ebca77b2;
-      hash = (hash ^ (hash >> 33)) * 0xc2b2ae3d5;
+  auto Hash() -> str_hash {
+    const uint64_t seed1 = 0xcbf29ce484222325; // FNV-1a 初始种子
+    const uint64_t seed2 = 0x14650FB0739D0383; // 额外种子增强随机性
+    uint64_t hash1 = seed1;
+    uint64_t hash2 = seed2;
+    const uint8_t *bytes = reinterpret_cast<const uint8_t *>(data);
+    for (int i = 0; bytes[i] != '\0' && i < MaxLength; ++i) {
+      // FNV-1a 核心计算
+      hash1 ^= bytes[i];
+      hash1 *= 0x9E3779B185EBCA87; // FNV 质数
+      // 额外混合链（增强雪崩效应）
+      hash2 += bytes[i];
+      hash2 ^= hash2 << 13;
+      hash2 ^= hash2 >> 7;
+      hash2 ^= hash2 << 17;
+      // 交叉混合
+      hash1 += hash2;
+      hash2 ^= hash1;
     }
-    // 确保结果在int64_t范围内
-    return (int64_t)(hash & 0x7FFFFFFFFFFFFFFF); // 保留符号位为0
+    // 最终混合（加强雪崩效应）
+    hash1 ^= hash1 >> 33;
+    hash1 *= 0xff51afd7ed558ccd;
+    hash1 ^= hash1 >> 33;
+    hash1 *= 0xc4ceb9fe1a85ec53;
+    hash1 ^= hash1 >> 33;
+    return hash1;
   }
 
   auto compare(const FixedString &other) const -> int {
