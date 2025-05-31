@@ -139,11 +139,6 @@ void train_sys::QueryTicket(const FixedChineseString<10> &origin,
   RouteTrain min;
   min.origin = origin;
   min.des = des;
-  /*if (min.origin.compare("河南省漯河市") == 0 &&
-      min.des.compare("江西省赣州市") == 0 &&
-      min.start_time.Compare({7, 4, 0, 0}) == 0) {
-    int i = 0;
-  }*/
   for (auto iter = routes.KeyBegin(min);
        !iter.IsEnd() && (*iter).second.origin.compare(origin) == 0 &&
        (*iter).second.des.compare(des) == 0;
