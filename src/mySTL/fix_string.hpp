@@ -9,7 +9,8 @@ struct HashCompare {
   auto operator()(const str_hash &lhs, const str_hash &rhs) const -> int {
     if (lhs > rhs) {
       return 1;
-    } else if (lhs < rhs) {
+    }
+    if (lhs < rhs) {
       return -1;
     }
     return 0;
