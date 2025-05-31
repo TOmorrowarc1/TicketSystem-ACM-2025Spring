@@ -7,7 +7,7 @@ class CerrRedirect {
 
 public:
   CerrRedirect(const std::string &filename)
-      : orig_cerr(std::cerr.rdbuf()), file(filename) {
+      : orig_cerr(std::cerr.rdbuf()), file(filename, std::ios::app) {
     std::cerr.rdbuf(file.rdbuf());
   }
 
