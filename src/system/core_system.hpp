@@ -3,6 +3,8 @@
 //记得加入所有的item类.
 #include "index/b_plus_tree.hpp"
 #include "item/user.hpp"
+#include "mySTL/set.hpp"
+#include "mySTL/vector.hpp"
 #include <set>
 namespace core {
 extern bpt::BufferPoolManager hash_str_buffer;
