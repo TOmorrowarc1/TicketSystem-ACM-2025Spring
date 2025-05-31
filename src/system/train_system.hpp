@@ -14,10 +14,8 @@ extern bpt::BufferPoolManager release_buffer;
 extern bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     release;
 
-extern bpt::BufferPoolManager routeA_buffer;
-extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorA> routeA;
-extern bpt::BufferPoolManager routeB_buffer;
-extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorB> routeB;
+extern bpt::BufferPoolManager routes_buffer;
+extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator> routes;
 
 extern bpt::BufferPoolManager user_order_buffer;
 extern bpt::BPlusTree<Order, Order, OrderComparator> user_order;
@@ -28,11 +26,11 @@ void AddTrain(const FixedString<20> &train_id, const TrainTotal &train);
 void DeleteTrain(const FixedString<20> train_id);
 void ReleaseTrain(const FixedString<20> train_id);
 void QueryTrain(const FixedString<20>, const Clock &time);
-void QueryTicket(const FixedChineseString<10> &start,
-                 const FixedChineseString<10> &end, const Clock date,
+void QueryTicket(const FixedChineseString<10> &origin,
+                 const FixedChineseString<10> &des, const Clock date,
                  bool time);
-void QueryTransfer(const FixedChineseString<10> &start,
-                   const FixedChineseString<10> &end, const Clock date,
+void QueryTransfer(const FixedChineseString<10> &origin,
+                   const FixedChineseString<10> &des, const Clock date,
                    bool time);
 void BuyTicket(Query &target, bool queue);
 void QueryOrder(const FixedString<20> &uid);

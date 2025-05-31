@@ -73,6 +73,12 @@ auto Clock::CutDate() -> Clock {
   result.minute = 0;
   return result;
 }
+auto Clock::CutTime() -> Clock {
+  Clock result = *this;
+  result.month = 0;
+  result.day = 0;
+  return result;
+}
 auto Clock::Compare(const Clock &other) const -> int {
   if (month != other.month) {
     return month - other.month;

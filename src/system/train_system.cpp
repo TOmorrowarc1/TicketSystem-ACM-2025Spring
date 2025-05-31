@@ -12,15 +12,10 @@ bpt::BufferPoolManager train_sys::release_buffer(50, 4096, "release_data",
 bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     train_sys::release(0, &release_buffer);
 
-bpt::BufferPoolManager train_sys::routeA_buffer(50, 4096, "routeA_data",
-                                                "routeA_disk");
-bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorA>
-    train_sys::routeA(0, &routeA_buffer);
-
-bpt::BufferPoolManager train_sys::routeB_buffer(50, 4096, "routeB_data",
+bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "routeB_data",
                                                 "routeB_disk");
-bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparatorB>
-    train_sys::routeB(0, &routeB_buffer);
+bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator>
+    train_sys::routes(0, &routes_buffer);
 
 bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
                                                     "order_disk_1");
@@ -52,9 +47,6 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
-  if (train_id.compare("Butsubtleclandest") == 0) {
-    std::cerr << "It is here\n";
-  }
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
@@ -66,22 +58,21 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
   TrainState state;
   state.train_id = train_id;
   state.Construct(train.value(), date);
-  RouteTrain route;
-  route.train_id = train_id;
   while (date.Compare(train.value().end) <= 0) {
     states.Insert(state.GetKey(), state);
-    route.train_time = state.arrive_time[0];
-    for (int i = 0; i < state.station_num - 1; ++i) {
-      route.origin = state.stations[i];
-      route.start_time = state.leave_time[i];
-      for (int ii = i + 1; ii < state.station_num; ++ii) {
-        route.des = state.stations[ii];
-        routeA.Insert(route, route);
-        routeB.Insert(route, route);
-      }
-    }
     state.AddDate(one_day);
     date.Addit(one_day);
+  }
+  RouteTrain route;
+  route.train_id = train_id;
+  for (int i = 0; i < train.value().station_num - 1; ++i) {
+    route.origin = train.value().stations[i];
+    route.start_time = train.value().leave_time[i].CutTime();
+    route.delta_day = train.value().leave_time[i].day;
+    for (int ii = i + 1; ii < train.value().station_num; ++ii) {
+      route.des = state.stations[ii];
+      routes.Insert(route, route);
+    }
   }
   release.Remove(train_id);
   release.Insert(train_id, train.value());
@@ -139,52 +130,52 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
   }
 }
 
-void train_sys::QueryTicket(const FixedChineseString<10> &start,
-                            const FixedChineseString<10> &end, const Clock date,
+void train_sys::QueryTicket(const FixedChineseString<10> &origin,
+                            const FixedChineseString<10> &des, const Clock date,
                             bool time) {
-  std::vector<RouteUser> routes;
+  std::vector<RouteUser> results;
   RouteUser target;
   RouteTrain min;
-  RouteTrain max;
-  min.start_time = date;
-  min.origin = start;
-  min.des = end;
-  max.start_time = date.Add({0, 1, 0, 0});
-  max.origin = start;
-  max.des = end;
-  if (min.origin.compare("河南省漯河市") == 0 &&
+  min.origin = origin;
+  min.des = des;
+  /*if (min.origin.compare("河南省漯河市") == 0 &&
       min.des.compare("江西省赣州市") == 0 &&
       min.start_time.Compare({7, 4, 0, 0}) == 0) {
     int i = 0;
+  }*/
+  for (auto iter = routes.KeyBegin(min);
+       !iter.IsEnd() && (*iter).second.origin.compare(origin) == 0 &&
+       (*iter).second.des.compare(des) == 0;
+       ++iter) {
+    Clock train_date = date.Minus({0, (*iter).second.delta_day, 0, 0});
+    std::optional<TrainState> train =
+        states.GetValue({(*iter).second.train_id, train_date});
+    if (train.has_value()) {
+      target = train.value().CompleteRoute((*iter).second);
+      results.push_back(target);
+    }
   }
-  for (auto iter = routeB.KeyBegin(min);
-       !iter.IsEnd() && RouteTComparatorB()((*iter).second, max) < 0; ++iter) {
-    std::optional<TrainState> result =
-        states.GetValue({(*iter).second.train_id, (*iter).second.train_time});
-    target = result.value().CompleteRoute((*iter).second);
-    routes.push_back(target);
-  }
-  RouteUser **answers = new RouteUser *[routes.size()];
-  for (int i = 0; i < routes.size(); ++i) {
-    answers[i] = &routes[i];
+  RouteUser **answers = new RouteUser *[results.size()];
+  for (int i = 0; i < results.size(); ++i) {
+    answers[i] = &results[i];
   }
   if (time) {
-    RouteQuickSortT(answers, 0, routes.size() - 1);
+    RouteQuickSortT(answers, 0, results.size() - 1);
   } else {
-    RouteQuickSortP(answers, 0, routes.size() - 1);
+    RouteQuickSortP(answers, 0, results.size() - 1);
   }
-  std::cout << routes.size() << '\n';
-  for (int i = 0; i < routes.size(); ++i) {
-    std::cout << answers[i]->train_id << ' ' << start << ' '
-              << answers[i]->start_time << " -> " << end << ' '
+  std::cout << results.size() << '\n';
+  for (int i = 0; i < results.size(); ++i) {
+    std::cout << answers[i]->train_id << ' ' << origin << ' '
+              << answers[i]->start_time << " -> " << des << ' '
               << answers[i]->start_time.Add(answers[i]->total_time) << ' '
               << answers[i]->price << ' ' << answers[i]->remain << '\n';
   }
   delete[] answers;
 }
 
-void train_sys::QueryTransfer(const FixedChineseString<10> &start,
-                              const FixedChineseString<10> &end,
+void train_sys::QueryTransfer(const FixedChineseString<10> &origin,
+                              const FixedChineseString<10> &des,
                               const Clock date, bool time) {
   int best_price = ~(1 << 31);
   Clock best_time = {0, 32, 0, 0};
@@ -194,29 +185,34 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
   RouteUser second_best_target;
   FixedChineseString<10> transfer;
   RouteTrain min;
-  min.start_time = date;
-  min.origin = start;
-  RouteTrain max;
-  max.origin = start;
-  max.start_time = date.Add({0, 1, 0, 0});
-  for (auto iter1 = routeA.KeyBegin(min);
-       !iter1.IsEnd() && RouteTComparatorA()((*iter1).second, max) < 0;
-       ++iter1) {
+  min.origin = origin;
+  for (auto iter1 = routes.KeyBegin(min);
+       !iter1.IsEnd() && (*iter1).second.origin.compare(origin) == 0; ++iter1) {
+    Clock first_train_date = date.Minus({0, (*iter1).second.delta_day, 0, 0});
     std::optional<TrainState> first_train =
-        states.GetValue({(*iter1).second.train_id, (*iter1).second.train_time});
+        states.GetValue({(*iter1).second.train_id, first_train_date});
+    if (!first_train.has_value()) {
+      continue;
+    }
     first_target = first_train.value().CompleteRoute((*iter1).second);
     min.origin = (*iter1).second.des;
-    min.des = end;
-    min.start_time = first_target.start_time.Add(first_target.total_time);
-    for (auto iter2 = routeB.KeyBegin(min);
+    min.des = des;
+    for (auto iter2 = routes.KeyBegin(min);
          !iter2.IsEnd() && (*iter2).second.des.compare(min.des) == 0 &&
          (*iter2).second.origin.compare(min.origin) == 0;
          ++iter2) {
-      if ((*iter2).second.train_id.compare((*iter1).second.train_id) == 0) {
+      Clock arrive_time = first_target.start_time.Add(first_target.total_time);
+      Clock second_train_date = arrive_time.CutDate();
+      // The train with the same ID on the second day?
+      if (arrive_time.CutTime().Compare((*iter2).second.start_time) > 0 ||
+          first_target.train_id.compare((*iter2).second.train_id) == 0) {
+        second_train_date.Addit({0, 1, 0, 0});
+      }
+      std::optional<TrainState> second_train =
+          states.GetValue({(*iter2).second.train_id, second_train_date});
+      if (!second_train.has_value()) {
         continue;
       }
-      std::optional<TrainState> second_train = states.GetValue(
-          {(*iter2).second.train_id, (*iter2).second.train_time});
       second_target = second_train.value().CompleteRoute((*iter2).second);
       if (time) {
         // A stupid 4 level comparation.
@@ -275,13 +271,13 @@ void train_sys::QueryTransfer(const FixedChineseString<10> &start,
   if (best_price == ~(1 << 31)) {
     std::cout << 0 << '\n';
   } else {
-    std::cout << first_best_target.train_id << ' ' << start << ' '
+    std::cout << first_best_target.train_id << ' ' << origin << ' '
               << first_best_target.start_time << " -> " << transfer << ' '
               << first_best_target.start_time.Add(first_best_target.total_time)
               << ' ' << first_best_target.price << ' '
               << first_best_target.remain << '\n';
     std::cout << second_best_target.train_id << ' ' << transfer << ' '
-              << second_best_target.start_time << " -> " << end << ' '
+              << second_best_target.start_time << " -> " << des << ' '
               << second_best_target.start_time.Add(
                      second_best_target.total_time)
               << ' ' << second_best_target.price << ' '

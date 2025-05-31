@@ -23,6 +23,7 @@ struct Clock {
   auto Add(const Clock &other) const -> Clock;
   auto Minus(const Clock &other) const -> Clock;
   auto CutDate() -> Clock;
+  auto CutTime() -> Clock;
   auto Compare(const Clock &other) const -> int;
 
   friend std::ostream &operator<<(std::ostream &os, const Clock &time);
@@ -84,26 +85,9 @@ struct RouteTrain {
   FixedChineseString<10> des;
   FixedString<20> train_id;
   Clock start_time;
-  Clock train_time;
+  int delta_day;
 };
-struct RouteTComparatorA {
-  auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
-    int result = lhs.origin.compare(rhs.origin);
-    if (result != 0) {
-      return result;
-    }
-    result = lhs.start_time.Compare(rhs.start_time);
-    if (result != 0) {
-      return result;
-    }
-    result = lhs.des.compare(rhs.des);
-    if (result != 0) {
-      return result;
-    }
-    return lhs.train_id.compare(rhs.train_id);
-  }
-};
-struct RouteTComparatorB {
+struct RouteTComparator {
   auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
     int result = lhs.origin.compare(rhs.origin);
     if (result != 0) {
