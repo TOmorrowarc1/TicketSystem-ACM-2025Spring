@@ -25,7 +25,7 @@ extern bpt::BPlusTree<Query, Query, QueryComparator> train_query;
 void AddTrain(const FixedString<20> &train_id, const TrainTotal &train);
 void DeleteTrain(const FixedString<20> train_id);
 void ReleaseTrain(const FixedString<20> train_id);
-void QueryTrain(const FixedString<20>, const Clock &time);
+void QueryTrain(const FixedString<20> train_id, const Clock &time);
 void QueryTicket(const FixedChineseString<10> &origin,
                  const FixedChineseString<10> &des, const Clock date,
                  bool time);
