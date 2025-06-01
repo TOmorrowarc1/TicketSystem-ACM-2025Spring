@@ -109,9 +109,9 @@ std::ostream &operator<<(std::ostream &os, const Clock &time) {
   return os;
 }
 
-auto TrainTotal::FindStation(const FixedChineseString<10> &station) -> int {
+auto TrainTotal::FindStation(str_hash station) -> int {
   for (int i = 0; i < station_num; ++i) {
-    if (stations[i].compare(station) == 0) {
+    if (stations[i] == station) {
       return i;
     }
   }
@@ -157,9 +157,9 @@ auto TrainState::GetKey() const -> TrainStateKey {
   date.hour = date.minute = 0;
   return {train_id, date};
 }
-auto TrainState::FindStation(const FixedChineseString<10> &station) -> int {
+auto TrainState::FindStation(str_hash station) -> int {
   for (int i = 0; i < station_num; ++i) {
-    if (stations[i].compare(station) == 0) {
+    if (stations[i] == station) {
       return i;
     }
   }
@@ -169,13 +169,13 @@ auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
   RouteUser info;
   info.train_id = train_id;
   int i = 0;
-  while (stations[i].compare(target.origin) != 0) {
+  while (stations[i] != target.origin) {
     ++i;
   }
   info.start_time = leave_time[i];
   info.price = 0;
   info.remain = remain_tickets[i];
-  while (stations[i].compare(target.des) != 0) {
+  while (stations[i] != target.des) {
     info.price += price[i];
     info.remain = std::min(info.remain, remain_tickets[i]);
     ++i;

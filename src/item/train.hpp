@@ -36,18 +36,18 @@ struct ClockComparator {
 };
 
 struct TrainTotal {
-  FixedChineseString<10> stations[25];
   Clock begin;
   Clock end;
   Clock arrive_time[25];
   Clock leave_time[25];
+  str_hash stations[25] = {0};
   int price[25] = {0};
   int station_num;
   int tickets_num;
   char type;
   bool has_released = false;
 
-  auto FindStation(const FixedChineseString<10> &station) -> int;
+  auto FindStation(str_hash station) -> int;
   auto DeltaDay(int station) -> Clock;
   auto AddDate(const Clock &date) -> TrainTotal &;
 };
@@ -63,10 +63,10 @@ struct TrainStateComparator {
   }
 };
 struct TrainState {
-  FixedChineseString<10> stations[25];
   FixedString<20> train_id;
   Clock arrive_time[25];
   Clock leave_time[25];
+  str_hash stations[25] = {0};
   int station_num;
   int max_tickets;
   int remain_tickets[25] = {0};
@@ -76,28 +76,26 @@ struct TrainState {
   auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
   auto AddDate(const Clock &date) -> TrainState &;
   auto GetKey() const -> TrainStateKey;
-  auto FindStation(const FixedChineseString<10> &station) -> int;
+  auto FindStation(str_hash station) -> int;
   auto CompleteRoute(const RouteTrain &target) -> RouteUser;
 };
 
 struct RouteTrain {
-  FixedChineseString<10> origin;
-  FixedChineseString<10> des;
+  str_hash origin = 0;
+  str_hash des = 0;
   FixedString<20> train_id;
   Clock start_time;
   int delta_day;
 };
 struct RouteTComparator {
   auto operator()(const RouteTrain &lhs, const RouteTrain &rhs) -> int {
-    int result = lhs.origin.compare(rhs.origin);
-    if (result != 0) {
-      return result;
+    if (lhs.origin != rhs.origin) {
+      return HashCompare()(lhs.origin, rhs.origin);
     }
-    result = lhs.des.compare(rhs.des);
-    if (result != 0) {
-      return result;
+    if (lhs.des != rhs.des) {
+      return HashCompare()(lhs.des, rhs.des);
     }
-    result = lhs.start_time.Compare(rhs.start_time);
+    int result = lhs.start_time.Compare(rhs.start_time);
     if (result != 0) {
       return result;
     }
@@ -131,8 +129,8 @@ struct RouteUComparatorB {
 };
 
 struct Query {
-  FixedChineseString<10> origin;
-  FixedChineseString<10> des;
+  str_hash origin = 0;
+  str_hash des = 0;
   FixedString<20> uid;
   FixedString<20> train_id;
   Clock date;
@@ -149,8 +147,8 @@ struct QueryComparator {
 
 enum class Status { SUCCESS = 0, PENDING, REFUNDED };
 struct Order {
-  FixedChineseString<10> origin;
-  FixedChineseString<10> des;
+  str_hash origin = 0;
+  str_hash des = 0;
   FixedString<20> uid;
   FixedString<20> train_id;
   Clock date;

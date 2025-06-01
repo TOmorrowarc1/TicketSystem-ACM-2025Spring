@@ -3,9 +3,14 @@
 //记得加入所有的item类.
 #include "index/b_plus_tree.hpp"
 #include "item/user.hpp"
+#include "mySTL/set.hpp"
+#include "mySTL/vector.hpp"
 #include <set>
 namespace core {
-extern std::set<FixedString<20>, FixStringLess<20>> users_id_now;
+extern bpt::BufferPoolManager hash_str_buffer;
+extern bpt::BPlusTree<str_hash, FixedChineseString<10>, HashCompare> hash_str;
+
+extern sjtu::Set<FixedString<20>, FixStringComparator<20>> users_id_now;
 
 auto Find(const FixedString<20> &user) -> bool;
 
