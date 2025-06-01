@@ -1,1 +1,8 @@
 build/
+testcases/
+state_data_
+order_data_1
+order_data_2
+release_data
+.in
+.out
