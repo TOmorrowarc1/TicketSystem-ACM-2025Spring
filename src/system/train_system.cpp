@@ -12,8 +12,8 @@ bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
 bpt::BPlusTree<TicketStateKey, TicketState, TicketStateKeyComparator>
     train_sys::states(0, &state_buffer);
 
-bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "routeB_data",
-                                                "routeB_disk");
+bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "route_data",
+                                                "route_disk");
 bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator>
     train_sys::routes(0, &routes_buffer);
 
@@ -47,11 +47,6 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
-  bool logout = false;
-  if (train_id.compare("brother") == 0 ||
-      train_id.compare("IamtowaitIdon") == 0) {
-    logout = true;
-  }
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
@@ -75,11 +70,6 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
     route.delta_day = train.value().leave_time[i].day;
     for (int ii = i + 1; ii < train.value().station_num; ++ii) {
       route.des = train.value().stations[ii];
-      if (logout) {
-        std::cerr << core::hash_str.GetValue(route.origin).value() << ' '
-                  << core::hash_str.GetValue(route.des).value() << ' '
-                  << route.start_time << ' ' << route.delta_day << '\n';
-      }
       routes.Insert(route, route);
     }
   }
