@@ -2,15 +2,15 @@
 
 int train_sys::order_time = 0;
 
-bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
-                                               "state_disk");
-bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator>
-    train_sys::states(0, &state_buffer);
-
 bpt::BufferPoolManager train_sys::release_buffer(50, 4096, "release_data",
                                                  "release_disk");
 bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     train_sys::release(0, &release_buffer);
+
+bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
+                                               "state_disk");
+bpt::BPlusTree<TicketStateKey, TicketState, TicketStateKeyComparator>
+    train_sys::states(0, &state_buffer);
 
 bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "route_data",
                                                 "route_disk");
@@ -19,7 +19,7 @@ bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator>
 
 bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
                                                     "order_disk_1");
-bpt::BPlusTree<Order, Order, OrderComparator>
+bpt::BPlusTree<OrderKey, Order, OrderKeyComparator>
     train_sys::user_order(0, &user_order_buffer);
 
 bpt::BufferPoolManager train_sys::train_query_buffer(50, 4096, "order_data_2",
@@ -55,12 +55,10 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
   train.value().has_released = true;
   Clock date = train.value().begin;
   Clock one_day = {0, 1, 0, 0};
-  TrainState state;
-  state.train_id = train_id;
-  state.Construct(train.value(), date);
+  TicketState state;
+  state.Construct(train.value());
   while (date.Compare(train.value().end) <= 0) {
-    states.Insert(state.GetKey(), state);
-    state.AddDate(one_day);
+    states.Insert({train_id, date}, state);
     date.Addit(one_day);
   }
   RouteTrain route;
@@ -91,33 +89,30 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
     std::cout << -1 << '\n';
     return;
   }
+  train.value().AddDate(date);
   if (train.value().has_released) {
-    TrainStateKey target;
-    target.train_id = train_id;
-    target.date = date;
-    std::optional<TrainState> result = states.GetValue(target);
-    std::cout << result.value().train_id << ' ' << result.value().type << '\n';
-    std::cout << core::hash_str.GetValue(result.value().stations[0]).value()
+    TicketStateKey target{train_id, date};
+    std::optional<TicketState> ticket_state = states.GetValue(target);
+    std::cout << train_id << ' ' << train.value().type << '\n';
+    std::cout << core::hash_str.GetValue(train.value().stations[0]).value()
               << ' ' << "xx-xx xx:xx"
-              << " -> " << result.value().leave_time[0] << " 0 "
-              << result.value().remain_tickets[0] << '\n';
-    int price = result.value().price[0];
-    for (int i = 1; i < result.value().station_num - 1; ++i) {
-      std::cout << core::hash_str.GetValue(result.value().stations[i]).value()
-                << ' ' << result.value().arrive_time[i] << " -> "
-                << result.value().leave_time[i] << ' ' << price << ' '
-                << result.value().remain_tickets[i] << '\n';
-      price += result.value().price[i];
+              << " -> " << train.value().leave_time[0] << " 0 "
+              << ticket_state.value().remain_tickets[0] << '\n';
+    int price = train.value().price[0];
+    for (int i = 1; i < train.value().station_num - 1; ++i) {
+      std::cout << core::hash_str.GetValue(train.value().stations[i]).value()
+                << ' ' << train.value().arrive_time[i] << " -> "
+                << train.value().leave_time[i] << ' ' << price << ' '
+                << ticket_state.value().remain_tickets[i] << '\n';
+      price += train.value().price[i];
     }
-    std::cout
-        << core::hash_str
-               .GetValue(
-                   result.value().stations[result.value().station_num - 1])
-               .value()
-        << ' ' << result.value().arrive_time[result.value().station_num - 1]
-        << " -> xx-xx xx:xx " << price << " x\n";
+    std::cout << core::hash_str
+                     .GetValue(
+                         train.value().stations[train.value().station_num - 1])
+                     .value()
+              << ' ' << train.value().arrive_time[train.value().station_num - 1]
+              << " -> xx-xx xx:xx " << price << " x\n";
   } else {
-    train.value().AddDate(date);
     std::cout << train_id << ' ' << train.value().type << '\n';
     std::cout << core::hash_str.GetValue(train.value().stations[0]).value()
               << ' ' << "xx-xx xx:xx"
@@ -151,11 +146,20 @@ void train_sys::QueryTicket(str_hash origin, str_hash des, const Clock date,
        !iter.IsEnd() && (*iter).second.origin == origin &&
        (*iter).second.des == des;
        ++iter) {
+    // First the name.
+    target.train_id = (*iter).second.train_id;
+    // The time: date from Route, time from train.
     Clock train_date = date.Minus({0, (*iter).second.delta_day, 0, 0});
-    std::optional<TrainState> train =
-        states.GetValue({(*iter).second.train_id, train_date});
-    if (train.has_value()) {
-      target = train.value().CompleteRoute((*iter).second);
+    target.start_time = train_date;
+    std::optional<TrainTotal> train_total = release.GetValue(target.train_id);
+    // The totaltime and price, by the way the spots for tickets.
+    std::pair<int, int> spots =
+        train_total.value().CompleteRoute((*iter).second, target);
+    std::optional<TicketState> ticket_state =
+        states.GetValue({target.train_id, train_date});
+    if (ticket_state.has_value()) {
+      target.remain =
+          ticket_state.value().RemainTicket(spots.first, spots.second);
       results.push_back(target);
     }
   }
@@ -193,13 +197,24 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
   min.origin = origin;
   for (auto iter1 = routes.KeyBegin(min);
        !iter1.IsEnd() && (*iter1).second.origin == origin; ++iter1) {
+    // First the name.
+    first_target.train_id = (*iter1).second.train_id;
+    // The time: date from Route, time from train.
     Clock first_train_date = date.Minus({0, (*iter1).second.delta_day, 0, 0});
-    std::optional<TrainState> first_train =
-        states.GetValue({(*iter1).second.train_id, first_train_date});
-    if (!first_train.has_value()) {
+    first_target.start_time = first_train_date;
+    std::optional<TrainTotal> first_train_total =
+        release.GetValue(first_target.train_id);
+    // The totaltime and price, by the way the spots for tickets.
+    std::pair<int, int> spots =
+        first_train_total.value().CompleteRoute((*iter1).second, first_target);
+    std::optional<TicketState> first_ticket_state =
+        states.GetValue({first_target.train_id, first_train_date});
+    if (!first_ticket_state.has_value()) {
       continue;
     }
-    first_target = first_train.value().CompleteRoute((*iter1).second);
+    first_target.remain =
+        first_ticket_state.value().RemainTicket(spots.first, spots.second);
+    // Query the second.
     min.origin = (*iter1).second.des;
     min.des = des;
     for (auto iter2 = routes.KeyBegin(min);
@@ -220,12 +235,22 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
       if (second_train_date.Compare((*iter2).second.start_time.CutDate()) < 0) {
         second_train_date = (*iter2).second.start_time.CutDate();
       }
-      std::optional<TrainState> second_train =
-          states.GetValue({(*iter2).second.train_id, second_train_date});
-      if (!second_train.has_value()) {
+      // First the name.
+      second_target.train_id = (*iter2).second.train_id;
+      // The time: date from Route, time from train.
+      second_target.start_time = second_train_date;
+      std::optional<TrainTotal> second_train_total =
+          release.GetValue(second_target.train_id);
+      // The totaltime and price, by the way the spots for tickets.
+      std::pair<int, int> spots = second_train_total.value().CompleteRoute(
+          (*iter2).second, second_target);
+      std::optional<TicketState> second_ticket_state =
+          states.GetValue({second_target.train_id, second_train_date});
+      if (!second_ticket_state.has_value()) {
         continue;
       }
-      second_target = second_train.value().CompleteRoute((*iter2).second);
+      second_target.remain =
+          second_ticket_state.value().RemainTicket(spots.first, spots.second);
       if (time) {
         // A stupid 4 level comparation.
         if (second_target.start_time.Add(second_target.total_time)
@@ -319,7 +344,7 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     return;
   }
   target.date = target.date.Minus(train_total.value().DeltaDay(start));
-  std::optional<TrainState> train =
+  std::optional<TicketState> train =
       states.GetValue({target.train_id, target.date});
   if (!train.has_value()) {
     std::cout << -1 << '\n';
@@ -329,15 +354,15 @@ void train_sys::BuyTicket(Query &target, bool queue) {
   int seat = train.value().remain_tickets[start];
   for (int i = start; i < des; ++i) {
     seat = std::min(seat, train.value().remain_tickets[i]);
-    price += train.value().price[i];
+    price += train_total.value().price[i];
   }
   Order order{target.origin,
               target.des,
               target.uid,
               target.train_id,
               target.date,
-              train.value().leave_time[start],
-              train.value().arrive_time[des],
+              train_total.value().leave_time[start].Add(target.date),
+              train_total.value().arrive_time[des].Add(target.date),
               Status::SUCCESS,
               target.amount,
               price,
@@ -349,13 +374,13 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     }
     states.Remove({target.train_id, target.date});
     states.Insert({target.train_id, target.date}, train.value());
-    user_order.Insert(order, order);
+    user_order.Insert(order.GetKey(), order);
     std::cout << price * target.amount << '\n';
   } else {
-    if (queue && target.amount <= train.value().max_tickets) {
+    if (queue && target.amount <= train_total.value().tickets_num) {
       order.status = Status::PENDING;
       train_query.Insert(target, target);
-      user_order.Insert(order, order);
+      user_order.Insert(order.GetKey(), order);
       std::cout << "queue\n";
     } else {
       std::cout << -1 << '\n';
@@ -368,7 +393,7 @@ void train_sys::QueryOrder(const FixedString<20> &uid) {
     std::cout << -1 << '\n';
     return;
   }
-  Order min;
+  OrderKey min;
   min.uid = uid;
   min.time = order_time;
   int count = 0;
@@ -401,7 +426,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     std::cout << -1 << '\n';
     return;
   }
-  Order min;
+  OrderKey min;
   min.uid = uid;
   min.time = order_time;
   int count = 1;
@@ -417,24 +442,25 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
   }
   Order target = (*iter1).second;
   if (target.status == Status::SUCCESS) {
-    std::optional<TrainState> train =
+    std::optional<TrainTotal> train_total = release.GetValue(target.train_id);
+    std::optional<TicketState> train =
         states.GetValue({target.train_id, target.date});
-    int start = train.value().FindStation(target.origin);
-    int des = train.value().FindStation(target.des);
+    int start = train_total.value().FindStation(target.origin);
+    int des = train_total.value().FindStation(target.des);
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] += target.amount;
     }
     sjtu::vector<Query> complete_query;
     Query min;
-    min.train_id = train.value().train_id;
-    min.date = train.value().arrive_time[0];
+    min.train_id = target.train_id;
+    min.date = target.date;
     min.time = 0;
     for (auto iter2 = train_query.KeyBegin(min);
          !iter2.IsEnd() && (*iter2).second.date.Compare(min.date) == 0 &&
          (*iter2).second.train_id.compare(min.train_id) == 0;
          ++iter2) {
-      int start = train.value().FindStation((*iter2).second.origin);
-      int des = train.value().FindStation((*iter2).second.des);
+      int start = train_total.value().FindStation((*iter2).second.origin);
+      int des = train_total.value().FindStation((*iter2).second.des);
       int seat = train.value().remain_tickets[start];
       for (int i = start; i < des; ++i) {
         seat = std::min(seat, train.value().remain_tickets[i]);
@@ -444,7 +470,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         for (int i = start; i < des; ++i) {
           train.value().remain_tickets[i] -= (*iter2).second.amount;
         }
-        Order order;
+        OrderKey order;
         order.uid = (*iter2).second.uid;
         order.time = (*iter2).second.time;
         std::optional<Order> order_change = user_order.GetValue(order);
@@ -456,9 +482,8 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     for (int i = 0; i < complete_query.size(); ++i) {
       train_query.Remove(complete_query[i]);
     }
-    states.Remove({train.value().train_id, train.value().arrive_time[0]});
-    states.Insert({train.value().train_id, train.value().arrive_time[0]},
-                  train.value());
+    states.Remove({target.train_id, target.date});
+    states.Insert({target.train_id, target.date}, train.value());
   } else if (target.status == Status::PENDING) {
     Query erase_target;
     erase_target.time = target.time;
@@ -470,8 +495,8 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     return;
   }
   target.status = Status::REFUNDED;
-  user_order.Remove(target);
-  user_order.Insert(target, target);
+  user_order.Remove(target.GetKey());
+  user_order.Insert(target.GetKey(), target);
   std::cout << 0 << '\n';
 }
 
