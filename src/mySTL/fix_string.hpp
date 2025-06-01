@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-using str_hash = uint64_t;
+using str_hash = unsigned long long int;
 struct HashCompare {
   auto operator()(const str_hash &lhs, const str_hash &rhs) const -> int {
     if (lhs > rhs) {
