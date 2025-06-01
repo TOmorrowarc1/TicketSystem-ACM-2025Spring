@@ -50,35 +50,24 @@ struct TrainTotal {
 
   auto FindStation(str_hash station) -> int;
   auto DeltaDay(int station) -> Clock;
-  auto AddDate(const Clock &date) -> TrainTotal &;
+  auto CompleteRoute(const RouteTrain &key, RouteUser &value) -> std::pair<int, int>;
 };
 
-struct TrainStateKey {
+struct TicketStateKey {
   FixedString<20> train_id;
   Clock date;
-  auto Compare(const TrainStateKey &other) const -> int;
+  auto Compare(const TicketStateKey &other) const -> int;
 };
-struct TrainStateComparator {
-  auto operator()(const TrainStateKey &lhs, const TrainStateKey &rhs) -> int {
+struct TicketStateKeyComparator {
+  auto operator()(const TicketStateKey &lhs, const TicketStateKey &rhs) -> int {
     return lhs.Compare(rhs);
   }
 };
-struct TrainState {
-  FixedString<20> train_id;
-  Clock arrive_time[25];
-  Clock leave_time[25];
-  str_hash stations[25] = {0};
-  int station_num;
-  int max_tickets;
+struct TicketState {
   int remain_tickets[25] = {0};
-  int price[25] = {0};
-  char type;
 
-  auto Construct(const TrainTotal &train, const Clock &date) -> TrainState &;
-  auto AddDate(const Clock &date) -> TrainState &;
-  auto GetKey() const -> TrainStateKey;
-  auto FindStation(str_hash station) -> int;
-  auto CompleteRoute(const RouteTrain &target) -> RouteUser;
+  auto Construct(const TrainTotal &train) -> TicketState &;
+  auto RemainTicket(int origin, int des) -> int;
 };
 
 struct RouteTrain {

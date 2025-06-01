@@ -120,76 +120,46 @@ auto TrainTotal::FindStation(str_hash station) -> int {
 auto TrainTotal::DeltaDay(int station) -> Clock {
   return {0, leave_time[station].day, 0, 0};
 }
-auto TrainTotal::AddDate(const Clock &date) -> TrainTotal & {
-  for (int i = 0; i < station_num; ++i) {
-    arrive_time[i].Addit(date);
-    leave_time[i].Addit(date);
+auto TrainTotal::CompleteRoute(const RouteTrain &key, RouteUser &value)
+    -> std::pair<int, int> {
+  int origin = 0;
+  int des = 0;
+  int cursor = 0;
+  while (stations[cursor] != key.origin) {
+    ++cursor;
   }
-  return *this;
+  origin = cursor;
+  value.price = price[origin];
+  while (stations[cursor] != key.des) {
+    ++cursor;
+    value.price += price[cursor];
+  }
+  des = cursor;
+  value.start_time.Addit(leave_time[origin]);
+  value.total_time = arrive_time[des].Minus(leave_time[origin]);
+  return {origin, des};
 }
 
-auto TrainState::Construct(const TrainTotal &train, const Clock &date)
-    -> TrainState & {
-  station_num = train.station_num;
-  max_tickets = train.tickets_num;
-  for (int i = 0; i < station_num; ++i) {
-    stations[i] = train.stations[i];
-    arrive_time[i] = train.arrive_time[i].Add(date);
-    leave_time[i] = train.leave_time[i].Add(date);
-    remain_tickets[i] = max_tickets;
-    price[i] = train.price[i];
-  }
-  leave_time[station_num - 1] = {0, 0, 0, 0};
-  remain_tickets[station_num - 1] = 0;
-  price[station_num - 1] = 0;
-  type = train.type;
-  return *this;
-}
-auto TrainState::AddDate(const Clock &date) -> TrainState & {
-  for (int i = 0; i < station_num; ++i) {
-    arrive_time[i].Addit(date);
-    leave_time[i].Addit(date);
-  }
-  return *this;
-}
-auto TrainState::GetKey() const -> TrainStateKey {
-  Clock date = arrive_time[0];
-  date.hour = date.minute = 0;
-  return {train_id, date};
-}
-auto TrainState::FindStation(str_hash station) -> int {
-  for (int i = 0; i < station_num; ++i) {
-    if (stations[i] == station) {
-      return i;
-    }
-  }
-  return -1;
-}
-auto TrainState::CompleteRoute(const RouteTrain &target) -> RouteUser {
-  RouteUser info;
-  info.train_id = train_id;
-  int i = 0;
-  while (stations[i] != target.origin) {
-    ++i;
-  }
-  info.start_time = leave_time[i];
-  info.price = 0;
-  info.remain = remain_tickets[i];
-  while (stations[i] != target.des) {
-    info.price += price[i];
-    info.remain = std::min(info.remain, remain_tickets[i]);
-    ++i;
-  }
-  info.total_time = arrive_time[i].Minus(info.start_time);
-  return info;
-}
-
-auto TrainStateKey::Compare(const TrainStateKey &other) const -> int {
+auto TicketStateKey::Compare(const TicketStateKey &other) const -> int {
   int result = train_id.compare(other.train_id);
   if (result != 0) {
     return result;
   }
   return date.Compare(other.date);
+}
+
+auto TicketState::Construct(const TrainTotal &train) -> TicketState & {
+  for (int i = 0; i < train.station_num; ++i) {
+    remain_tickets[i] = train.tickets_num;
+  }
+  return *this;
+}
+auto TicketState::RemainTicket(int origin, int des) -> int {
+  int result = remain_tickets[origin];
+  for (int i = origin; i < des; ++i) {
+    result = std::min(result, remain_tickets[i]);
+  }
+  return result;
 }
 
 auto Query::Compare(const Query &other) const -> int {
