@@ -120,6 +120,13 @@ auto TrainTotal::FindStation(str_hash station) -> int {
 auto TrainTotal::DeltaDay(int station) -> Clock {
   return {0, leave_time[station].day, 0, 0};
 }
+auto TrainTotal::AddDate(const Clock &date) -> TrainTotal & {
+  for (int i = 0; i < station_num; ++i) {
+    arrive_time[i].Addit(date);
+    leave_time[i].Addit(date);
+  }
+  return *this;
+}
 auto TrainTotal::CompleteRoute(const RouteTrain &key, RouteUser &value)
     -> std::pair<int, int> {
   int origin = 0;
