@@ -47,11 +47,6 @@ void train_sys::DeleteTrain(const FixedString<20> train_id) {
 }
 
 void train_sys::ReleaseTrain(const FixedString<20> train_id) {
-  bool logout = false;
-  if (train_id.compare("brother") == 0 ||
-      train_id.compare("IamtowaitIdon") == 0) {
-    logout = true;
-  }
   std::optional<TrainTotal> train = release.GetValue(train_id);
   if (!train.has_value() || train.value().has_released) {
     std::cout << -1 << '\n';
@@ -77,11 +72,6 @@ void train_sys::ReleaseTrain(const FixedString<20> train_id) {
     route.delta_day = train.value().leave_time[i].day;
     for (int ii = i + 1; ii < train.value().station_num; ++ii) {
       route.des = train.value().stations[ii];
-      if (logout) {
-        std::cerr << core::hash_str.GetValue(route.origin).value() << ' '
-                  << core::hash_str.GetValue(route.des).value() << ' '
-                  << route.start_time << ' ' << route.delta_day << '\n';
-      }
       routes.Insert(route, route);
     }
   }
@@ -192,11 +182,6 @@ void train_sys::QueryTicket(str_hash origin, str_hash des, const Clock date,
 
 void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
                               bool time) {
-  bool logout = false;
-  if (origin == FixedChineseString<10>("甘肃省玉门市").Hash() &&
-      des == FixedChineseString<10>("江苏省镇江市").Hash()) {
-    logout = true;
-  }
   int best_price = ~(1 << 31);
   Clock best_time = {0, 32, 0, 0};
   RouteUser first_target;
@@ -209,9 +194,6 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
   for (auto iter1 = routes.KeyBegin(min);
        !iter1.IsEnd() && (*iter1).second.origin == origin; ++iter1) {
     Clock first_train_date = date.Minus({0, (*iter1).second.delta_day, 0, 0});
-    if (logout) {
-      std::cerr << core::hash_str.GetValue((*iter1).second.des).value() << '\n';
-    }
     std::optional<TrainState> first_train =
         states.GetValue({(*iter1).second.train_id, first_train_date});
     if (!first_train.has_value()) {
@@ -224,9 +206,6 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
          !iter2.IsEnd() && (*iter2).second.des == min.des &&
          (*iter2).second.origin == min.origin;
          ++iter2) {
-      if (logout) {
-        std::cerr << core::hash_str.GetValue(min.origin).value() << '\n';
-      }
       Clock arrive_time = first_target.start_time.Add(first_target.total_time);
       Clock second_train_date = arrive_time.CutDate();
       if (first_target.train_id.compare((*iter2).second.train_id) == 0) {
@@ -273,24 +252,6 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
           first_best_target = first_target;
           second_best_target = second_target;
           transfer = min.origin;
-          if (logout) {
-            std::cerr << first_best_target.train_id << ' '
-                      << core::hash_str.GetValue(origin).value() << ' '
-                      << first_best_target.start_time << " -> "
-                      << core::hash_str.GetValue(transfer).value() << ' '
-                      << first_best_target.start_time.Add(
-                             first_best_target.total_time)
-                      << ' ' << first_best_target.price << ' '
-                      << first_best_target.remain << '\n';
-            std::cerr << second_best_target.train_id << ' '
-                      << core::hash_str.GetValue(transfer).value() << ' '
-                      << second_best_target.start_time << " -> "
-                      << core::hash_str.GetValue(des).value() << ' '
-                      << second_best_target.start_time.Add(
-                             second_best_target.total_time)
-                      << ' ' << second_best_target.price << ' '
-                      << second_best_target.remain << '\n';
-          }
         }
       } else {
         if (second_target.price + first_target.price < best_price ||
