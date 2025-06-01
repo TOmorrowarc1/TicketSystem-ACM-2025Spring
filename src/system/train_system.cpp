@@ -12,8 +12,8 @@ bpt::BufferPoolManager train_sys::release_buffer(50, 4096, "release_data",
 bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     train_sys::release(0, &release_buffer);
 
-bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "routeB_data",
-                                                "routeB_disk");
+bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "route_data",
+                                                "route_disk");
 bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator>
     train_sys::routes(0, &routes_buffer);
 
