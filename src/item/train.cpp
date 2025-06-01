@@ -136,10 +136,10 @@ auto TrainTotal::CompleteRoute(const RouteTrain &key, RouteUser &value)
     ++cursor;
   }
   origin = cursor;
-  value.price = price[origin];
+  value.price = 0;
   while (stations[cursor] != key.des) {
-    ++cursor;
     value.price += price[cursor];
+    ++cursor;
   }
   des = cursor;
   value.start_time.Addit(leave_time[origin]);
