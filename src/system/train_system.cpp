@@ -224,6 +224,7 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
     }
     first_target.remain =
         first_ticket_state.value().RemainTicket(spots.first, spots.second);
+    // Query the second.
     min.origin = (*iter1).second.des;
     min.des = des;
     for (auto iter2 = routes.KeyBegin(min);
@@ -247,7 +248,7 @@ void train_sys::QueryTransfer(str_hash origin, str_hash des, const Clock date,
       // First the name.
       second_target.train_id = (*iter2).second.train_id;
       // The time: date from Route, time from train.
-      first_target.start_time = second_train_date;
+      second_target.start_time = second_train_date;
       std::optional<TrainTotal> second_train_total =
           release.GetValue(second_target.train_id);
       // The totaltime and price, by the way the spots for tickets.
