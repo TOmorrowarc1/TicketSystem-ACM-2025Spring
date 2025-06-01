@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-using str_hash = uint64_t;
+using str_hash = unsigned long long int;
 struct HashCompare {
   auto operator()(const str_hash &lhs, const str_hash &rhs) const -> int {
     if (lhs > rhs) {
@@ -55,11 +55,11 @@ public:
   void clear() { data[0] = '\0'; }
 
   auto Hash() -> str_hash {
-    const uint64_t seed1 = 0xcbf29ce484222325; // FNV-1a 初始种子
-    const uint64_t seed2 = 0x14650FB0739D0383; // 额外种子增强随机性
-    uint64_t hash1 = seed1;
-    uint64_t hash2 = seed2;
-    const uint8_t *bytes = reinterpret_cast<const uint8_t *>(data);
+    const unsigned long long int seed1 = 0xcbf29ce484222325; // FNV-1a 初始种子
+    const unsigned long long int seed2 = 0x14650FB0739D0383; // 额外种子增强随机性
+    unsigned long long int hash1 = seed1;
+    unsigned long long int hash2 = seed2;
+    const unsigned char *bytes = reinterpret_cast<const unsigned char *>(data);
     for (int i = 0; bytes[i] != '\0' && i < MaxLength; ++i) {
       // FNV-1a 核心计算
       hash1 ^= bytes[i];
