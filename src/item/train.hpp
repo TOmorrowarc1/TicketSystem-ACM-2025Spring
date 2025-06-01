@@ -50,7 +50,7 @@ struct TrainTotal {
 
   auto FindStation(str_hash station) -> int;
   auto DeltaDay(int station) -> Clock;
-  auto TrainTotal::AddDate(const Clock &date) -> TrainTotal &;
+  auto AddDate(const Clock &date) -> TrainTotal &;
   auto CompleteRoute(const RouteTrain &key, RouteUser &value)
       -> std::pair<int, int>;
 };
