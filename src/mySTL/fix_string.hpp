@@ -59,7 +59,7 @@ public:
     const unsigned long long int seed2 = 0x14650FB0739D0383; // 额外种子增强随机性
     unsigned long long int hash1 = seed1;
     unsigned long long int hash2 = seed2;
-    const uint8_t *bytes = reinterpret_cast<const uint8_t *>(data);
+    const unsigned char *bytes = reinterpret_cast<const unsigned char *>(data);
     for (int i = 0; bytes[i] != '\0' && i < MaxLength; ++i) {
       // FNV-1a 核心计算
       hash1 ^= bytes[i];
