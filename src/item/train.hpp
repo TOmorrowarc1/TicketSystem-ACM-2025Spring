@@ -11,6 +11,7 @@ struct RouteTrain;
 struct RouteUser;
 struct Query;
 struct Order;
+struct OrderKey;
 struct Clock {
   int month = 0;
   int day = 0;
@@ -159,10 +160,17 @@ struct Order {
   int price;
   int time;
 
-  auto Compare(const Order &other) const -> int;
+  auto GetKey() -> OrderKey;
 };
-struct OrderComparator {
-  auto operator()(const Order &lhs, const Order &rhs) -> int {
+
+struct OrderKey {
+  FixedString<20> uid;
+  int time;
+
+  auto Compare(const OrderKey &other) const -> int;
+};
+struct OrderKeyComparator {
+  auto operator()(const OrderKey &lhs, const OrderKey &rhs) -> int {
     return lhs.Compare(rhs);
   }
 };

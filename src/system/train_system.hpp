@@ -18,7 +18,7 @@ extern bpt::BufferPoolManager routes_buffer;
 extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator> routes;
 
 extern bpt::BufferPoolManager user_order_buffer;
-extern bpt::BPlusTree<Order, Order, OrderComparator> user_order;
+extern bpt::BPlusTree<OrderKey, Order, OrderKeyComparator> user_order;
 extern bpt::BufferPoolManager train_query_buffer;
 extern bpt::BPlusTree<Query, Query, QueryComparator> train_query;
 

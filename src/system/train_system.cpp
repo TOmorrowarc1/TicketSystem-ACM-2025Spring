@@ -19,7 +19,7 @@ bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator>
 
 bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
                                                     "order_disk_1");
-bpt::BPlusTree<Order, Order, OrderComparator>
+bpt::BPlusTree<OrderKey, Order, OrderKeyComparator>
     train_sys::user_order(0, &user_order_buffer);
 
 bpt::BufferPoolManager train_sys::train_query_buffer(50, 4096, "order_data_2",
@@ -388,13 +388,13 @@ void train_sys::BuyTicket(Query &target, bool queue) {
     }
     states.Remove({target.train_id, target.date});
     states.Insert({target.train_id, target.date}, train.value());
-    user_order.Insert(order, order);
+    user_order.Insert(order.GetKey(), order);
     std::cout << price * target.amount << '\n';
   } else {
     if (queue && target.amount <= train.value().max_tickets) {
       order.status = Status::PENDING;
       train_query.Insert(target, target);
-      user_order.Insert(order, order);
+      user_order.Insert(order.GetKey(), order);
       std::cout << "queue\n";
     } else {
       std::cout << -1 << '\n';
@@ -407,7 +407,7 @@ void train_sys::QueryOrder(const FixedString<20> &uid) {
     std::cout << -1 << '\n';
     return;
   }
-  Order min;
+  OrderKey min;
   min.uid = uid;
   min.time = order_time;
   int count = 0;
@@ -440,7 +440,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     std::cout << -1 << '\n';
     return;
   }
-  Order min;
+  OrderKey min;
   min.uid = uid;
   min.time = order_time;
   int count = 1;
@@ -483,7 +483,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
         for (int i = start; i < des; ++i) {
           train.value().remain_tickets[i] -= (*iter2).second.amount;
         }
-        Order order;
+        OrderKey order;
         order.uid = (*iter2).second.uid;
         order.time = (*iter2).second.time;
         std::optional<Order> order_change = user_order.GetValue(order);
@@ -509,8 +509,8 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     return;
   }
   target.status = Status::REFUNDED;
-  user_order.Remove(target);
-  user_order.Insert(target, target);
+  user_order.Remove(target.GetKey());
+  user_order.Insert(target.GetKey(), target);
   std::cout << 0 << '\n';
 }
 
