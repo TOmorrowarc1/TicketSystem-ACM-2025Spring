@@ -3,7 +3,7 @@
 #include <cstring>
 #include <string>
 
-constexpr int size_start = 8;
+constexpr int size_start = 4;
 constexpr int malloc_times = 2;
 
 namespace sjtu {

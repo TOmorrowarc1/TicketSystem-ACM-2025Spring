@@ -116,7 +116,7 @@ public:
   Set() : root_(nullptr), nodes_num_(0) { sentinar_ = new Node(); }
 
   /*Copy the nodes recursively*/
-  Node *Copy(Node *root, Node *other) {
+  auto Copy(Node *root, Node *other) -> Node * {
     root = new Node(*(other->content_));
     root->color_ = other->color_;
     if (other->left_child_ != nullptr) {
@@ -163,7 +163,7 @@ public:
     delete sentinar_;
   }
 
-  Set &operator=(const Set &other) {
+  auto operator=(const Set &other) -> Set & {
     if (root_ == other.root_) {
       return *this;
     }
@@ -173,7 +173,7 @@ public:
     return *this;
   }
 
-  Node *Predecessor(const Node *base) const {
+  auto Predecessor(const Node *base) const -> Node * {
     Node *target = (Node *)(base);
     if (target->left_child_ != nullptr) {
       target = target->left_child_;
@@ -188,7 +188,7 @@ public:
     return target->parent_;
   }
 
-  Node *Successor(const Node *base) const {
+  auto Successor(const Node *base) const -> Node * {
     Node *target = (Node *)(base);
     if (target->right_child_ != nullptr) {
       target = target->right_child_;
@@ -414,39 +414,38 @@ public:
       return false;
     }
     if (place->left_child_ != nullptr) {
-      place = predecessor(pos.at_);
-      place->Swap(pos.at_, place, sentinar_);
+      place = predecessor(place);
+      place->Swap(record, place, sentinar_);
       while (root_->parent_ != nullptr) {
         root_ = root_->parent_;
       }
-      place = pos.at_;
-      if (target->left_child_ != nullptr) {
+      place = record;
+      if (place->left_child_ != nullptr) {
         target->Swap(place, place->left_child_, sentinar_);
       }
-    } else if (pos.at_->right_child_ != nullptr) {
-      target = successor(pos.at_);
-      target->Swap(pos.at_, target, sentinar_);
+    } else if (place->right_child_ != nullptr) {
+      place = successor(place);
+      place->Swap(record, place, sentinar_);
       while (root_->parent_ != nullptr) {
         root_ = root_->parent_;
       }
-      target = pos.at_;
-      if (target->right_child_ != nullptr) {
-        target->Swap(target, target->right_child_, sentinar_);
+      place = record;
+      if (place->right_child_ != nullptr) {
+        place->Swap(place, place->right_child_, sentinar_);
       }
     }
-    EraseMaintain(target);
-    if (target->parent_->left_child_ == target) {
-      target->parent_->left_child_ = nullptr;
+    EraseMaintain(place);
+    if (place->parent_->left_child_ == place) {
+      place->parent_->left_child_ = nullptr;
     } else {
-      target->parent_->right_child_ = nullptr;
+      place->parent_->right_child_ = nullptr;
     }
     --nodes_num_;
-    delete target;
-    pos.at_ = nullptr;
-    return;
+    delete place;
+    return true;
   }
 };
 
-} // namespace set
+} // namespace sjtu
 
 #endif

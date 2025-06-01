@@ -152,7 +152,7 @@ void train_sys::QueryTrain(const FixedString<20> train_id, const Clock &date) {
 
 void train_sys::QueryTicket(str_hash origin, str_hash des, const Clock date,
                             bool time) {
-  std::vector<RouteUser> results;
+  sjtu::vector<RouteUser> results;
   RouteUser target;
   RouteTrain min;
   min.origin = origin;
@@ -463,7 +463,7 @@ void train_sys::Refund(const FixedString<20> &uid, int rank) {
     for (int i = start; i < des; ++i) {
       train.value().remain_tickets[i] += target.amount;
     }
-    std::vector<Query> complete_query;
+    sjtu::vector<Query> complete_query;
     Query min;
     min.train_id = train.value().train_id;
     min.date = train.value().arrive_time[0];
