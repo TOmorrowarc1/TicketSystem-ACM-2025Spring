@@ -81,8 +81,8 @@ struct TrainState {
 };
 
 struct RouteTrain {
-  str_hash origin;
-  str_hash des;
+  str_hash origin = 0;
+  str_hash des = 0;
   FixedString<20> train_id;
   Clock start_time;
   int delta_day;

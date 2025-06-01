@@ -207,10 +207,10 @@ public:
     Node *target = root_;
     Node *parent = nullptr;
     while (target != nullptr) {
-      if (Compare()(target->content_, value) == 0) {
+      if (Compare()(value, *target->content_) == 0) {
         return target;
       }
-      if (Compare()(value, target->content_) < 0) {
+      if (Compare()(value, *target->content_) < 0) {
         parent = target;
         target = target->left_child_;
       } else {
@@ -226,7 +226,7 @@ public:
       return false;
     }
     Node *place = Search(value);
-    return Compare()(place->content_, value) == 0;
+    return Compare()(value, *place->content_) == 0;
   }
 
   void InsertMaintain(Node *target) {
@@ -288,13 +288,13 @@ public:
       return true;
     }
     Node *place = Search(value);
-    if (Compare()(value, place->content) == 0) {
+    if (Compare()(value, *place->content_) == 0) {
       return false;
     }
     Node *target = new Node(value);
     target->color_ = RED;
     target->parent_ = place;
-    if (Compare()(value, place->content_) < 0) {
+    if (Compare()(value, *place->content_) < 0) {
       place->left_child_ = target;
     } else {
       place->right_child_ = target;
@@ -410,21 +410,21 @@ public:
     */
     Node *place = Search(value);
     Node *record = place;
-    if (Compare()(place->content, value) != 0) {
+    if (Compare()(value, *place->content_) != 0) {
       return false;
     }
     if (place->left_child_ != nullptr) {
-      place = predecessor(place);
+      place = Predecessor(place);
       place->Swap(record, place, sentinar_);
       while (root_->parent_ != nullptr) {
         root_ = root_->parent_;
       }
       place = record;
       if (place->left_child_ != nullptr) {
-        target->Swap(place, place->left_child_, sentinar_);
+        place->Swap(place, place->left_child_, sentinar_);
       }
     } else if (place->right_child_ != nullptr) {
-      place = successor(place);
+      place = Successor(place);
       place->Swap(record, place, sentinar_);
       while (root_->parent_ != nullptr) {
         root_ = root_->parent_;

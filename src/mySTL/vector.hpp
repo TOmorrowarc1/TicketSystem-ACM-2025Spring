@@ -18,12 +18,9 @@ private:
   size_t size_now;
   size_t size_total;
 
-  //空间扩张。
   void space() {
     T *new_pointer_ = (T *)operator new(sizeof(T) * size_total * malloc_times);
-    //所有权不必转移，资源不应释放，因此不能析构。
     memmove(new_pointer_, pointer_, sizeof(T) * size_total);
-    // pointer_对应空间失去所有者，释放。
     operator delete(pointer_, size_total * sizeof(T));
     pointer_ = new_pointer_;
     size_total = malloc_times * size_total;
@@ -33,14 +30,12 @@ public:
   class const_iterator;
   class iterator;
 
-  //构造函数：默认，拷贝，移动。
   vector() {
     pointer_ = (T *)operator new(sizeof(T) * size_start);
     size_now = 0;
     size_total = size_start;
   }
   vector(const vector &other) {
-    //复制资源。
     size_now = other.size_now;
     size_total = other.size_total;
     while (size_total / malloc_times > size_now) {
@@ -53,7 +48,6 @@ public:
     }
   }
   vector(vector &&other) {
-    //直接接管资源。
     pointer_ = other.pointer_;
     size_now = other.size_now;
     size_total = other.size_total;
@@ -61,7 +55,6 @@ public:
   }
 
   ~vector() {
-    //显式调用析构函数，释放资源。（初始化即分配，有构造则有析构）
     for (int i = 0; i < size_now; ++i) {
       pointer_[i].~T();
     }
@@ -109,45 +102,15 @@ public:
     return *this;
   }
 
-  T &at(const size_t &pos) {
-    if (pos >= size_now) {
-      throw index_out_of_bound();
-    }
-    return pointer_[pos];
-  }
-  const T &at(const size_t &pos) const {
-    if (pos >= size_now) {
-      throw index_out_of_bound();
-    }
-    return pointer_[pos];
-  }
+  T &at(const size_t &pos) { return pointer_[pos]; }
+  const T &at(const size_t &pos) const { return pointer_[pos]; }
 
-  T &operator[](const size_t &pos) {
-    if (pos >= size_now) {
-      throw index_out_of_bound();
-    }
-    return pointer_[pos];
-  }
-  const T &operator[](const size_t &pos) const {
-    if (pos >= size_now) {
-      throw index_out_of_bound();
-    }
-    return pointer_[pos];
-  }
+  T &operator[](const size_t &pos) { return pointer_[pos]; }
+  const T &operator[](const size_t &pos) const { return pointer_[pos]; }
 
-  const T &front() const {
-    if (size_now == 0) {
-      throw container_is_empty();
-    }
-    return *pointer_;
-  }
+  const T &front() const { return *pointer_; }
 
-  const T &back() const {
-    if (size_now == 0) {
-      throw container_is_empty();
-    }
-    return pointer_[size_now - 1];
-  }
+  const T &back() const { return pointer_[size_now - 1]; }
 
   bool empty() const { return size_now == 0; }
 
@@ -172,9 +135,6 @@ public:
   }
 
   void pop_back() {
-    if (size_now == 0) {
-      throw container_is_empty();
-    }
     pointer_[size_now - 1].~T();
     --size_now;
   }
@@ -214,12 +174,7 @@ public:
       return iterator(start_, content_ - n);
     }
 
-    int operator-(const iterator &rhs) const {
-      if (start_ != rhs.start_) {
-        throw invalid_iterator();
-      }
-      return content_ - rhs.content_;
-    }
+    int operator-(const iterator &rhs) const { return content_ - rhs.content_; }
     iterator &operator+=(const int &n) {
       content_ += n;
       return *this;
@@ -291,12 +246,7 @@ public:
       return const_iterator(start_, content_ - n);
     }
 
-    int operator-(const iterator &rhs) const {
-      if (start_ != rhs.start_) {
-        throw invalid_iterator();
-      }
-      return content_ - rhs.content_;
-    }
+    int operator-(const iterator &rhs) const { return content_ - rhs.content_; }
 
     const_iterator operator++(int) {
       const_iterator tmp(*this);
@@ -360,9 +310,6 @@ public:
   }
 
   iterator insert(const size_t &ind, const T &value) {
-    if (ind > size_now) {
-      throw index_out_of_bound();
-    }
     ++size_now;
     memmove(pointer_ + ind + 1, pointer_ + ind,
             (size_now - ind - 1) * sizeof(T));
@@ -386,9 +333,6 @@ public:
   }
 
   iterator erase(const size_t &ind) {
-    if (ind >= size_now) {
-      throw index_out_of_bound();
-    }
     (pointer_ + ind)->~T();
     memmove(pointer_ + ind, pointer_ + ind + 1, (size_now - ind) * sizeof(T));
     return iterator(pointer_, pointer_ + ind);
