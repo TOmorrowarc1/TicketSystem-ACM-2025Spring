@@ -1,6 +1,7 @@
 #include "commandparser.hpp"
 #include <iostream>
 
+void BackEnd();
 class CerrRedirect {
   std::streambuf *orig_cerr;
   std::ofstream file;
