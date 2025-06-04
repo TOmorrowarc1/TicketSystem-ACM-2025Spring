@@ -7,18 +7,19 @@
 namespace train_sys {
 extern int order_time;
 
-extern bpt::BufferPoolManager state_buffer;
-extern bpt::BPlusTree<TrainStateKey, TrainState, TrainStateComparator> states;
-
 extern bpt::BufferPoolManager release_buffer;
 extern bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     release;
+
+extern bpt::BufferPoolManager state_buffer;
+extern bpt::BPlusTree<TicketStateKey, TicketState, TicketStateKeyComparator>
+    states;
 
 extern bpt::BufferPoolManager routes_buffer;
 extern bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator> routes;
 
 extern bpt::BufferPoolManager user_order_buffer;
-extern bpt::BPlusTree<Order, Order, OrderComparator> user_order;
+extern bpt::BPlusTree<OrderKey, Order, OrderKeyComparator> user_order;
 extern bpt::BufferPoolManager train_query_buffer;
 extern bpt::BPlusTree<Query, Query, QueryComparator> train_query;
 
