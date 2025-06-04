@@ -16,6 +16,11 @@ public:
 
 int main() {
   CerrRedirect redirect("error_log.txt");
+  BackEnd();
+  return 0;
+}
+
+void BackEnd() {
   std::string input;
   std::string timestamp;
   TokenScanner command;
@@ -62,5 +67,4 @@ int main() {
   std::cout << "bye\n";
   has_opened.seekp(0);
   has_opened.write((char *)&train_sys::order_time, sizeof(int));
-  return 0;
 }
