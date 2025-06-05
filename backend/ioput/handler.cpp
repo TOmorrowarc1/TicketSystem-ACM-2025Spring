@@ -1,4 +1,48 @@
-#include "handler.hpp"
+#include "IO/commandparser.hpp"
+#include <httplib.h>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+void BackEnd();
+std::string ProcessCommand(const std::string &input);
+
+int main() {
+    httplib::Server svr;
+
+    // API端点定义
+    svr.Post("/api/process", [](const httplib::Request& req, httplib::Response& res) {
+        // 1. 检查请求格式
+        if (!req.has_header("Content-Type") || 
+            req.get_header_value("Content-Type") != "text/plain") {
+            res.status = 400;
+            res.set_content("Error: Expecting text/plain", "text/plain");
+            return;
+        }
+
+        // 2. 获取原始字符串输入
+        std::string input = req.body;
+
+        // 3. 调用后端核心逻辑
+        std::string output;
+        try {
+            output = ProcessCommand(input); // 核心调用点
+        } catch (const std::exception& e) {
+            res.status = 500;
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+            return;
+        }
+
+        // 4. 返回结果
+        res.set_content(output, "text/plain");
+    });
+
+    // 启动服务器
+    std::cout << "Server running at http://localhost:8080\n";
+    svr.listen("localhost", 8080);
+
+    return 0;
+}
 
 void BackEnd() {
   std::string input;
@@ -69,7 +113,7 @@ std::string ProcessCommand(const std::string &input) {
 
   // 调用现有的命令处理逻辑
   // 假设您有一个处理命令的函数
-  execute_command_line_logic(); // 这是您现有的main函数中的核心逻辑
+  BackEnd(); // 这是您现有的main函数中的核心逻辑
 
   // 恢复标准IO
   std::cin.rdbuf(original_cin);
