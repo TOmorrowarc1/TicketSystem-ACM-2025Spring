@@ -53,9 +53,7 @@ std::string ProcessCommand(const std::string &input1) {
   static std::fstream has_opened("has_opened", std::ios::in | std::ios::out |
                                                    std::ios::binary);
   static bool init = false;
-
-  std::cerr << "1. 重定向前 - cin: " << std::cin.rdbuf()
-            << ", cout: " << std::cout.rdbuf() << "\n";
+  std::cerr << "重定向中……";
   // 重定向IO
   std::istringstream input_stream(input1);
   std::ostringstream output_stream;
