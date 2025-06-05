@@ -59,8 +59,7 @@ std::string ProcessCommand(const std::string &input1) {
   std::ostringstream output_stream;
   auto old_cin = std::cin.rdbuf(input_stream.rdbuf());
   auto old_cout = std::cout.rdbuf(output_stream.rdbuf());
-  std::cerr << "2. 重定向后 - cin: " << std::cin.rdbuf()
-            << ", cout: " << std::cout.rdbuf() << "\n";
+  std::cerr << "2. 重定向后 - cin: " << std::cin.rdbuf();
 
   // Execute each command.
   std::string input;
