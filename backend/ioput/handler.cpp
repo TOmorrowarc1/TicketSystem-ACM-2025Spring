@@ -1,25 +1,4 @@
-#include "commandparser.hpp"
-#include <iostream>
-
-void BackEnd();
-class CerrRedirect {
-  std::streambuf *orig_cerr;
-  std::ofstream file;
-
-public:
-  CerrRedirect(const std::string &filename)
-      : orig_cerr(std::cerr.rdbuf()), file(filename, std::ios::app) {
-    std::cerr.rdbuf(file.rdbuf());
-  }
-
-  ~CerrRedirect() { std::cerr.rdbuf(orig_cerr); }
-};
-
-int main() {
-  CerrRedirect redirect("error_log.txt");
-  BackEnd();
-  return 0;
-}
+#include "handler.hpp"
 
 void BackEnd() {
   std::string input;
@@ -68,4 +47,34 @@ void BackEnd() {
   std::cout << "bye\n";
   has_opened.seekp(0);
   has_opened.write((char *)&train_sys::order_time, sizeof(int));
+}
+
+static std::streambuf *original_cin = nullptr;
+static std::streambuf *original_cout = nullptr;
+
+std::string ProcessCommand(const std::string &input) {
+  // 备份原始流缓冲区
+  if (!original_cin)
+    original_cin = std::cin.rdbuf();
+  if (!original_cout)
+    original_cout = std::cout.rdbuf();
+
+  // 创建字符串流替代标准IO
+  std::istringstream input_stream(input);
+  std::ostringstream output_stream;
+
+  // 重定向输入输出
+  std::cin.rdbuf(input_stream.rdbuf());
+  std::cout.rdbuf(output_stream.rdbuf());
+
+  // 调用现有的命令处理逻辑
+  // 假设您有一个处理命令的函数
+  execute_command_line_logic(); // 这是您现有的main函数中的核心逻辑
+
+  // 恢复标准IO
+  std::cin.rdbuf(original_cin);
+  std::cout.rdbuf(original_cout);
+
+  // 返回捕获的输出
+  return output_stream.str();
 }

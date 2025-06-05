@@ -1,7 +1,7 @@
 #ifndef DISK_MANAGER_HPP
 #define DISK_MANAGER_HPP
 
-#include "config.hpp"
+#include "storage/config.hpp"
 #include <cassert>
 #include <fstream>
 #include <iostream>

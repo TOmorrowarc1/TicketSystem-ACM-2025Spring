@@ -1,6 +1,6 @@
 #ifndef FRAME_MANAGER_HPP
 #define FRAME_MANAGER_HPP
-#include "config.hpp"
+#include "storage/config.hpp"
 #include <cassert>
 namespace bpt {
 

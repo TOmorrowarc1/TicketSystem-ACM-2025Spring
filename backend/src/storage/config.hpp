@@ -1,5 +1,6 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
+#include <utility>
 namespace bpt {
 using page_id_t = int;
 using frame_id_t = int;

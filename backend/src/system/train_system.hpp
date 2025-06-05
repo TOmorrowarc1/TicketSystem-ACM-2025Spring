@@ -1,7 +1,7 @@
 #ifndef TRAIN_SYS_HPP
 #define TRAIN_SYS_HPP
 
-#include "core_system.hpp"
+#include "system/core_system.hpp"
 #include "item/train.hpp"
 #include <vector>
 namespace train_sys {
