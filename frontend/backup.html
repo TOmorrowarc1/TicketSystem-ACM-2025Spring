@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Processor (Plain Text)</title>
+    <style>
+        body {
+            background-color: #000000;
+            /* Black background */
+            color: #FFFFFF;
+            /* White text for labels */
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            /* Space between elements */
+            width: 100%;
+            max-width: 600px;
+            /* Max width for content */
+        }
+
+        .io-box {
+            background-color: #FFFFFF;
+            /* White box */
+            color: #000000;
+            /* Black text inside box */
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        textarea {
+            width: calc(100% - 22px);
+            /* Account for padding and border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            /* Slightly off-white for fields */
+            color: #333;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        #submitButton {
+            background-color: #4CAF50;
+            /* Green */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #submitButton:hover {
+            background-color: #45a049;
+            /* Darker green */
+        }
+
+        #submitButton:active {
+            background-color: #3e8e41;
+        }
+
+        .config-box {
+            background-color: #222;
+            /* Dark grey for config */
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+
+        .config-box label {
+            color: #ddd;
+        }
+
+        .config-box input[type="text"] {
+            background-color: #444;
+            color: #fff;
+            border-color: #555;
+        }
+
+        #statusMessage {
+            margin-top: 10px;
+            min-height: 20px;
+            /* To prevent layout shifts */
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>String Processor (Plain Text)</h1>
+
+        <div class="io-box">
+            <label for="inputString">Enter String:</label>
+            <input type="text" id="inputString" placeholder="Type your string here...">
+        </div>
+
+        <div class="io-box">
+            <label for="outputString">Backend Response:</label>
+            <textarea id="outputString" readonly placeholder="Output will appear here..."></textarea>
+        </div>
+
+        <button id="submitButton">Enter</button>
+
+        <div id="statusMessage"></div>
+
+        <div class="config-box">
+            <label for="backendIp">Backend URL:</label>
+            <input type="text" id="backendIp" value="http://localhost:8080">
+            <small style="color: #aaa; display: block; margin-top: 5px;">Make sure this includes the protocol
+                (http/https) and the full endpoint path.</small>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputStringField = document.getElementById('inputString');
+            const outputStringField = document.getElementById('outputString');
+            const submitButton = document.getElementById('submitButton');
+            const backendIpField = document.getElementById('backendIp');
+            const statusMessageField = document.getElementById('statusMessage');
+
+            submitButton.addEventListener('click', async () => {
+                const stringToSend = inputStringField.value;
+                const backendUrl = backendIpField.value.trim();
+
+                if (!stringToSend) {
+                    statusMessageField.textContent = 'Error: Input string cannot be empty.';
+                    statusMessageField.style.color = 'red';
+                    outputStringField.value = '';
+                    return;
+                }
+                if (!backendUrl) {
+                    statusMessageField.textContent = 'Error: Backend URL cannot be empty.';
+                    statusMessageField.style.color = 'red';
+                    outputStringField.value = '';
+                    return;
+                }
+                try {
+                    new URL(backendUrl);
+                } catch (_) {
+                    statusMessageField.textContent = 'Error: Invalid Backend URL format.';
+                    statusMessageField.style.color = 'red';
+                    outputStringField.value = '';
+                    return;
+                }
+
+                outputStringField.value = 'Processing...';
+                statusMessageField.textContent = 'Sending request...';
+                statusMessageField.style.color = 'orange';
+
+                try {
+                    // --- Backend Communication (Plain Text) ---
+                    const response = await fetch(backendUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain', // Indicate we are sending plain text
+                        },
+                        body: stringToSend // Send the raw string as the body
+                    });
+
+                    if (!response.ok) {
+                        let errorText = `HTTP error! Status: ${response.status}`;
+                        try {
+                            // Try to get error message from backend response body (assuming it's also plain text)
+                            const errorData = await response.text();
+                            errorText += ` - ${errorData}`;
+                        } catch (e) {
+                            errorText += ` - ${response.statusText}`;
+                        }
+                        throw new Error(errorText);
+                    }
+
+                    const responseText = await response.text(); // Get the response body as plain text
+
+                    outputStringField.value = responseText;
+                    statusMessageField.textContent = 'Success!';
+                    statusMessageField.style.color = 'lightgreen';
+
+                } catch (error) {
+                    console.error('Error sending/receiving data:', error);
+                    outputStringField.value = `Error: ${error.message}`;
+                    statusMessageField.textContent = 'Failed to communicate with backend.';
+                    statusMessageField.style.color = 'red';
+                }
+            });
+
+            inputStringField.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    submitButton.click();
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
