@@ -2,7 +2,7 @@
 #define ITERATOR_HPP
 
 #include "b_plus_tree_page.hpp"
-#include "buffer_pool_manager.hpp"
+#include "storage/buffer_pool_manager.hpp"
 
 namespace bpt {
 

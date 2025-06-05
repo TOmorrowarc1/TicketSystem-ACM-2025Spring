@@ -1,6 +1,6 @@
 #ifndef B_PLUS_TREE_PAGE_HPP
 #define B_PLUS_TREE_PAGE_HPP
-#include "config.hpp"
+#include "storage/config.hpp"
 #include <cstring>
 namespace bpt {
 

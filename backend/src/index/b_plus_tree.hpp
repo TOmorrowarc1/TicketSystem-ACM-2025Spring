@@ -1,8 +1,8 @@
 #ifndef B_PLUS_TREE_HPP
 #define B_PLUS_TREE_HPP
 #include "b_plus_tree_page.hpp"
-#include "buffer_pool_manager.hpp"
 #include "iterator.hpp"
+#include "storage/buffer_pool_manager.hpp"
 #include <optional>
 namespace bpt {
 
