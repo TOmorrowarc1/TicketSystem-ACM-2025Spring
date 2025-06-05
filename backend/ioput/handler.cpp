@@ -56,12 +56,11 @@ std::string ProcessCommand(const std::string &input1) {
   std::ostringstream output_stream;
   auto old_cin = std::cin.rdbuf(input_stream.rdbuf());
   auto old_cout = std::cout.rdbuf(output_stream.rdbuf());
-  // Execute each command. 
+  // Execute each command.
   std::string input;
   std::string timestamp;
   TokenScanner command;
   UserCommand user_parser;
-  std::fstream has_opened;
   if (!init) {
     has_opened.close();
     has_opened.open("has_opened", std::ios::out | std::ios::binary);
@@ -75,6 +74,9 @@ std::string ProcessCommand(const std::string &input1) {
     std::cout << timestamp << ' ';
     user_sys::AddAdmin(user_parser.uid_, user_parser.para_);
     init = true;
+  } else {
+    has_opened.seekg(0);
+    has_opened.read((char *)&train_sys::order_time, sizeof(int));
   }
   std::cin >> timestamp;
   std::getline(std::cin, input);
