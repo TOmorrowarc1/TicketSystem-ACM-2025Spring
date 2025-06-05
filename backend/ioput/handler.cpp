@@ -8,40 +8,43 @@ void BackEnd();
 std::string ProcessCommand(const std::string &input);
 
 int main() {
-    httplib::Server svr;
+  httplib::Server svr;
 
-    // API端点定义
-    svr.Post("/api/process", [](const httplib::Request& req, httplib::Response& res) {
-        // 1. 检查请求格式
-        if (!req.has_header("Content-Type") || 
-            req.get_header_value("Content-Type") != "text/plain") {
-            res.status = 400;
-            res.set_content("Error: Expecting text/plain", "text/plain");
-            return;
-        }
+  // API端点定义
+  svr.Post("/api/process",
+           [](const httplib::Request &req, httplib::Response &res) {
+             res.set_header("Access-Control-Allow-Origin", "*");
+             res.set_header("Access-Control-Allow-Methods", "POST");
+             // 1. 检查请求格式
+             if (!req.has_header("Content-Type") ||
+                 req.get_header_value("Content-Type") != "text/plain") {
+               res.status = 400;
+               res.set_content("Error: Expecting text/plain", "text/plain");
+               return;
+             }
 
-        // 2. 获取原始字符串输入
-        std::string input = req.body;
+             // 2. 获取原始字符串输入
+             std::string input = req.body;
 
-        // 3. 调用后端核心逻辑
-        std::string output;
-        try {
-            output = ProcessCommand(input); // 核心调用点
-        } catch (const std::exception& e) {
-            res.status = 500;
-            res.set_content("Error: " + std::string(e.what()), "text/plain");
-            return;
-        }
+             // 3. 调用后端核心逻辑
+             std::string output;
+             try {
+               output = ProcessCommand(input); // 核心调用点
+             } catch (const std::exception &e) {
+               res.status = 500;
+               res.set_content("Error: " + std::string(e.what()), "text/plain");
+               return;
+             }
 
-        // 4. 返回结果
-        res.set_content(output, "text/plain");
-    });
+             // 4. 返回结果
+             res.set_content(output, "text/plain");
+           });
 
-    // 启动服务器
-    std::cout << "Server running at http://localhost:8080\n";
-    svr.listen("localhost", 8080);
+  // 启动服务器
+  std::cout << "Server running at http://localhost:8080\n";
+  svr.listen("localhost", 8080);
 
-    return 0;
+  return 0;
 }
 
 void BackEnd() {
