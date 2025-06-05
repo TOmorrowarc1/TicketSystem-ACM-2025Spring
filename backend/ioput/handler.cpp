@@ -37,7 +37,6 @@ int main() {
 
              // 4. 返回结果
              res.set_content(output, "text/plain");
-             std::cerr << "已返回结果。";
            });
 
   // 启动服务器
@@ -53,13 +52,11 @@ std::string ProcessCommand(const std::string &input1) {
   static std::fstream has_opened("has_opened", std::ios::in | std::ios::out |
                                                    std::ios::binary);
   static bool init = false;
-  std::cerr << "重定向中……";
   // 重定向IO
   std::istringstream input_stream(input1);
   std::ostringstream output_stream;
   auto old_cin = std::cin.rdbuf(input_stream.rdbuf());
   auto old_cout = std::cout.rdbuf(output_stream.rdbuf());
-  std::cerr << "2. 重定向后 - cin: " << std::cin.rdbuf();
 
   // Execute each command.
   std::string input;
