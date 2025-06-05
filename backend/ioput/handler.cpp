@@ -8,7 +8,7 @@ std::string ProcessCommand(const std::string &input);
 
 int main() {
   httplib::Server svr;
-
+  std::cerr << "服务器启动...\n";
   // API端点定义
   svr.Post("/api/process",
            [](const httplib::Request &req, httplib::Response &res) {
@@ -37,25 +37,33 @@ int main() {
 
              // 4. 返回结果
              res.set_content(output, "text/plain");
+             std::cerr << "已返回结果。";
            });
 
   // 启动服务器
-  std::cout << "Server running at http://localhost:8080\n";
+  std::cerr << "Server running at http://localhost:8080\n";
   svr.listen("localhost", 8080);
 
   return 0;
 }
 
 std::string ProcessCommand(const std::string &input1) {
+  std::cerr << "===== 开始处理指令: " << input1 << " =====\n";
   // 静态变量保持持久化状态（文件、内存数据等）
   static std::fstream has_opened("has_opened", std::ios::in | std::ios::out |
                                                    std::ios::binary);
   static bool init = false;
+
+  std::cerr << "1. 重定向前 - cin: " << std::cin.rdbuf()
+            << ", cout: " << std::cout.rdbuf() << "\n";
   // 重定向IO
   std::istringstream input_stream(input1);
   std::ostringstream output_stream;
   auto old_cin = std::cin.rdbuf(input_stream.rdbuf());
   auto old_cout = std::cout.rdbuf(output_stream.rdbuf());
+  std::cerr << "2. 重定向后 - cin: " << std::cin.rdbuf()
+            << ", cout: " << std::cout.rdbuf() << "\n";
+
   // Execute each command.
   std::string input;
   std::string timestamp;
@@ -101,5 +109,10 @@ std::string ProcessCommand(const std::string &input1) {
   // 恢复IO
   std::cin.rdbuf(old_cin);
   std::cout.rdbuf(old_cout);
-  return output_stream.str();
+
+  std::string result = output_stream.str();
+  std::cerr << "3. 捕获的输出: " << result << "\n";
+  std::cerr << "===== 结束处理指令 =====\n\n";
+
+  return result;
 }
