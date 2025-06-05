@@ -1,6 +1,6 @@
 #include "core_system.hpp"
 
-bpt::BufferPoolManager core::hash_str_buffer(50, 4096, "hashdata", "hashdisk");
+bpt::BufferPoolManager core::hash_str_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/hashdata", "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/hashdisk");
 bpt::BPlusTree<str_hash, FixedChineseString<10>, HashCompare>
     core::hash_str(0, &hash_str_buffer);
 

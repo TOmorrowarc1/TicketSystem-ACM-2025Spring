@@ -2,28 +2,28 @@
 
 int train_sys::order_time = 0;
 
-bpt::BufferPoolManager train_sys::release_buffer(50, 4096, "release_data",
-                                                 "release_disk");
+bpt::BufferPoolManager train_sys::release_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/release_data",
+                                                 "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/release_disk");
 bpt::BPlusTree<FixedString<20>, TrainTotal, FixStringComparator<20>>
     train_sys::release(0, &release_buffer);
 
-bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "state_data",
-                                               "state_disk");
+bpt::BufferPoolManager train_sys::state_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/state_data",
+                                               "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/state_disk");
 bpt::BPlusTree<TicketStateKey, TicketState, TicketStateKeyComparator>
     train_sys::states(0, &state_buffer);
 
-bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "route_data",
-                                                "route_disk");
+bpt::BufferPoolManager train_sys::routes_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/route_data",
+                                                "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/route_disk");
 bpt::BPlusTree<RouteTrain, RouteTrain, RouteTComparator>
     train_sys::routes(0, &routes_buffer);
 
-bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "order_data_1",
-                                                    "order_disk_1");
+bpt::BufferPoolManager train_sys::user_order_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/order_data_1",
+                                                    "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/order_disk_1");
 bpt::BPlusTree<OrderKey, Order, OrderKeyComparator>
     train_sys::user_order(0, &user_order_buffer);
 
-bpt::BufferPoolManager train_sys::train_query_buffer(50, 4096, "order_data_2",
-                                                     "order_disk_2");
+bpt::BufferPoolManager train_sys::train_query_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/order_data_2",
+                                                     "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/order_disk_2");
 bpt::BPlusTree<Query, Query, QueryComparator>
     train_sys::train_query(0, &train_query_buffer);
 

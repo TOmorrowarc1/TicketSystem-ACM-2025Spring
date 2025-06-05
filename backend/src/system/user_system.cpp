@@ -1,7 +1,7 @@
 #include "user_system.hpp"
 
-bpt::BufferPoolManager user_sys::user_info_buffer(50, 4096, "user_info_data",
-                                                  "user_info_disk");
+bpt::BufferPoolManager user_sys::user_info_buffer(50, 4096, "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/user_info_data",
+                                                  "/home/tomorrow_arc1/C++learn/TicketSystem-2025/TicketSystem-ACM-2025Spring/backend/data/user_info_disk");
 
 bpt::BPlusTree<FixedString<20>, UserInfo, FixStringComparator<20>>
     user_sys::user_info(0, &user_info_buffer);
