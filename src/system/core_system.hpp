@@ -5,7 +5,6 @@
 #include "item/user.hpp"
 #include "mySTL/set.hpp"
 #include "mySTL/vector.hpp"
-#include <set>
 namespace core {
 extern bpt::BufferPoolManager hash_str_buffer;
 extern bpt::BPlusTree<str_hash, FixedChineseString<10>, HashCompare> hash_str;

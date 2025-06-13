@@ -3,7 +3,8 @@
 
 #include "core_system.hpp"
 #include "item/train.hpp"
-#include <vector>
+
+
 namespace train_sys {
 extern int order_time;
 
